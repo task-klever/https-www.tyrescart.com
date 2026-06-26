@@ -1,0 +1,82 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Checkout\Model\Form\AbstractEntityFormElement;
+use Hyva\Checkout\Model\Form\EntityFormInterface;
+use Hyva\Checkout\Magewire\Checkout\AddressView\MagewireAddressFormInterface;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var MagewireAddressFormInterface $magewire */
+/** @var Escaper $escaper */
+/** @var EntityFormInterface $form */
+/** @var AbstractEntityFormElement $element */
+
+$form = $magewire->getPublicForm();
+$namespace = $form->getNamespace();
+
+// Grep submit button element manually since it's been filtered out on element rendering.
+$submit = $form->getElement('submit');
+?>
+<form class="col-start-1 row-start-1" <?= /* @noEscape */ $form->renderAttributes($escaper) ?>>
+    <?php /* Inject custom logic right before the form elements grid. */ ?>
+    <?= /** @noEscape */ $block->getChildHtml('before') ?>
+
+    <div class="checkout-form-elements">
+        <?php /* Deprecated: It is recommended to replace all instances of "address-form.before" with the "before" container. */ ?>
+        <?php /* Backward compatibility: supports blocks using this template that require a child container alias like "address-form.before". */ ?>
+        <?= /** @noEscape */ $block->getChildHtml('address-form.before') ?>
+
+        <?php foreach ($form->getElements() as $element): ?>
+            <?php if ($element->canRender()): ?>
+                <?php if ($element->getFrontendInput() !== 'hidden'): ?>
+                    <?php /** @purge: md:col-span-3 md:col-span-6 md:col-span-9 md:col-span-12 */ ?>
+                        <div class="<?= $escaper->escapeHtmlAttr($element->renderWrapperClass(['col-span-12 space-y-1'])) ?>"
+                            <?= /* @noEscape */ $element->renderAttributes($escaper, 'wrapper') ?>
+                        >
+                    <?php endif ?>
+
+                    <?= /* @noEscape */ $element->render() ?>
+
+                    <?php if ($element->getFrontendInput() !== 'hidden'): ?>
+                        <?php if ($magewire->hasError($element->getTracePath())): ?>
+                            <ul class="messages" role="list" aria-live="polite">
+                                <li>
+                                    <?= /** @noEscape */ $magewire->getError($element->getId()) ?>
+                                </li>
+                            </ul>
+                        <?php endif ?>
+
+                        </div>
+                    <?php endif ?>
+            <?php endif ?>
+        <?php endforeach ?>
+
+        <?php /* Deprecated: It is recommended to replace all instances of "address-form.after" with the "after" container. */ ?>
+        <?php /* Backward compatibility: supports blocks using this template that require a child container alias like "address-form.after". */ ?>
+        <?= /** @noEscape */ $block->getChildHtml('address-form.after') ?>
+    </div>
+
+    <?php /* Inject custom logic right after the form elements grid. */ ?>
+    <?= /** @noEscape */ $block->getChildHtml('after') ?>
+
+    <?php if ($submit && $submit->isVisible()): ?>
+        <div class="checkout-form-toolbar flex flex-row gap-x-2 rounded-md"
+            <?= /* @noEscape */ $element->renderAttributes($escaper, 'toolbar') ?>
+        >
+            <?= /* @noEscape */ $submit->render() ?>
+        </div>
+    <?php endif ?>
+</form>
+
+</div>

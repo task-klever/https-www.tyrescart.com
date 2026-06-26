@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <title>
+            Aalogics Add Attribute Options
+        </title>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Aalogics\AttributeOptions\Block\Adminhtml\Attribute\Add"
+                name="aalogics_attributeoptions_attribute.add"/>
+            <!-- <block class="Aalogics\AttributeOptions\Block\Adminhtml\Attribute\Add" template="Aalogics_AttributeOptions::attribute_form.phtml"/> -->
+        </referenceContainer>
+    </body>
+</page>

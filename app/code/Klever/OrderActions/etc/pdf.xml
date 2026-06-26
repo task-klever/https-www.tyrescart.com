@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Sales:etc/pdf.xsd">
+    <renderers>
+        <page type="invoice">
+            <renderer product_type="default">Klever\OrderActions\Model\Order\Pdf\Items\Invoice\DefaultInvoice</renderer>
+        </page>
+    </renderers>
+</config>

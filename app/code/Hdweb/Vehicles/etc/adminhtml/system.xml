@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Config/etc/system_file.xsd">
+    <system>
+        <tab id="hdweb" translate="label" sortOrder="300">
+            <label>Hdweb</label>
+        </tab>
+        <section id="vehicles" translate="label" type="text" sortOrder="1" showInStore="1" showInDefault="1" showInWebsite="1">
+            <class>separator-top</class>
+            <label>Vehicles</label>
+            <tab>hdweb</tab>
+            <resource>Hdweb_Vehicles::config_vehicles</resource>
+            <group id="general" translate="label" type="text" sortOrder="1" showInDefault="1" showInStore="1" showInWebsite="1">
+                <label>General</label>
+                <field id="make_h1" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Make Page H1 Tag</label>
+                    <comment>Enter H1 Tag you want where you can include dynamic make like this {make}. for example : Buy {make} Tyres</comment>
+                </field>
+                <field id="model_h1" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Model Page H1 Tag</label>
+                    <comment>Enter H1 Tag you want where you can include dynamic make and model like this {make} {model}. for example : Buy {make} {model} Tyres Online at Best Price in UAE</comment>
+                </field>
+                <field id="make_default_meta_title" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Make Page Default Meta Title</label>
+                    <comment>Enter Default Meta Title you want where you can include dynamic make like this {make}. for example : Buy {make} Car Tires Online at Best Price UAE </comment>
+                </field>
+                <field id="make_default_meta_keywords" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Make Page Default Meta Keywords</label>
+                    <comment>Enter Default Meta Keywords you want where you can include dynamic make like this {make}. for example : {make}, car tires, {make} car tires, {make} vehicle tires, premium tires, high-performance tires, luxury car tires, {make} tire selection</comment>
+                </field>
+                <field id="make_default_meta_description" translate="label" type="textarea" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Make Page Default Meta Description</label>
+                    <comment>Enter Default Meta Description you want where you can include dynamic make like this {make}. for example : Shop premium {make} car tyres in UAE</comment>
+                </field>
+                <field id="model_default_meta_title" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Model Page Default Meta Title</label>
+                    <comment>Enter Default Meta Title you want where you can include dynamic make like this {make}. for example : Buy {make} Car Tires Online at Best Price UAE </comment>
+                </field>
+                <field id="model_default_meta_keywords" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Model Page Default Meta Keywords</label>
+                    <comment>Enter Default Meta Keywords you want where you can include dynamic make like this {make}. for example : {make}, car tires, {make} car tires, {make} vehicle tires, premium tires, high-performance tires, luxury car tires, {make} tire selection</comment>
+                </field>
+                <field id="model_default_meta_description" translate="label" type="textarea" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Model Page Default Meta Description</label>
+                    <comment>Enter Default Meta Description you want where you can include dynamic make like this {make}. for example : Shop premium {make} car tyres in UAE</comment>
+                </field>
+            </group>
+        </section>
+        <section id="sitemap">
+         <group id="vehicles_pages" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+             <label>
+                 <![CDATA[Vehicles Pages Options]]>
+             </label>
+             <field id="changefreq" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                 <label>
+                     <![CDATA[Frequency]]>
+                 </label>
+                 <source_model>Magento\Sitemap\Model\Config\Source\Frequency</source_model>
+             </field>
+             <field id="priority" translate="label comment" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                 <label>
+                     <![CDATA[Priority]]>
+                 </label>
+                 <comment>
+                     <![CDATA[Valid values range from 0.0 to 1.0.]]>
+                 </comment>
+                 <backend_model>Magento\Sitemap\Model\Config\Backend\Priority</backend_model>
+             </field>
+         </group>
+     </section>
+    </system>
+</config>

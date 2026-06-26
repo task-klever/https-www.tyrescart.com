@@ -1,0 +1,87 @@
+<?php
+/**
+ * Special Offers page - displays banners from Mageplaza BannerSlider
+ * With date filtering, mobile image support, and detail page links
+ */
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$bannerHelper = $objectManager->get(\Mageplaza\BannerSlider\Helper\Data::class);
+$offerCollection = $bannerHelper->getBannerCollection(1)->addFieldToFilter('status', 1);
+$storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface');
+$mediaURL = $storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+$baseUrl = $this->getBaseUrl();
+$storeCode = $storeManager->getStore()->getCode();
+$today = date('Y-m-d');
+
+// Filter by display_from and display_to dates
+$filteredOffers = [];
+foreach ($offerCollection as $offer) {
+    $displayFrom = $offer->getData('display_from');
+    $displayTo = $offer->getData('display_to');
+
+    // Skip if display_from is set and today is before it
+    if ($displayFrom && $today < $displayFrom) {
+        continue;
+    }
+    // Skip if display_to is set and today is after it
+    if ($displayTo && $today > $displayTo) {
+        continue;
+    }
+    $filteredOffers[] = $offer;
+}
+?>
+<section class="section section-padding all-offers pt-4 md:pt-6">
+    <?php if (count($filteredOffers) > 0): ?>
+    <div class="container-theme">
+        <div class="w-full inline-grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
+            <?php foreach ($filteredOffers as $offer): ?>
+            <?php
+                $offerImage = $offer->getImage();
+                $offerImageMobile = $offer->getData('image_mobile');
+                $offerTitle = $offer->getName();
+                $offerUrl = $offer->getUrlBanner();
+                $offerUrlKey = $offer->getData('url_key');
+
+                // Build detail page URL if url_key exists
+                $detailUrl = $offerUrlKey ? $baseUrl . 'special-offers/' . $offerUrlKey : null;
+
+                // Use detail page URL if available, otherwise fall back to banner url
+                $linkUrl = $detailUrl ?: $offerUrl;
+
+                if ($linkUrl && $storeCode === 'ar') {
+                    $linkUrl = str_replace('/en/', '/ar/', $linkUrl);
+                }
+            ?>
+            <div class="offer-item flex items-end justify-center shrink-0 w-full">
+                <div class="slide w-full overflow-hidden group border border-[#e1e1e1] rounded-[10px] o-hidden">
+                    <div class="blog-image relative group">
+                        <div class="img_wrp w-full pb-full h-0 z-0 pb-[70%]">
+                            <figure class="absolute inset-0">
+                                <?php if ($linkUrl): ?>
+                                <a href="<?= $escaper->escapeUrl($linkUrl) ?>" <?= $detailUrl ? '' : 'target="_blank"' ?>>
+                                <?php endif; ?>
+                                <picture>
+                                    <?php if ($offerImageMobile): ?>
+                                    <!-- Mobile image -->
+                                    <source media="(max-width: 767px)" srcset="<?= $escaper->escapeUrl($mediaURL . 'mageplaza/bannerslider/banner/image/' . $offerImageMobile) ?>">
+                                    <?php endif; ?>
+                                    <!-- Desktop image -->
+                                    <source srcset="<?= $escaper->escapeUrl($mediaURL . 'mageplaza/bannerslider/banner/image/' . $offerImage) ?>">
+                                    <img class="w-full h-full object-cover object-top" src="<?= $escaper->escapeUrl($mediaURL . 'mageplaza/bannerslider/banner/image/' . $offerImage) ?>" alt="<?= $escaper->escapeHtmlAttr($offerTitle) ?>" loading="lazy">
+                                </picture>
+                                <?php if ($linkUrl): ?>
+                                </a>
+                                <?php endif; ?>
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php else: ?>
+    <div class="message info empty">
+        <div><?= $escaper->escapeHtml(__("We can't find any offers.")) ?></div>
+    </div>
+    <?php endif; ?>
+</section>

@@ -1,0 +1,39 @@
+{
+    "hdweb_warrantyclaim_claim": {
+        "column": {
+            "claim_id": true,
+            "warranty_reference": true,
+            "invoice_number": true,
+            "invoice_date": true,
+            "product_type": true,
+            "invoice_image": true,
+            "vehicle_plate": true,
+            "customer_name": true,
+            "phone": true,
+            "email": true,
+            "product_image1": true,
+            "product_image2": true,
+            "product_image3": true,
+            "comment": true,
+            "current_millage": true,
+            "status": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "hdweb_warranty_claim_comment": {
+        "column": {
+            "id": true,
+            "warranty_id": true,
+            "comment": true,
+            "created_by": true,
+            "created_at": true,
+            "status": true,
+            "is_notify_customer": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

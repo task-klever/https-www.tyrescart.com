@@ -1,0 +1,27 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Checkout\Model\Form\AbstractEntityFormElement;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+
+/** @var AbstractEntityFormElement $element */
+$element = $block->getData('element');
+?>
+<div class="bg-gray-100 p-6 rounded-lg not-found">
+    <?php if ($element): ?>
+        <p><?= $escaper->escapeHtml(__('Unable to render form element for %1.', $element->getId())) ?></p>
+    <?php else: ?>
+        <p><?= $escaper->escapeHtml(__('Unable to render form element.')) ?></p>
+    <?php endif ?>
+</div>

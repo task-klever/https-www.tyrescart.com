@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="hdweb" translate="label" sortOrder="300">
+            <label>Hdweb</label>
+        </tab>
+        <section id="installer" translate="label" type="text" sortOrder="1" showInStore="1" showInDefault="1" showInWebsite="1">
+            <class>separator-top</class>
+            <label>Installer</label>
+            <tab>hdweb</tab>
+            <resource>Hdweb_Installer::config_installer</resource>
+            <group id="general" translate="label" type="text" sortOrder="1" showInDefault="1" showInStore="1" showInWebsite="1">
+                <label>General</label>
+                 <field id="admin_installer_email_template" translate="label" type="select" sortOrder="3" showInDefault="1" showInStore="1" showInWebsite="1">
+                    <label>Admin Installer Email Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                 <field id="admin_notify_customer_email_template" translate="label" type="select" sortOrder="3" showInDefault="1" showInStore="1" showInWebsite="1">
+                    <label>Admin Customer Email Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+				<field id="no_fitment_installer" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>No Fitment Installer ID</label>
+					<comment>Enter Installer ID</comment>
+                </field>
+				<field id="mobilevan_fitment_service_installer" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Mobile Van Fitment Service Installer ID</label>
+					<comment>Enter Installer ID</comment>
+                </field>
+				<field id="skip_installer_ids" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Skip Installer IDs</label>
+					<comment>Enter installer id comma separated which you want to hide from store locator page.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

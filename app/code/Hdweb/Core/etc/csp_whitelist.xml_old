@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp/etc/csp_whitelist.xsd">
+    <policies>
+        <policy id="script-src">
+            <values>
+                <value id="wheelsize" type="host">*.wheel-size.com</value>
+                <value id="cdnwheelsize" type="host">cdn.wheel-size.com</value>
+                <value id="googlecoin" type="host">*.google.co.in</value>
+                <value id="statsdoubleclick" type="host">stats.g.doubleclick.net</value>
+                <value id="googleapis" type="host">*.googleapis.com</value>
+                <value id="gstatic" type="host">*.gstatic.com</value>
+                <value id="clarity" type="host">*.clarity.ms</value>
+                <value id="tawk" type="host">*.tawk.to</value>
+                <value id="embedtawk" type="host">embed.tawk.to</value>
+                <value id="jsdelivr" type="host">cdn.jsdelivr.net</value>
+                <value id="cloudflareinsights" type="host">static.cloudflareinsights.com</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="wheelsize" type="host">*.wheel-size.com</value>
+                <value id="cdnwheelsize" type="host">cdn.wheel-size.com</value>                
+                <value id="googlecoin" type="host">*.google.co.in</value>
+                <value id="statsdoubleclick" type="host">stats.g.doubleclick.net</value>
+                <value id="googleapis" type="host">*.googleapis.com</value>
+                <value id="gstatic" type="host">*.gstatic.com</value>
+                <value id="clarity" type="host">*.clarity.ms</value>
+                <value id="tawk" type="host">*.tawk.to</value>
+                <value id="embedtawk" type="host">embed.tawk.to</value>
+                <value id="jsdelivr" type="host">cdn.jsdelivr.net</value>     
+                <value id="cloudflareinsights" type="host">static.cloudflareinsights.com</value>           
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="wheelsize" type="host">*.wheel-size.com</value>
+                <value id="cdnwheelsize" type="host">cdn.wheel-size.com</value>                
+                <value id="googlecoin" type="host">*.google.co.in</value>
+                <value id="statsdoubleclick" type="host">stats.g.doubleclick.net</value>
+                <value id="googleapis" type="host">*.googleapis.com</value>
+                <value id="gstatic" type="host">*.gstatic.com</value>
+                <value id="clarity" type="host">*.clarity.ms</value>
+                <value id="tawk" type="host">*.tawk.to</value>
+                <value id="tawkwss" type="host">wss://*.tawk.to</value>
+                <value id="embedtawk" type="host">embed.tawk.to</value>
+                <value id="jsdelivr" type="host">cdn.jsdelivr.net</value>
+                <value id="cloudflareinsights" type="host">static.cloudflareinsights.com</value>                
+            </values>
+        </policy>
+        <policy id="frame-src">
+            <values>
+                <value id="wheelsize" type="host">*.wheel-size.com</value>
+                <value id="cdnwheelsize" type="host">cdn.wheel-size.com</value>                
+                <value id="googlecoin" type="host">*.google.co.in</value>
+                <value id="statsdoubleclick" type="host">stats.g.doubleclick.net</value>
+                <value id="googleapis" type="host">*.googleapis.com</value>
+                <value id="gstatic" type="host">*.gstatic.com</value>
+                <value id="clarity" type="host">*.clarity.ms</value>
+                <value id="tawk" type="host">*.tawk.to</value>
+                <value id="embedtawk" type="host">embed.tawk.to</value>
+                <value id="jsdelivr" type="host">cdn.jsdelivr.net</value>  
+                <value id="cloudflareinsights" type="host">static.cloudflareinsights.com</value>              
+            </values>
+        </policy>
+        <policy id="font-src">
+            <values>
+                <value id="wheelsize" type="host">*.wheel-size.com</value>
+                <value id="cdnwheelsize" type="host">cdn.wheel-size.com</value>                
+                <value id="googlecoin" type="host">*.google.co.in</value>
+                <value id="statsdoubleclick" type="host">stats.g.doubleclick.net</value>
+                <value id="googleapis" type="host">*.googleapis.com</value>
+                <value id="gstatic" type="host">*.gstatic.com</value>
+                <value id="clarity" type="host">*.clarity.ms</value>
+                <value id="tawk" type="host">*.tawk.to</value>
+                <value id="embedtawk" type="host">embed.tawk.to</value>
+                <value id="jsdelivr" type="host">cdn.jsdelivr.net</value>
+                <value id="gstatic" type="host">fonts.gstatic.com</value>    
+                <value id="cloudflareinsights" type="host">static.cloudflareinsights.com</value>            
+            </values>
+        </policy>
+        <policy id="media-src">
+            <values>
+                <value id="wheelsize" type="host">*.wheel-size.com</value>
+                <value id="cdnwheelsize" type="host">cdn.wheel-size.com</value>                
+                <value id="googlecoin" type="host">*.google.co.in</value>
+                <value id="statsdoubleclick" type="host">stats.g.doubleclick.net</value>
+                <value id="googleapis" type="host">*.googleapis.com</value>
+                <value id="gstatic" type="host">*.gstatic.com</value>
+                <value id="clarity" type="host">*.clarity.ms</value>
+                <value id="tawk" type="host">*.tawk.to</value> 
+                <value id="embedtawk" type="host">embed.tawk.to</value>
+                <value id="jsdelivr" type="host">cdn.jsdelivr.net</value>    
+                <value id="cloudflareinsights" type="host">static.cloudflareinsights.com</value>           
+            </values>
+        </policy>
+        <policy id="style-src">
+            <values>
+                <value id="wheelsize" type="host">*.wheel-size.com</value>
+                <value id="cdnwheelsize" type="host">cdn.wheel-size.com</value>   
+                <value id="googlecoin" type="host">*.google.co.in</value>
+                <value id="statsdoubleclick" type="host">stats.g.doubleclick.net</value>
+                <value id="googleapis" type="host">*.googleapis.com</value>
+                <value id="gstatic" type="host">*.gstatic.com</value>   
+                <value id="clarity" type="host">*.clarity.ms</value>
+                <value id="tawk" type="host">*.tawk.to</value>
+                <value id="embedtawk" type="host">embed.tawk.to</value>
+                <value id="jsdelivr" type="host">cdn.jsdelivr.net</value>  
+                <value id="cloudflareinsights" type="host">static.cloudflareinsights.com</value>                        
+            </values>
+        </policy>
+        <policy id="form-action">
+            <values>
+                <value id="wheelsize" type="host">*.wheel-size.com</value>
+                <value id="cdnwheelsize" type="host">cdn.wheel-size.com</value>   
+                <value id="googlecoin" type="host">*.google.co.in</value>
+                <value id="statsdoubleclick" type="host">stats.g.doubleclick.net</value>
+                <value id="googleapis" type="host">*.googleapis.com</value>
+                <value id="gstatic" type="host">*.gstatic.com</value>   
+                <value id="clarity" type="host">*.clarity.ms</value>
+                <value id="tawk" type="host">*.tawk.to</value>
+                <value id="embedtawk" type="host">embed.tawk.to</value>
+                <value id="jsdelivr" type="host">cdn.jsdelivr.net</value>   
+                <value id="cloudflareinsights" type="host">static.cloudflareinsights.com</value>                       
+            </values>
+        </policy>        
+    </policies>
+</csp_whitelist>

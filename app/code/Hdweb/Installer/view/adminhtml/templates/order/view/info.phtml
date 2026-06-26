@@ -1,0 +1,1232 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+/**
+ * @var \Magento\Sales\Block\Adminhtml\Order\View\Info $block
+ */
+$order = $block->getOrder();
+$helper = $this->helper('Hdweb\Installer\Helper\Data');
+$coreHelper = $this->helper('Hdweb\Core\Helper\Data');
+$hdwebPOHelper = $this->helper('Hdweb\Purchaseorder\Helper\Data');
+$baseCurrencyCode = (string)$order->getBaseCurrencyCode();
+$globalCurrencyCode = (string)$order->getGlobalCurrencyCode();
+$orderCurrencyCode = (string)$order->getOrderCurrencyCode();
+
+$orderAdminDate = $block->formatDate(
+    $block->getOrderAdminDate($order->getCreatedAt()),
+    \IntlDateFormatter::MEDIUM,
+    true
+);
+
+$orderStoreDate = $block->formatDate(
+    $order->getCreatedAt(),
+    \IntlDateFormatter::MEDIUM,
+    true,
+    $block->getTimezoneForStore($order->getStore())
+);
+
+$customerUrl = $block->getCustomerViewUrl();
+
+$allowedAddressHtmlTags = ['b', 'br', 'em', 'i', 'li', 'ol', 'p', 'strong', 'sub', 'sup', 'ul'];
+
+$customerEmail=$order->getCustomerEmail();
+
+$objectManager=\Magento\Framework\App\ObjectManager::getInstance();
+?>
+
+<section class="admin__page-section order-view-account-information">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $block->escapeHtml(__('Order & Account Information')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <div class="admin__page-section-item order-information">
+            <?php /* Order Information */ ?>
+            <?php $confirmationEmailStatusMessage = $order->getEmailSent() ? __('The order confirmation email was sent') : __('The order confirmation email is not sent'); ?>
+            <div class="admin__page-section-item-title">
+                <span class="title">
+                    <?php if ($block->getNoUseOrderLink()) : ?>
+                        <?= $block->escapeHtml(__('Order # %1', $order->getRealOrderId())) ?> (<span><?= $block->escapeHtml($confirmationEmailStatusMessage) ?></span>)
+                    <?php else : ?>
+                        <a href="<?= $block->escapeUrl($block->getViewUrl($order->getId())) ?>"><?= $block->escapeHtml(__('Order # %1', $order->getRealOrderId())) ?></a>
+                        <span>(<?= $block->escapeHtml($confirmationEmailStatusMessage) ?>)</span>
+                    <?php endif; ?>
+                </span>
+            </div>
+            <div class="admin__page-section-item-content">
+                <table class="admin__table-secondary order-information-table">
+                <tr>
+                    <th><?= $block->escapeHtml(__('Order Date')) ?></th>
+                    <td><?= $block->escapeHtml($orderAdminDate) ?></td>
+                </tr>
+                <?php if ($orderAdminDate != $orderStoreDate) : ?>
+                    <tr>
+                        <th><?= $block->escapeHtml(__('Order Date (%1)', $block->getTimezoneForStore($order->getStore()))) ?></th>
+                        <td><?= $block->escapeHtml($orderStoreDate) ?></td>
+                    </tr>
+                <?php endif;?>
+                <tr>
+                    <th><?= $block->escapeHtml(__('Order Status')) ?></th>
+                    <td><span id="order_status"><?= $block->escapeHtml($order->getStatusLabel()) ?></span></td>
+                </tr>
+                <?= $block->getChildHtml() ?>
+                <?php if ($block->isSingleStoreMode() == false) : ?>
+                    <tr>
+                        <th><?= $block->escapeHtml(__('Purchased From')) ?></th>
+                        <td><?= $block->escapeHtml($block->getOrderStoreName(), ['br']) ?></td>
+                    </tr>
+                <?php endif; ?>
+                <?php if ($order->getRelationChildId()) : ?>
+                    <tr>
+                        <th><?= $block->escapeHtml(__('Link to the New Order')) ?></th>
+                        <td>
+                            <a href="<?= $block->escapeUrl($block->getViewUrl($order->getRelationChildId())) ?>">
+                                <?= $block->escapeHtml($order->getRelationChildRealId()) ?>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endif; ?>
+                <?php if ($order->getRelationParentId()) : ?>
+                    <tr>
+                        <th><?= $block->escapeHtml(__('Link to the Previous Order')) ?></th>
+                        <td>
+                            <a href="<?= $block->escapeUrl($block->getViewUrl($order->getRelationParentId())) ?>">
+                                <?= $block->escapeHtml($order->getRelationParentRealId()) ?>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endif; ?>
+                <?php if ($order->getRemoteIp() && $block->shouldDisplayCustomerIp()) : ?>
+                    <tr>
+                        <th><?= $block->escapeHtml(__('Placed from IP')) ?></th>
+                        <td><?= $block->escapeHtml($order->getRemoteIp()); ?><?= $order->getXForwardedFor() ? ' (' . $block->escapeHtml($order->getXForwardedFor()) . ')' : ''; ?></td>
+                    </tr>
+                <?php endif; ?>
+                    <tr>
+                        <th><?= $block->escapeHtml(__('GA User')) ?></th>
+                        <?php if ($order->getGaUserId()) : ?>
+                            <td><?php echo $order->getGaUserId(); ?></td>
+                        <?php else: ?>
+                            <td><?php echo 'N/A'; ?></td>
+                        <?php endif; ?>
+                    </tr>
+                    <tr>
+                        <th><?= $block->escapeHtml(__('Order Type')) ?></th>
+                        <?php if ($order->getOrderType()) : ?>
+                            <td><?php echo $order->getOrderType(); ?></td>
+                        <?php else: ?>
+                            <td><?php echo 'N/A'; ?></td>
+                        <?php endif; ?>
+                    </tr>                    
+                <?php if ($order->getSalesPersonId() ): 
+                      $userFactory=$objectManager->get('Magento\User\Model\UserFactory');
+                      $user = $userFactory->create()->load($order->getSalesPersonId());
+                      $Firstname = $user->getFirstname();
+                      $Lastname = $user->getLastname()
+                     ?>
+                        <tr>
+                            <th><?php echo $block->escapeHtml(__('Salesperson')) ?></th>
+                            <td><?php echo $block->escapeHtml($Firstname.' '.$Lastname);
+                   
+                        ?></td>
+                        </tr>
+                    <?php endif; ?>
+
+                <?php if ($globalCurrencyCode !== $baseCurrencyCode) : ?>
+                    <tr>
+                        <th><?= $block->escapeHtml(__('%1 / %2 rate:', $globalCurrencyCode, $baseCurrencyCode)) ?></th>
+                        <td><?= $block->escapeHtml($order->getBaseToGlobalRate()) ?></td>
+                    </tr>
+                <?php endif; ?>
+                <?php if ($baseCurrencyCode !== $orderCurrencyCode && $globalCurrencyCode !== $orderCurrencyCode) : ?>
+                    <tr>
+                        <th><?= $block->escapeHtml(__('%1 / %2 rate:', $orderCurrencyCode, $baseCurrencyCode)) ?></th>
+                        <td><?= $block->escapeHtml($order->getBaseToOrderRate()) ?></td>
+                    </tr>
+                <?php endif; ?>
+            </table>
+            </div>
+        </div>
+
+        <div class="admin__page-section-item order-account-information">
+            <?php /* Account Information */ ?>
+            <div class="admin__page-section-item-title">
+                <span class="title"><?= $block->escapeHtml(__('Account Information')) ?></span>
+                <div class="actions">
+                    <?php if ($customerUrl) : ?>
+                        <a href="<?= /* @noEscape */ $customerUrl ?>" target="_blank">
+                            <?= $block->escapeHtml(__('Edit Customer')) ?>
+                        </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div class="admin__page-section-item-content">
+                <table class="admin__table-secondary order-account-information-table">
+                    <tr>
+                        <th><?= $block->escapeHtml(__('Customer Name')) ?></th>
+                        <td>
+                            <?php if ($customerUrl) : ?>
+                                <a href="<?= $block->escapeUrl($customerUrl) ?>" target="_blank">
+                                    <span><?= $block->escapeHtml($order->getCustomerName()) ?></span>
+                                </a>
+                            <?php else : ?>
+                                <?= $block->escapeHtml($order->getCustomerName()) ?>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><?= $block->escapeHtml(__('Email')) ?></th>
+                        <td><a href="mailto:<?= $block->escapeHtmlAttr($order->getCustomerEmail()) ?>"><?= $block->escapeHtml($order->getCustomerEmail()) ?></a></td>
+                    </tr>
+                    <?php if ($groupName = $block->getCustomerGroupName()) : ?>
+                        <tr>
+                            <th><?= $block->escapeHtml(__('Customer Group')) ?></th>
+                            <td><?= $block->escapeHtml($groupName) ?></td>
+                        </tr>
+                    <?php endif; ?>
+                    <?php foreach ($block->getCustomerAccountData() as $data) : ?>
+                        <tr>
+                            <th><?= $block->escapeHtml($data['label']) ?></th>
+                            <td><?= $block->escapeHtml($data['value'], ['br']) ?></td>
+                        </tr>
+                    <?php endforeach;?>
+                    <?= $block->getChildHtml('extra_customer_info') ?>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="admin__page-section order-addresses">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $block->escapeHtml(__('Address Information')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <div class="admin__page-section-item order-billing-address">
+            <?php /* Billing Address */ ?>
+            <div class="admin__page-section-item-title">
+                <span class="title"><?= $block->escapeHtml(__('Billing Address')) ?></span>
+                <div class="actions"><?= /* @noEscape */ $block->getAddressEditLink($order->getBillingAddress()); ?></div>
+            </div>
+            <address class="admin__page-section-item-content"><?= $block->escapeHtml($block->getFormattedAddress($order->getBillingAddress()), $allowedAddressHtmlTags); ?></address>
+        </div>
+        <?php if (!$block->getOrder()->getIsVirtual()) : ?>
+            <div class="admin__page-section-item order-shipping-address">
+                <?php /* Shipping Address */ ?>
+                <div class="admin__page-section-item-title">
+                    <span class="title"><?= $block->escapeHtml(__('Shipping Address')) ?></span>
+                    <div class="actions"><?= /* @noEscape */ $block->getAddressEditLink($order->getShippingAddress()); ?></div>
+                </div>
+                <address class="admin__page-section-item-content"><?= $block->escapeHtml($block->getFormattedAddress($order->getShippingAddress()), $allowedAddressHtmlTags); ?></address>
+            </div>
+        <?php endif; ?>
+    </div>
+</section>
+
+<section class="admin__page-section order-installer">
+    <div class="admin__page-section-title">
+        <span class="title"><?php echo $block->escapeHtml(__('Delivery Information')) ?></span>
+        <div class="actions"><a href="javascript:void(0);" id="editDeliveryInfo" style="color:#eb5202; font-size:13px; font-weight:600;"><?php echo __('Edit') ?></a></div>
+    </div>
+    <div>
+        <?php
+            $deliveryShippingDesc = $order->getShippingDescription() ?: '';
+            // Check both shipping description AND installer's ismobilevan flag
+            $deliveryIsMobileVanDisplay = (stripos($deliveryShippingDesc, 'Mobile Van') !== false);
+            if (!$deliveryIsMobileVanDisplay && $order->getPickupStore()) {
+                $checkInstaller = $objectManager->create('Ecomteck\StoreLocator\Model\Stores')->load($order->getPickupStore());
+                if ($checkInstaller->getId() && $checkInstaller->getIsmobilevan()) {
+                    $deliveryIsMobileVanDisplay = true;
+                }
+            }
+        ?>
+        <?php if($deliveryShippingDesc): ?>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Service Type') ?> : </span><span class="text_field"><?php echo $block->escapeHtml($deliveryShippingDesc) ?></span>
+            </div>
+        <?php endif; ?>
+        <?php if($deliveryIsMobileVanDisplay && $order->getPickupLocation()): ?>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Fitting Location') ?> : </span>
+                <span class="text_field"><?php echo $block->escapeHtml($order->getPickupLocation()) ?></span>
+                <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($order->getPickupLocation()) ?>" target="_blank" style="color:#0073aa; margin-left:8px;"><?php echo __('View on Google Maps') ?></a>
+            </div>
+        <?php endif; ?>
+        <?php if($order->getPickupDate()): ?>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Date') ?> : </span><span class="text_field">
+                    <?php echo trim(str_replace('00:00:00', '', $order->getPickupDate())); ?>
+                </span>
+            </div>
+        <?php endif; ?>
+        <?php if($order->getPickupTime()): ?>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Time') ?> : </span><span class="text_field"><?php echo $order->getPickupTime() ?></span>
+            </div>
+        <?php endif; ?>
+        <?php
+            $latestOrderComment = '';
+            $orderHistories = $order->getStatusHistories();
+            if ($orderHistories) {
+                foreach ($orderHistories as $history) {
+                    $histComment = $history->getComment();
+                    if ($histComment && stripos($histComment, 'Update -') === false) {
+                        $latestOrderComment = $histComment;
+                        break;
+                    }
+                }
+            }
+        ?>
+        <?php if($latestOrderComment): ?>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Order Comment') ?> : </span><span class="text_field"><?php echo $block->escapeHtml($latestOrderComment) ?></span>
+            </div>
+        <?php endif; ?>
+        <?php /* Legacy mobile van service location data */ ?>
+        <?php if ($order->getMobilevanserviceLocation()): ?>
+        <?php
+            $serviceData = @unserialize($order->getMobilevanserviceLocation());
+            if ($serviceData && is_array($serviceData)):
+                $mobilevanserviceAddress = isset($serviceData['address']) ? $serviceData['address'] : '';
+                $mobilevanserviceLocation_lat = isset($serviceData['lat']) ? $serviceData['lat'] : '';
+                $mobilevanserviceLocation_lng = isset($serviceData['long']) ? $serviceData['long'] : '';
+                $latLong = $mobilevanserviceLocation_lat.','.$mobilevanserviceLocation_lng;
+                $mobilevanserviceLocation_notes = isset($serviceData['notes']) ? $serviceData['notes'] : '';
+        ?>
+            <?php if ($mobilevanserviceAddress && !$order->getPickupLocation()): ?>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Mobile Van Service Address');?> : </span><span class="text_field"><?php echo $mobilevanserviceAddress; ?></span>
+            </div>
+            <?php endif; ?>
+            <?php if ($mobilevanserviceLocation_lat && $mobilevanserviceLocation_lng): ?>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Location Coordinates');?> : </span><span class="text_field"><a href="http://maps.google.com/?q=<?php echo $latLong;?>" target="_blank"><?php echo __('View on map');?></a></span>
+            </div>
+            <?php endif; ?>
+            <?php if ($mobilevanserviceLocation_notes): ?>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Additional Notes');?> : </span><span class="text_field"><?php echo $mobilevanserviceLocation_notes;?></span>
+            </div>
+            <?php endif; ?>
+        <?php endif; ?>
+        <?php endif; ?>
+    </div>
+</section>
+
+<?php
+$make=$order->getMake();
+if(isset($make)){ ?>
+    <section class="admin__page-section order-vehicle">
+        <div class="admin__page-section-title">
+            <span class="title"><?php echo $block->escapeHtml(__('Vehicle Information')) ?></span>
+        </div>
+        <div>
+            <?php if($order->getVinNumber()): ?>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Vin No :')?></span><span class="text_field"><?php echo $order->getVinNumber() ?> </div>
+            <?php endif; ?>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Plate No :')?></span><span class="text_field"><?php echo $order->getPlate() ?> </div>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Make :') ?> </span><span class="text_field"><?php echo $order->getMake() ; ?></span> 
+            </div>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Model :') ?></span><span class="text_field"><?php echo $order->getModel(); ?></span> 
+            </div>
+            <div class="field">
+                <span class="lable_field"><?php echo __('Year :') ?> </span><span class="text_field"><?php echo $order->getYear() ; ?></span> 
+            </div>
+            <div class="actions"><a href="JavaScript:Void(0);" id="vehicleData"><?php echo __('Edit')?></a></div>
+        </div>
+    </section>
+<?php }else{ ?>
+    <section class="admin__page-section order-vehicle">
+        <div class="admin__page-section-title">
+            <span class="title"><?php echo $block->escapeHtml(__('Vehicle Information')) ?></span>
+        </div>
+        <div>
+            <div class="actions"><a href="JavaScript:Void(0);" id="vehicleData"><?php echo __('Add Vehicle Details') ?></a></div>
+        </div>
+    </section>
+<?php } ?>
+<?php
+    // Only show Installer Information for outlet orders (not mobile van)
+    $showInstallerSection = ($order->getShippingDescription() == "Install at Outlet");
+    if ($showInstallerSection && $order->getPickupStore()) {
+        $checkInstallerForSection = $objectManager->create('Ecomteck\StoreLocator\Model\Stores')->load($order->getPickupStore());
+        if ($checkInstallerForSection->getId() && $checkInstallerForSection->getIsmobilevan()) {
+            $showInstallerSection = false;
+        }
+    }
+?>
+<?php if ($showInstallerSection) : ?>
+    <section class="admin__page-section order-installer">
+        <div class="admin__page-section-title">
+            <span class="title"><?php echo $block->escapeHtml(__('Installer Information')) ?></span>
+        </div>
+        <?php if ($order->getPickupStore()): ?>
+            <?php
+                $installer_id = $order->getPickupStore();
+                $installerDetails = $hdwebPOHelper->getIntallerDetails($installer_id);
+                $country = $objectManager->create('\Magento\Directory\Model\Country')->load($installerDetails['country'])->getName();
+            ?>
+                <div>
+                    <div class="field">
+                        <span class="text_field"><?php echo $installerDetails['name']; ?></span> 
+                    </div>
+                    <div class="field">
+                        <span class="text_field"><?php echo $installerDetails['address']; ?></span> 
+                    </div>
+                    <div class="field">
+                        <span class="text_field"><?php echo $installerDetails['city']; ?></span> 
+                    </div>
+                    <div class="field">
+                        <span class="text_field"><?php echo $country; ?></span> 
+                    </div>
+                    <div class="field">
+                        <span class="lable_field">Email: </span><span class="text_field"><?php echo $installerDetails['email']; ?></span> 
+                    </div>
+                    <div class="field">
+                        <span class="lable_field">Phone: </span><span class="text_field"><?php echo $installerDetails['phone']; ?></span> 
+                    </div>
+                </div>
+        <?php else: ?>
+                <div>
+                    <div class="field">
+                        <span class="text_field"><?php echo __('No Installer Information') ?></span> 
+                    </div>
+                </div>
+        <?php endif; ?>
+</section>
+<?php endif; ?>
+
+
+<?php $poData = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorder')->getCollection()->addfieldtofilter('orderreference_no',$order->getIncrementId());
+$totalFpo = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorder')->getCollection()
+                                                                        ->addfieldtofilter('order_id',$order->getIncrementId())
+                                                                        ->addfieldtofilter('po_type','fpo');
+$totalMpo = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorder')->getCollection()
+                                                                        ->addfieldtofilter('order_id',$order->getIncrementId())
+                                                                        ->addfieldtofilter('po_type','mpo');
+$totalMPoItems = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorderitem')->getCollection()
+                                                                        ->addfieldtofilter('order_id',$order->getIncrementId())
+                                                                        ->addfieldtofilter('po_type','mpo');
+$totalFPoItems = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorderitem')->getCollection()
+                                                                        ->addfieldtofilter('order_id',$order->getIncrementId())
+                                                                        ->addfieldtofilter('po_type','fpo');
+$totalMPOQty = 0;
+foreach ($totalMPoItems as $mpo) {
+        $totalMPOQty += $mpo['qty'];
+}
+$totalFMPOQty = 0;
+foreach ($totalFPoItems as $fpo) {
+        $totalFMPOQty += $fpo['qty'];
+}
+    if (count($poData) > 0) {
+        $grandSum = 0; 
+        $totalMargin = 0; 
+        ?>
+        <section class="admin__page-section order-po">
+                <div class="admin__page-section-title">
+                    <span class="title"><?php echo $block->escapeHtml(__('Purchase Order Information')) ?></span>
+                </div>
+                <div>
+                <?php if($totalMpo->count() > 0): ?>
+                    <div class="field">
+                        <span class="lable_field"><?php echo $block->escapeHtml(__('No. of MPOs') ) ?> </span><span class="text_field"><?php echo $totalMpo->count(). __(' (TotalQty: '). $totalMPOQty.')' ?></span> 
+                    </div>
+                <?php endif; ?>
+                    <div class="field">
+                        <?php if($totalMpo->count() > 0): ?>
+                            <span class="lable_field"><?php echo $block->escapeHtml(__('MPO Number')) ?> </span>
+                        <?php endif; ?>
+                        <?php foreach ($poData as $po) { 
+                            $grandSum = $grandSum+(double)$po->getGrandtotal();
+                        ?>
+                        <?php } 
+                        $totalMargin = number_format(((($order->getGrandtotal()-$grandSum)/$order->getGrandtotal())*100),2); ?>
+                        <?php if($totalMpo->count() > 0): ?>
+                            <?php foreach($totalMpo as $mpo): ?>
+                                <span class="text_field"><a target="_blank" href="<?php echo $this->getUrl('purchaseorder/create/edit').'po_id/'.$mpo->getId() ?>"><?php echo $mpo->getPoreferenceNo() ?></a></span> 
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div>
+                <?php if($totalFpo->count() > 0): ?>
+                    <div class="field">
+                        <span class="lable_field"><?php echo $block->escapeHtml(__('No. of FPOs') ) ?> </span><span class="text_field"><?php echo $totalFpo->count(). __(' (TotalQty: '). $totalFMPOQty.')' ?></span> 
+                    </div>
+                    <div class="field">
+                        <span class="lable_field"><?php echo $block->escapeHtml(__('FPO Number')) ?> </span>
+                        <?php foreach($totalFpo as $fpo): ?>
+                            <span class="text_field"><a target="_blank" href="<?php echo $this->getUrl('purchaseorder/create/edit').'po_id/'.$fpo->getId() ?>"><?php echo $fpo->getPoreferenceNo() ?></a></span> 
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+                    <div class="field">
+                        <span class="lable_field"><?php echo $block->escapeHtml(__('PO Grand Total') )?> </span><span class="text_field"><?php echo $grandSum ?></span> 
+                    </div>
+                    <div class="field">
+                        <span class="lable_field"><?php echo $block->escapeHtml(__('Total Margin'))?> </span><span class="text_field"><?php echo $totalMargin.'%' ?></span> 
+                    </div>
+                </div>
+         </section>
+<?php } ?>
+
+
+<div id="vehicle-popup-modal" style="display : none;">
+    <?php $make = $order->getMake();
+    $model = $order->getModel();
+    $year = $order->getYear();
+    $plate = $order->getPlate();
+    $vin = $order->getVinNumber();
+
+    ?>
+    <form class="form" action="<?php echo $this->getUrl('installer/order/updatevehicle') ?>" id="mailsendform" method="post">
+        <input name="form_key" type="hidden" value="<?php /* @escapeNotVerified */ echo $block->getFormKey() ?>" />
+        <input name="order_id" type="hidden" value="<?php echo $order->getId() ?>">
+        <fieldset class="fieldset">
+
+            <?php /* <div class="admin__field field required">
+                <label><?php echo __('Vin number') ?></label>
+                <input type="text" class="input-text required-entry" data-validate="{required:true}" id="vin_number" <?php if (isset($vin)) { ?> value="<?php echo $vin; ?>" <?php } ?> name="vin_number" />
+            </div> */ ?>
+
+            <div class="admin__field field required">
+                <label><?php echo __('Plate number') ?></label>
+                <input type="text" class="input-text required-entry" data-validate="{required:true}" id="plate_number" <?php if (isset($plate)) { ?> value="<?php echo $plate; ?>" <?php } ?> name="plate_number" />
+            </div>
+            <div class="admin__field field required" style="float: left;margin-right: 15px;">
+                <label><?php echo _('Make : ') ?></label>
+                <select name="vehiclelist1" class="required-entry">
+                            <?php foreach ($coreHelper->getOnestepCheckoutVehcilelist() as $vehcilelist) { ?>
+                                <option value="<?php echo $vehcilelist['value']; ?>" <?php if ($make == $vehcilelist['value']) { ?> selected="selected" <?php } ?> ><?php echo $vehcilelist['label']; ?></option>
+                            <?php } ?>
+                   
+                </select>
+            </div>
+            <div class="admin__field field required">
+                <label><?php echo _(' OR Make : ') ?></label>
+                <input type="text" class="input-text" id="vehiclelist1_text" value="" name="vehiclelist1_text" />
+            </div>
+            <div class="admin__field field required" style="float: left;margin-right: 15px;">
+                <label><?php echo _('Model : ') ?></label>
+                <select name="vehiclemodel1" class="required-entry">
+                </select>
+            </div>
+            <div class="admin__field field required">
+                <label><?php echo _(' OR Model : ') ?></label>
+                <input type="text" class="input-text" id="vehiclemodel1_text" value="" name="vehiclemodel1_text" />
+            </div>
+            <div class="admin__field field required" style="float: left;margin-right: 15px;">
+                <label><?php echo _('Year : ') ?></label>
+                <select name="vehicleyear1" class="required-entry">
+                </select>
+            </div>
+            <div class="admin__field field required">
+                <label><?php echo _(' OR Year : ') ?></label>
+                <input type="text" class="input-text" id="vehicleyear1_text" value="" name="vehicleyear1_text" />
+            </div>
+        </fieldset>
+        </br>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button type="submit" class="action submit primary" title="<?php echo __('Submit') ?>">
+                    <span><?php echo __('Submit') ?></span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<?php  /* Notify installer Popup  */  ?>
+
+<div id="notify-installer-popup-modal" style="display : none;" >
+    <form class="form" action="<?php echo $this->getUrl('installer/order/sendemailtoinstaller') ?>" id="mailsendform" method="post" >
+        <input name="form_key" type="hidden" value="<?php /* @escapeNotVerified */ echo $block->getFormKey() ?>" />
+        <input name="send_email" class="" ss="send_mail" id="send_mail" type="hidden" />
+        <input name="order_id" type="hidden" value="<?php echo $order->getId() ?>">
+        <input name="isdownloadworkorder" type="hidden" value="" id="isdownloadworkorder" />
+        <fieldset class="fieldset">
+            <div class="field required">
+                <input type="hidden" name="id" value="<?php echo $order->getId() ?>" />
+                <label><?php echo __('Appointment Date') ?></label>
+                <input type="text" class="input-text required-entry hasDatepicker" data-validate="{required:true}" id="notify_installer_date" name="installer_date" value="<?php echo $order->getWorkorderDatetime() ?>" required />
+            </div>
+            </br>
+            <div class="field required">
+                <div>
+                    <label class="admin__field-label"><?php echo __('Admin Comment') ?></label>
+                </div>
+                <div>
+                    <textarea name="installer_comment" rows="5" cols="100"><?php echo $order->getWorkorderComment() ?></textarea>
+                </div>
+            </div>
+        </fieldset>
+        </br>
+        <div class="actions-toolbar">
+            <div class="primary" style="display:flex; gap:10px;">
+                <button type="button" class="action submit" title="<?php echo __('Update') ?>" onclick="
+                    var form = document.getElementById('mailsendform');
+                    form.action = '<?php echo $this->getUrl('installer/order/updateworkorder') ?>';
+                    document.getElementById('isdownloadworkorder').value = '';
+                    form.submit();
+                ">
+                    <span><?php echo __('Update') ?></span>
+                </button>
+                <button type="button" class="action submit" title="<?php echo __('Download PDF') ?>" onclick="
+                    var form = document.getElementById('mailsendform');
+                    form.action = '<?php echo $this->getUrl('installer/order/downloadpdf') ?>';
+                    document.getElementById('isdownloadworkorder').value = '1';
+                    if (!document.getElementById('workorder_type')) {
+                        var typeInput = document.createElement('input');
+                        typeInput.type = 'hidden';
+                        typeInput.name = 'type';
+                        typeInput.value = 'workorder';
+                        typeInput.id = 'workorder_type';
+                        form.appendChild(typeInput);
+                    }
+                    form.submit();
+                ">
+                    <span><?php echo __('Download PDF') ?></span>
+                </button>
+                <button type="submit" class="action submit primary" title="<?php echo __('Save & Send Mail') ?>" onclick="
+                    document.getElementById('mailsendform').action = '<?php echo $this->getUrl('installer/order/sendemailtoinstaller') ?>';
+                    document.getElementById('isdownloadworkorder').value = '';
+                    var typeEl = document.getElementById('workorder_type');
+                    if (typeEl) typeEl.remove();
+                ">
+                    <span><?php echo __('Save & Send Mail') ?></span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div id="notify-customer-popup-modal" style="display : none;" >
+    <form class="form" action="<?php echo $this->getUrl('installer/order/sendemailtocustomer') ?>" id="customernotify" method="post" >
+        <input name="form_key" type="hidden" value="<?php /* @escapeNotVerified */ echo $block->getFormKey() ?>" />
+        <input name="send_email" class="customer_notify_send_mail" id="customer_notify_send_mail" type="hidden" />
+        <input name="order_id" type="hidden" value="<?php echo $order->getId() ?>">
+        <input name="isdownloadworkorder" type="hidden" value="" id="customer_isdownloadworkorder" />
+        <fieldset class="fieldset">
+            <div class="field required">
+                <input type="hidden" name="id" value="<?php echo $order->getId() ?>" />
+                <label><?php echo __('Appointment Date') ?></label>
+                <input type="text" class="input-text required-entry hasDatepicker" data-validate="{required:true}" id="customer_installer_date" name="installer_date" value="<?php echo $order->getAppointmentDatetime() ?>" required />
+            </div>
+            </br>
+            <div class="field required">
+                <div>
+                    <label class="admin__field-label"><?php echo __('Admin Comment') ?></label>
+                </div>
+                <div>
+                    <textarea name="installer_comment" rows="5" cols="100"><?php echo $order->getAppointmentComment() ?: 'Please present this to the Installer Partner to verify and proceed with the fitment.' ?></textarea>
+                </div>
+            </div>
+        </fieldset>
+        </br>
+        <div class="actions-toolbar">
+            <div class="primary" style="display:flex; gap:10px;">
+                <button type="button" class="action submit" title="<?php echo __('Update') ?>" onclick="
+                    var form = document.getElementById('customernotify');
+                    form.action = '<?php echo $this->getUrl('installer/order/updateappointment') ?>';
+                    document.getElementById('customer_isdownloadworkorder').value = '';
+                    form.submit();
+                ">
+                    <span><?php echo __('Update') ?></span>
+                </button>
+                <button type="button" class="action submit" title="<?php echo __('Download PDF') ?>" onclick="
+                    var form = document.getElementById('customernotify');
+                    form.action = '<?php echo $this->getUrl('installer/order/downloadpdf') ?>';
+                    document.getElementById('customer_isdownloadworkorder').value = '1';
+                    if (!document.getElementById('appointment_type')) {
+                        var typeInput = document.createElement('input');
+                        typeInput.type = 'hidden';
+                        typeInput.name = 'type';
+                        typeInput.value = 'appointment';
+                        typeInput.id = 'appointment_type';
+                        form.appendChild(typeInput);
+                    }
+                    form.submit();
+                ">
+                    <span><?php echo __('Download PDF') ?></span>
+                </button>
+                <button type="submit" class="action submit primary" title="<?php echo __('Save & Send Mail') ?>" onclick="
+                    document.getElementById('customernotify').action = '<?php echo $this->getUrl('installer/order/sendemailtocustomer') ?>';
+                    document.getElementById('customer_isdownloadworkorder').value = '';
+                    var typeEl = document.getElementById('appointment_type');
+                    if (typeEl) typeEl.remove();
+                ">
+                    <span><?php echo __('Save & Send Mail') ?></span>
+                </button>
+            </div>
+        </div>
+    </form>
+    <form class="form" action="<?php echo $this->getUrl('installer/order/sendorderemail') ?>" id="ordermailsendform" method="post" style="float:right;">
+        <input name="form_key" type="hidden" value="<?php /* @escapeNotVerified */ echo $block->getFormKey() ?>" />        
+        <input name="order_id" type="hidden" value="<?php echo $order->getId() ?>">
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button type="submit" class="action submit primary" title="<?php  echo __('Send Order Email') ?>">
+                    <span><?php echo __('Send Order Email') ?></span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<div id="installer-popup-modal" style="display : none;" >
+    <?php $allStores = $objectManager->create('Ecomteck\StoreLocator\Block\StoreLocator')->getStorePickupList(); ?>
+    <?php $allStores = $allStores->setOrder('name','ASC'); ?>
+    <form class="form" action="<?php echo $this->getUrl('installer/order/updateinstaller') ?>" id="editintaller" method="post" >
+        <input name="form_key" type="hidden" value="<?php /* @escapeNotVerified */ echo $block->getFormKey() ?>" />
+        <input name="order_id" type="hidden" value="<?php echo $order->getId() ?>">
+        <fieldset class="fieldset">
+            <div class="field required">
+                <label><?php echo __('Instller List') ?></label>
+                <select name="installer">
+                <?php foreach ($allStores as $store) { ?>
+                    <option value="<?php echo $store->getStoresId(); ?>"><?php echo $store->getName().'('.$store->getAddress().')'; ?></option>
+                <?php } ?>
+                </select>
+            </div>
+        </fieldset>
+    </br>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button type="submit" class="action submit primary" title="<?php  echo __('Submit') ?>">
+                    <span><?php echo __('Submit') ?></span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="assign_sales_person-modal" style="display : none;" >
+    <form class="form" action="<?php echo $this->getUrl('salesperson/order/assignsalesperson') ?>" id="assignsalespersonendform" method="post" >
+        <input name="form_key" type="hidden" value="<?php /* @escapeNotVerified */ echo $block->getFormKey() ?>" />
+        <input name="order_id" type="hidden" value="<?php echo $order->getId() ?>">
+        <fieldset class="fieldset">
+            <div class="field required">
+                <label><?php echo _('Salesperson List : ') ?></label>
+                <select name="salesid" class="required-entry">
+                    
+                <?php foreach ($helper->getManagerList() as $key => $value) { ?>
+                    <option value="<?php echo $key; ?>"><?php echo $value; ?></option>
+                <?php } ?>
+                </select>
+            </div>
+            <!-- <div class="field required">
+                <div>
+                    <label class="admin__field-label">Comments</label>
+                </div>
+                <div>
+                    <textarea name="comment" class="required-entry" rows="5" cols="100"></textarea>
+                </div>
+            </div>  -->
+        </fieldset>
+    </br>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button type="submit" class="action submit primary" title="<?php  echo __('Assign Salesperson') ?>">
+                    <?php  if($order->getSalesPersonId()){ ?>
+                       <span><?php echo __('Update Salesperson') ?></span>
+                    <?php  } else { ?>
+                             <span><?php echo __('Assign Salesperson') ?></span>
+                    <?php  } ?>
+
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<?php
+    // Prepare delivery edit data
+    $currentPickupStoreId = $order->getPickupStore() ?: '';
+    $isMobileVan = (stripos($order->getShippingDescription() ?: '', 'Mobile Van') !== false);
+    // Also check current installer's ismobilevan flag
+    if (!$isMobileVan && $currentPickupStoreId) {
+        $currentInstallerCheck = $objectManager->create('Ecomteck\StoreLocator\Model\Stores')->load($currentPickupStoreId);
+        if ($currentInstallerCheck->getId() && $currentInstallerCheck->getIsmobilevan()) {
+            $isMobileVan = true;
+        }
+    }
+    $deliveryPickupLocation = $order->getPickupLocation() ?: '';
+    $deliveryPickupDate = $order->getPickupDate() ? trim(str_replace('00:00:00', '', $order->getPickupDate())) : '';
+    $deliveryPickupTime = $order->getPickupTime() ?: '';
+    // Get latest non-system order comment from status history
+    $deliveryOrderComment = '';
+    $deliveryHistories = $order->getStatusHistories();
+    if ($deliveryHistories) {
+        foreach ($deliveryHistories as $dHistory) {
+            $dHistComment = $dHistory->getComment();
+            if ($dHistComment && stripos($dHistComment, 'Update -') === false) {
+                $deliveryOrderComment = $dHistComment;
+                break;
+            }
+        }
+    }
+
+    // Load all active installers + their opening hours for date/time JS
+    $deliveryAllStores = $objectManager->create('Ecomteck\StoreLocator\Model\ResourceModel\Stores\Collection')
+        ->addFieldToFilter('status', 1)
+        ->setOrder('name', 'ASC');
+    $deliveryStoreHours = [];
+    $deliveryStoreSkipDays = [];
+    $deliveryStoreCutoffTime = [];
+    $deliveryStoreSkipHours = [];
+    foreach ($deliveryAllStores as $dStore) {
+        $dsid = $dStore->getStoresId();
+        $deliveryStoreHours[$dsid] = $dStore->getOpeningHoursFormated();
+        $deliveryStoreSkipDays[$dsid] = $dStore->getSkipDays() ? (int)$dStore->getSkipDays() : 0;
+        $deliveryStoreCutoffTime[$dsid] = $dStore->getCutoffTime() ?: '';
+        $deliveryStoreSkipHours[$dsid] = $dStore->getSkipHours() ? (int)$dStore->getSkipHours() : 0;
+    }
+    $timezone = $objectManager->get('Magento\Framework\Stdlib\DateTime\TimezoneInterface');
+    $deliveryTimezone = $timezone->getConfigTimezone();
+?>
+<div id="delivery-popup-modal" style="display:none;">
+    <form class="form" action="<?php echo $this->getUrl('installer/order/updatedelivery') ?>" id="deliveryEditForm" method="post">
+        <input name="form_key" type="hidden" value="<?php echo $block->getFormKey() ?>" />
+        <input name="order_id" type="hidden" value="<?php echo $order->getId() ?>">
+        <fieldset class="fieldset" style="border:none; padding:0; margin:0;">
+            <!-- Installer Dropdown -->
+            <div style="margin-bottom:20px;">
+                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:6px;"><?php echo __('Installer') ?></label>
+                <select name="delivery_installer" id="delivery_installer_select" style="width:100%; padding:8px 12px; border:1px solid #ccc; border-radius:3px; height:40px;">
+                    <option value=""><?php echo __('-- Select Installer --') ?></option>
+                    <?php foreach ($deliveryAllStores as $dStore) : ?>
+                    <option value="<?php echo $dStore->getStoresId() ?>"
+                            <?php if ($currentPickupStoreId == $dStore->getStoresId()) echo 'selected'; ?>
+                            data-ismobilevan="<?php echo $dStore->getIsmobilevan() ? '1' : '0' ?>">
+                        <?php echo $block->escapeHtml($dStore->getName() . ' - ' . $dStore->getCity()) ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <!-- Fitting Location (shown dynamically when mobile van installer is selected) -->
+            <div style="margin-bottom:20px; <?php echo $isMobileVan ? '' : 'display:none;' ?>" id="delivery_fitting_location_wrap">
+                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:6px;"><?php echo __('Fitting Location') ?></label>
+                <input type="text" class="admin__control-text" name="delivery_pickup_location" id="delivery_pickup_location_input" value="<?php echo $block->escapeHtmlAttr($deliveryPickupLocation) ?>" style="width:100%; padding:8px 12px; border:1px solid #ccc; border-radius:3px;" />
+            </div>
+            <!-- Date + Time Dropdowns -->
+            <div style="display:flex; gap:20px; margin-bottom:20px;">
+                <div style="flex:1;">
+                    <label style="display:block; font-weight:600; font-size:14px; margin-bottom:6px;"><?php echo __('Appointment Date') ?></label>
+                    <select name="delivery_date" id="delivery_date_select" style="width:100%; padding:8px 12px; border:1px solid #ccc; border-radius:3px; height:40px;">
+                        <option value=""><?php echo __('-- Select Date --') ?></option>
+                        <?php if ($deliveryPickupDate) : ?>
+                        <option value="<?php echo $block->escapeHtmlAttr($deliveryPickupDate) ?>" selected><?php echo $block->escapeHtml($deliveryPickupDate) ?></option>
+                        <?php endif; ?>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label style="display:block; font-weight:600; font-size:14px; margin-bottom:6px;"><?php echo __('Appointment Time') ?></label>
+                    <select name="delivery_time" id="delivery_time_select" style="width:100%; padding:8px 12px; border:1px solid #ccc; border-radius:3px; height:40px;">
+                        <option value=""><?php echo __('-- Select Time --') ?></option>
+                        <?php if ($deliveryPickupTime) : ?>
+                        <option value="<?php echo $block->escapeHtmlAttr($deliveryPickupTime) ?>" selected><?php echo $block->escapeHtml($deliveryPickupTime) ?></option>
+                        <?php endif; ?>
+                    </select>
+                </div>
+            </div>
+            <!-- Order Comment -->
+            <div style="margin-bottom:20px;">
+                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:6px;"><?php echo __('Order Comment') ?></label>
+                <textarea class="admin__control-textarea" name="delivery_comment" rows="5" style="width:100%; padding:8px 12px; border:1px solid #ccc; border-radius:3px; resize:vertical;"><?php echo $block->escapeHtml($deliveryOrderComment) ?></textarea>
+            </div>
+        </fieldset>
+        <hr style="border:none; border-top:1px solid #e0e0e0; margin:20px 0;" />
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button type="submit" class="action submit primary" title="<?php echo __('Save Changes') ?>" style="background:#eb5202; border-color:#eb5202; padding:8px 20px; border-radius:3px; color:#fff; font-weight:600;">
+                    <span><?php echo __('Save Changes') ?></span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Delivery edit: store hours data + JS for date/time population -->
+<script>
+var deliveryStoreHours = <?php echo json_encode($deliveryStoreHours) ?>;
+var deliveryStoreSkipDays = <?php echo json_encode($deliveryStoreSkipDays) ?>;
+var deliveryStoreCutoffTime = <?php echo json_encode($deliveryStoreCutoffTime) ?>;
+var deliveryStoreSkipHours = <?php echo json_encode($deliveryStoreSkipHours) ?>;
+var deliveryTimezone = '<?php echo $deliveryTimezone ?>';
+
+(function() {
+    function getNow() {
+        var nowStr = new Date().toLocaleString('en-US', { timeZone: deliveryTimezone });
+        return new Date(nowStr);
+    }
+
+    function timeToMinutes(timeStr) {
+        var parts = timeStr.trim().split(' ');
+        var time = parts[0];
+        var modifier = parts[1];
+        var tp = time.split(':');
+        var h = parseInt(tp[0], 10);
+        var m = parseInt(tp[1], 10);
+        if (modifier === 'PM' && h !== 12) h += 12;
+        if (modifier === 'AM' && h === 12) h = 0;
+        return h * 60 + m;
+    }
+
+    function time24ToMinutes(t) {
+        if (!t) return 0;
+        var p = t.split(':');
+        return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+    }
+
+    function getTimeSlots(storeId, selectedDate) {
+        var weekdays = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+        var dateObj = new Date(selectedDate);
+        var dayName = weekdays[dateObj.getDay()];
+        if (!deliveryStoreHours[storeId] || !deliveryStoreHours[storeId][dayName]) return [];
+        var slots = deliveryStoreHours[storeId][dayName];
+        if (!slots || slots.length === 0) return [];
+
+        var skipDays = deliveryStoreSkipDays[storeId] || 0;
+        var now = getNow();
+        var todayStr = (now.getMonth()+1) + '/' + now.getDate() + '/' + now.getFullYear();
+        var isToday = (selectedDate === todayStr);
+
+        if (skipDays === 0 && isToday) {
+            var currentMinutes = now.getHours() * 60 + now.getMinutes();
+            var cutoff = deliveryStoreCutoffTime[storeId] || '';
+            if (cutoff && currentMinutes >= time24ToMinutes(cutoff)) return [];
+            var skipHrs = deliveryStoreSkipHours[storeId] || 0;
+            var earliest = currentMinutes + (skipHrs * 60);
+            return slots.filter(function(slot) {
+                return timeToMinutes(slot.split('-')[0].trim()) >= earliest;
+            });
+        }
+        return slots.slice();
+    }
+
+    function populateDeliveryDates(storeId) {
+        var dateSelect = document.getElementById('delivery_date_select');
+        var timeSelect = document.getElementById('delivery_time_select');
+        if (!dateSelect) return;
+
+        dateSelect.innerHTML = '<option value="">-- Select Date --</option>';
+        timeSelect.innerHTML = '<option value="">-- Select Time --</option>';
+
+        if (!storeId || !deliveryStoreHours[storeId]) return;
+
+        var now = getNow();
+        var skipDays = deliveryStoreSkipDays[storeId] || 0;
+        var startDate = new Date(now);
+        startDate.setHours(0,0,0,0);
+        startDate.setDate(startDate.getDate() + skipDays);
+
+        var monthNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+        var collected = 0;
+        for (var i = 0; i < 45 && collected < 15; i++) {
+            var date = new Date(startDate);
+            date.setDate(startDate.getDate() + i);
+            var dateVal = (date.getMonth()+1) + '/' + date.getDate() + '/' + date.getFullYear();
+            var slots = getTimeSlots(storeId, dateVal);
+            if (slots.length > 0) {
+                var display = date.getDate().toString().padStart(2,'0') + '-' + monthNames[date.getMonth()] + '-' + date.getFullYear();
+                var opt = document.createElement('option');
+                opt.value = dateVal;
+                opt.textContent = display;
+                dateSelect.appendChild(opt);
+                collected++;
+            }
+        }
+        if (collected === 0) {
+            var opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'No available dates';
+            opt.disabled = true;
+            dateSelect.appendChild(opt);
+        }
+    }
+
+    function populateDeliveryTimes(storeId, dateVal) {
+        var timeSelect = document.getElementById('delivery_time_select');
+        if (!timeSelect) return;
+        timeSelect.innerHTML = '<option value="">-- Select Time --</option>';
+        if (!storeId || !dateVal) return;
+
+        var slots = getTimeSlots(storeId, dateVal);
+        slots.forEach(function(slot) {
+            var opt = document.createElement('option');
+            opt.value = slot;
+            opt.textContent = slot;
+            timeSelect.appendChild(opt);
+        });
+        if (slots.length === 0) {
+            var opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'No time slots available';
+            opt.disabled = true;
+            timeSelect.appendChild(opt);
+        }
+    }
+
+    // Wait for DOM
+    document.addEventListener('DOMContentLoaded', function() {
+        var installerSelect = document.getElementById('delivery_installer_select');
+        var dateSelect = document.getElementById('delivery_date_select');
+
+        if (installerSelect) {
+            installerSelect.addEventListener('change', function() {
+                populateDeliveryDates(this.value);
+                // Show/hide fitting location based on mobile van
+                var selectedOption = this.options[this.selectedIndex];
+                var isMobileVan = selectedOption ? selectedOption.getAttribute('data-ismobilevan') === '1' : false;
+                var fittingWrap = document.getElementById('delivery_fitting_location_wrap');
+                if (fittingWrap) {
+                    fittingWrap.style.display = isMobileVan ? 'block' : 'none';
+                }
+            });
+        }
+        if (dateSelect) {
+            dateSelect.addEventListener('change', function() {
+                var storeId = installerSelect ? installerSelect.value : '';
+                populateDeliveryTimes(storeId, this.value);
+            });
+        }
+    });
+})();
+</script>
+
+<!-- Google Maps Places for Fitting Location autocomplete -->
+<?php $gmapApiKey = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface')->getValue('ecomteck_storelocator/map/api_key'); ?>
+<script>
+function initDeliveryPlacesAutocomplete() {
+    var input = document.getElementById('delivery_pickup_location_input');
+    if (!input || input._autocompleteInit) return;
+    input._autocompleteInit = true;
+    var autocomplete = new google.maps.places.Autocomplete(input, {
+        componentRestrictions: { country: 'ae' }
+    });
+}
+// Init when Maps API is ready
+function onDeliveryMapsReady() {
+    initDeliveryPlacesAutocomplete();
+    // Also re-init when fitting location becomes visible (installer change)
+    var installerSel = document.getElementById('delivery_installer_select');
+    if (installerSel) {
+        installerSel.addEventListener('change', function() {
+            setTimeout(initDeliveryPlacesAutocomplete, 200);
+        });
+    }
+}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo $gmapApiKey; ?>&libraries=places&callback=onDeliveryMapsReady" async defer></script>
+
+<script>
+    require(['jquery','Magento_Ui/js/modal/modal','mage/mage','mage/calendar'],
+        function($,modal) 
+        {   
+            $('#notify_installer_date').datetimepicker({
+                dateFormat: 'd/m/yy',
+                timeFormat: 'HH:mm:ss',
+                changeMonth: true,
+                changeYear: true,
+                showsTime: true
+            });
+
+            $('#customer_installer_date').datetimepicker({
+                dateFormat: 'd/m/yy',
+                timeFormat: 'HH:mm:ss',
+                changeMonth: true,
+                changeYear: true,
+                showsTime: true
+            });   
+            
+            $('.installer-button').click(function(event){
+            var options = {
+                type: 'popup',
+                responsive: true,
+                innerScroll: true,
+                title: 'Notify Installer',
+                buttons: []
+            };
+            
+            var popup = modal(options, $('#notify-installer-popup-modal'));
+            var email = '<?php echo isset($customerEmail) ? $customerEmail  : '' ?>';
+            $(".send_mail").val(email);
+            $('#notify-installer-popup-modal').modal('openModal');
+          });
+
+          $('.notify-customer-button').click(function(event){
+            var options = {
+                type: 'popup',
+                responsive: true,
+                innerScroll: true,
+                title: 'Notify Customer',
+                buttons: []
+            };
+            
+            var customer_notify_popup = modal(options, $('#notify-customer-popup-modal'));
+            var email = '<?php echo isset($customerEmail) ? $customerEmail  : '' ?>';
+            $(".customer_notify_send_mail").val(email);
+            $('#notify-customer-popup-modal').modal('openModal');
+          });  
+
+          $('.edit-installer-button').click(function(event){
+            var options = {
+                type: 'popup',
+                responsive: true,
+                innerScroll: true,
+                title: 'Edit Installer',
+                buttons: []
+            };
+
+            var popup = modal(options, $('#installer-popup-modal'));
+            $('#installer-popup-modal').modal('openModal');
+        });
+
+        /* delivery information edit */
+        $('#editDeliveryInfo').click(function(event){
+            var options = {
+                type: 'popup',
+                responsive: true,
+                innerScroll: true,
+                title: 'Delivery Details',
+                buttons: []
+            };
+            var popup = modal(options, $('#delivery-popup-modal'));
+            $('#delivery-popup-modal').modal('openModal');
+        });
+
+        /* vehicle information */
+            $('#vehicleData').click(function(event){
+            var options = {
+                type: 'popup',
+                responsive: true,
+                innerScroll: true,
+                title: 'Vehicle Details',
+                buttons: []
+            };
+
+            var popup = modal(options, $('#vehicle-popup-modal'));
+            $('#vehicle-popup-modal').modal('openModal');
+                $(document).ready(function(){
+                    if ($("select[name='vehiclelist1']").has('option').length > 0) {    
+                        var selectedVehicle = $("select[name='vehiclelist1']").children("option:selected").val();
+                        $("select[name='vehiclelist1']").val(selectedVehicle).trigger('change');
+                    }
+                });
+            }); 
+
+            $(document).on('change', "select[name='vehiclelist1']", function() {
+                var selectedmodel = $("select[name='vehiclelist1']").val();
+                if (selectedmodel) {
+                    getvehiclemodelAction(selectedmodel);
+                }
+            });
+
+            $(document).on('change', "select[name='vehiclemodel1']", function() {
+              var selectevehicledmodel = $("select[name='vehiclelist1']").val();
+                     var selectedyear = $("select[name='vehiclemodel1']").val();
+                     var data = {'make': selectevehicledmodel, 'model': selectedyear};
+                     if (data) {
+                        getvehicleyearAction(data);
+                    }
+            });
+
+            function getvehiclemodelAction(area, responce) {
+                $('body').trigger('processStart');
+
+                return $.ajax({
+                    url: '/installer/ajax/getvehiclemodel',
+                    method: 'post',
+                    data: JSON.stringify(area),
+                    contentType: 'application/json; charset=UTF-8',
+                    showLoader: true,
+                    beforeSend: function(xhr){
+                        //Empty to remove magento's default handler
+                    }
+                }).done(function (response) {
+                    if (response) {
+                        $.each(response, function (i, v) {         
+                                $("select[name='vehiclemodel1']").html(v.vehiclemodel);
+                                $("select[name='vehicleyear1']").html(v.vehicleyear);
+                        });
+                        var chechMake = "<?php echo $order->getMake() ?>";
+                        var modelSelected = "<?php echo $order->getModel() ?>";
+                        var yearSelected = "<?php echo $order->getYear() ?>";
+                        if (chechMake != '' && modelSelected != '' && yearSelected != '') {
+                            if (chechMake == $("select[name='vehiclelist1']").val()) {
+                                $("select[name='vehiclemodel1']").val(modelSelected).trigger('change');
+                            }
+                        }
+                    }
+                    $('body').trigger('processStop');
+                }).fail(function (response) {
+                    //handle failure scenario
+                });
+            }
+
+            function getvehicleyearAction(area, responce) {
+                $('body').trigger('processStart');
+
+                return $.ajax({
+                    url: '/installer/ajax/getvehicleyear',
+                    method: 'post',
+                    data: JSON.stringify(area),
+                    contentType: 'application/json; charset=UTF-8',
+                    showLoader: true,
+                    beforeSend: function(xhr){
+                        //Empty to remove magento's default handler
+                    }
+                }).done(function (response) {
+                    if (response) {
+                        $.each(response, function (i, v) {         
+                                $("select[name='vehicleyear1']").html(v.vehicleyear);
+                        });
+                        var chechMake = "<?php echo $order->getMake() ?>";
+                        var chechModel = "<?php echo $order->getModel() ?>";
+                        var yearSelected = "<?php echo $order->getYear() ?>";
+                        if (chechMake != '' && chechModel != '' && yearSelected != '') {
+                            if (chechMake == $("select[name='vehiclelist1']").val() && chechModel == $("select[name='vehiclemodel1']").val()) {
+                                $("select[name='vehicleyear1']").val(yearSelected).trigger('change');
+                            }
+                        }
+                    }
+                    $('body').trigger('processStop');
+                }).fail(function (response) {
+                    //handle failure scenario
+                });
+            }
+            
+        /* vehicle information end */    
+
+   });                 
+</script>
+<script>
+    require(['jquery','Magento_Ui/js/modal/modal'],
+        function($,modal) 
+        {
+            $('.assign_sales_person').click(function(event){
+            var options = {
+                type: 'popup',
+                responsive: true,
+                innerScroll: true,
+                title: 'Select SalesPerson',
+                buttons: []
+            };
+
+            var assign_sales_person_popup = modal(options, $('#assign_sales_person-modal'));
+
+            $('#assign_sales_person-modal').modal('openModal');
+        });
+    });
+</script>
+<style type="text/css">
+    #order-view-hold-button{
+        display: none;
+    }
+</style>

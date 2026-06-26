@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @category   Ecomteck
+ * @package    Ecomteck_StorePickup
+ * @author     ecomteck@gmail.com
+ * @website    http://www.ecomteck.com
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="admin">
+        <route id="storepickupstore" frontName="storepickupstore">
+            <module name="Ecomteck_StorePickup" />
+        </route>
+    </router>
+</config>

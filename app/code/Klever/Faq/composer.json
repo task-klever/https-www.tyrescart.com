@@ -1,0 +1,17 @@
+{
+    "name": "klever/module-faq",
+    "description": "Extends Mageprince FAQ with footer FAQs, URL slugs for groups and individual FAQs",
+    "type": "magento2-module",
+    "version": "1.2.1",
+    "require": {
+        "mageprince/module-faq": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Klever\\Faq\\": ""
+        }
+    }
+}

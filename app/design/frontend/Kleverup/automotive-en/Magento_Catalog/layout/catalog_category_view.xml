@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<page
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
+>
+     <head>
+        <!-- tyrefinder.js removed: fitment-bar.phtml handles all tyre finder functionality via Alpine.js -->
+    </head>
+    <body>
+            <referenceContainer name="category.view.container" htmlId="category-view-container" htmlClass="category-view">
+            <block class="Magento\Catalog\Block\Category\View" name="category.image" template="Magento_Catalog::category/image.phtml">
+                <arguments>
+                    <argument name="image" xsi:type="object">Magento\Catalog\ViewModel\Category\Image</argument>
+                    <argument name="output" xsi:type="object">Magento\Catalog\ViewModel\Category\Output</argument>
+                </arguments>
+            </block>
+            <block class="Magento\Catalog\Block\Category\View" name="category.description" template="Magento_Catalog::category/description.phtml"/>
+            <block class="Magento\Catalog\Block\Category\View" name="category.cms" template="Magento_Catalog::category/cms.phtml"/>
+        </referenceContainer>
+       
+        <referenceBlock name="script-alpine-js">
+            <block name="alpine-plugin-ajax-cart" template="Magento_Theme::page/js/plugins/ajax-cart.phtml">
+                <arguments>
+                    <argument name="delay" xsi:type="number">500</argument>
+                    <argument name="show_sku" xsi:type="boolean">true</argument>
+                    <!-- <argument name="display_on_success" xsi:type="string">false</argument> -->
+                    <!-- <argument name="display_on_success" xsi:type="string">minicart</argument> -->
+                    <argument name="display_on_success" xsi:type="string">modal</argument>
+                    <!-- <argument name="form_selectors" xsi:type="string">#product_addtocart_form, .product_addtocart_form, #custom_form</argument> -->
+                </arguments>
+            </block>
+        </referenceBlock>
+
+         <!-- Move breadcrumbs into separate full-width wrapper -->
+        
+        
+        <referenceBlock name="catalog.leftnav.state" remove="true" />
+    </body>
+</page>

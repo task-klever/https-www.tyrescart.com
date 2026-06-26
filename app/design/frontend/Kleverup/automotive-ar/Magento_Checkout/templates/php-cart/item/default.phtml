@@ -1,0 +1,393 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\ProductStockItem;
+use Magento\Checkout\Block\Cart\Item\Renderer;
+use Magento\Framework\Escaper;
+use Hdweb\Tyrefinder\Helper\Productlisting as ListingHelper;
+
+/** @var Renderer $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+$item = $block->getItem();
+try {
+    $logger = \Magento\Framework\App\ObjectManager::getInstance()
+        ->get(\Psr\Log\LoggerInterface::class);
+    $logger->info('DEBUG_CART_ITEM_INFO_BUYREQUEST - Item ID: ' . $item->getId() .
+        ' -> ' . print_r($item->getOptionByCode('info_buyRequest') ?
+            $item->getOptionByCode('info_buyRequest')->getValue() : 'NO BUY REQUEST FOUND', true));
+} catch (\Throwable $e) {
+    // ignore logging errors
+}
+
+$product = $item->getProduct();
+
+
+$isVisibleProduct = $product->isVisibleInSiteVisibility();
+
+
+$stockItemViewModel = $viewModels->require(ProductStockItem::class);
+$qty = $stockItemViewModel->isQtyDecimal($product)
+    ? $block->getQty()
+    : (int) $block->getQty();
+    
+$listingHelper = $this->helper(ListingHelper::class);
+$prod_qty =  $listingHelper->getProductAvailableQty($product->getSku());
+$stockQty = 0;
+if ($prod_qty >= 8) {
+    $stockQty = 8;
+} else {
+    $stockQty = $prod_qty;
+}
+
+
+
+?>
+<tbody class="cart item bg-white"
+       <?php foreach ($block->getData('cart_item_data_attributes') ?? [] as $attribute => $include): ?>
+           <?php if ($include): ?>
+               <?= $escaper->escapeHtml(sprintf('data-%s', $attribute)); ?>="<?= $escaper->escapeHtmlAttr($item->getData($attribute)); ?>"
+           <?php endif; ?>
+       <?php endforeach; ?>
+>
+    <tr class="item-info align-top text-left lg:text-right flex flex-wrap lg:table-row border-b border-gray-300 py-0 md:py-3 pb-2 md:pb-0 text-theme-dark relative">
+        <td data-th="<?= $escaper->escapeHtml(__('Item')) ?>" class="col item px-4 flex gap-4 py-2 text-right w-full sm:flex-nowrap lg:w-auto items-center">
+            <?php if ($block->hasProductUrl()): ?>
+                <a href="<?= $escaper->escapeUrl($block->getProductUrl()) ?>"
+                   title="<?= $escaper->escapeHtmlAttr($block->getProductName()) ?>"
+                   tabindex="-1"
+                   class="product-item-photo shrink-0">
+            <?php else: ?>
+                <span class="product-item-photo shrink-0">
+            <?php endif;?>
+            <?= $block->getImage($block->getProductForThumbnail(), 'cart_page_product_thumbnail')
+                ->setTemplate('Magento_Catalog::product/image.phtml')
+                ->toHtml() ?>
+            <?php if ($block->hasProductUrl()): ?>
+                </a>
+            <?php else: ?>
+                </span>
+            <?php endif; ?>
+            <div class="product-item-details grow leading-[1.2] pl-[70px] md:pl-0">
+                <strong class="product-item-name break-all text-base font-medium">
+                    <?php if ($block->hasProductUrl()): ?>
+                        <a href="<?= $escaper->escapeUrl($block->getProductUrl()) ?>"><?= $escaper->escapeHtml($block->getProductName()) ?></a>
+                    <?php else: ?>
+                        <?= $escaper->escapeHtml($block->getProductName()) ?>
+                    <?php endif; ?>
+                </strong>
+ 
+                <?php if ($options = $block->getOptionList()): ?>
+                    <dl class="item-options w-full break-all mt-4 pb-2 text-sm clearfix hidden">
+                        <?php foreach ($options as $option): ?>
+                            <?php $formatedOptionValue = $block->getFormatedOptionValue($option) ?>
+                            <dt class="font-bold float-left clear-left mr-2 mb-2"><?= $escaper->escapeHtml($option['label']) ?>:</dt>
+                            <dd class="float-left">
+                                <?php if (isset($formatedOptionValue['full_view'])): ?>
+                                    <?= $escaper->escapeHtml($formatedOptionValue['full_view']) ?>
+                                <?php else: ?>
+                                    <?= $escaper->escapeHtml($formatedOptionValue['value'], ['span', 'a']) ?>
+                                <?php endif; ?>
+                            </dd>
+                        <?php endforeach; ?>
+                    </dl>
+                <?php endif;?>
+
+
+
+
+
+<?php
+/** @var \Magento\Quote\Model\Quote\Item $item */
+$product = $item->getProduct();
+$productOptions = $product->getOptions(); // <-- get full product options
+$selectedOptions = $item->getProduct()->getCustomOptions();
+?>
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+$formKey = $block->getLayout()
+    ->createBlock(\Magento\Framework\View\Element\Template::class)
+    ->getFormKey();
+
+
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    $formKey = $objectManager->get(\Magento\Framework\Data\Form\FormKey::class)->getFormKey();
+
+?>
+<script>
+    window.formKey = "<?= $escaper->escapeHtml($formKey) ?>";
+</script>
+<?php if ($productOptions): ?>
+    <dl class="item-options w-full break-all mt-4 pb-2 text-sm clearfix">
+        <?php foreach ($productOptions as $productOption): ?>
+            <?php if ($productOption->getType() == 'radio'): ?>
+                <?php
+                $optionId = (int)$productOption->getId();
+                $selectedCustomOption = $selectedOptions['option_' . $optionId] ?? null;
+                // Selected value is usually option type id (not the label)
+                $selectedValue = $selectedCustomOption ? $selectedCustomOption->getValue() : '';
+                $values = $productOption->getValues() ?: [];
+                ?>
+                <dt class="font-bold float-left clear-left mr-2 mb-2">
+                    <?= $escaper->escapeHtml($productOption->getTitle()) ?>:
+                </dt>
+                <dd class="float-left">
+                    <!-- Alpine component per option -->
+                    <div
+                        x-data="{
+                            selected: '<?= $escaper->escapeHtmlAttr($selectedValue) ?>',
+                            loading: false,
+                            itemId: <?= (int)$item->getId() ?>,
+                            optionId: <?= $optionId ?>,
+                            async update() {
+    this.loading = true;
+    try {
+        const payload = {
+            form_key: '<?= $escaper->escapeHtmlAttr($formKey) ?>',
+            item_id: this.itemId,
+            options: { [this.optionId]: this.selected }
+        };
+
+        const res = await fetch('<?= $block->getUrl('customcart/update/option') ?>', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+
+        if (json.success) {
+            // ✅ Trigger reload
+            const waitForCartReload = new Promise(resolve => {
+                const handler = () => {
+                    window.removeEventListener('hyva:customer-sections-reloaded', handler);
+                    resolve();
+                };
+                window.addEventListener('hyva:customer-sections-reloaded', handler);
+            });
+
+            window.dispatchEvent(new CustomEvent('reload-customer-section-data', {
+                detail: { sections: ['cart'] }
+            }));
+
+            // Wait until reload event fires before hiding loader
+            await waitForCartReload;
+        } else {
+            alert(json.message || 'Failed to update item.');
+        }
+    } catch (err) {
+        console.error(err);
+        alert(err.message || 'Network error while updating item.');
+    } finally {
+        this.loading = false;
+    }
+}
+                        }"
+                        class="flex gap-3 items-center"
+                    >
+
+
+<?php
+/** @var \Magento\Framework\Pricing\Helper\Data $priceHelper */
+$priceHelper = $this->helper(\Magento\Framework\Pricing\Helper\Data::class);
+?>
+                        <?php foreach ($values as $value): ?>
+    <?php
+        $valueId = $value->getOptionTypeId();
+        $valueTitle = $value->getTitle();
+
+        $price = $value->getPrice();
+        $priceType = $value->getPriceType(); // fixed | percent
+
+        $formattedPrice = '';
+
+
+if ($priceType === 'percent') {
+    $basePrice = $product->getPrice();
+    $price = ($basePrice * $price) / 100;
+}
+
+        if ($price != 0) {
+            $formattedPrice =   $priceHelper->currency($price, false, false) ;
+        }
+    ?>
+    <label class="flex items-center gap-1">
+        <input
+            type="radio"
+            name="cart_option_<?= $item->getId() ?>_<?= $optionId ?>"
+            value="<?= $escaper->escapeHtmlAttr($valueId) ?>"
+            x-model="selected"
+            class="form-radio"
+        >
+        <span>
+            <?= $escaper->escapeHtml($valueTitle) ?>
+            <?php if ($formattedPrice): ?>
+                <span class="text-gray-600 text-xs">
+                    <?= '(+ <span class="currency-dirham"></span> '.$escaper->escapeHtml($formattedPrice) . ')'?>
+                </span>
+            <?php endif; ?>
+        </span>
+    </label>
+<?php endforeach; ?>
+
+
+
+
+                        <!-- Update button with loader -->
+                        <button
+                            type="button"
+                            @click.prevent="update()"
+                            :disabled="loading"
+                            class="ml-3 px-3 py-1 rounded-lg text-xs border"
+                            style="background-color: #1f7aea; color: white;"
+                        >
+                            <span x-show="!loading">Update</span>
+
+                            <!-- simple spinner -->
+                            <span x-show="loading" aria-live="polite" class="flex items-center gap-2">
+                                <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+                                    <path d="M22 12a10 10 0 0 1-10 10" stroke-linecap="round"></path>
+                                </svg>
+                                Updating...
+                            </span>
+                        </button>
+                    </div>
+                </dd>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    </dl>
+<?php endif; ?>
+
+<script>
+function updateCartOption(itemId, optionId, value) {
+    fetch('/customcart/update/option', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            form_key: window.formKey,
+            item_id: itemId,
+            options: { [optionId]: value }
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            window.dispatchEvent(new CustomEvent('reload-customer-section-data', {
+                detail: { sections: ['cart'] }
+            }));
+            window.dispatchEvent(new CustomEvent('reload-cart-summary'));
+        } else {
+            alert(res.message || 'Failed to update item.');
+        }
+    });
+}
+</script>
+
+
+
+
+
+
+                <?php if ($messages = $block->getMessages()): ?>
+                    <?php foreach ($messages as $message): ?>
+                        <div class="cart item message <?= $escaper->escapeHtmlAttr($message['type']) ?>">
+                            <div><?= $escaper->escapeHtml($message['text']) ?></div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+                <?php $addInfoBlock = $block->getProductAdditionalInformationBlock(); ?>
+                <?php if ($addInfoBlock): ?>
+                    <?= $addInfoBlock->setItem($item)->toHtml() ?>
+                <?php endif;?>
+            </div>
+        </td>
+
+        <td class="col price px-4 block w-1/3 lg:w-auto lg:table-cell text-center align-middle text-base md:text-lg">
+            <span class="lg:hidden font-bold mt-2">
+                <?= $escaper->escapeHtml(__('Price')) ?>
+            </span>
+            <?= $block->getUnitPriceHtml($item) ?>
+        </td>
+
+
+<?php /*
+        <!-- <td class="col qty lg:pt-2 px-4 block w-1/3 lg:w-auto lg:table-cell align-middle text-center text-base md:text-lg">
+            <span class="lg:hidden font-bold">
+                <?= $escaper->escapeHtml(__('Qty')) ?>
+            </span>
+            <div class="field qty">
+                <div class="control qty text-center">
+                    <label for="cart-<?= $escaper->escapeHtmlAttr($item->getId()) ?>-qty">
+                        <span class="label sr-only"><?= $escaper->escapeHtml(__('Qty')) ?></span>
+                        <input id="cart-<?= $escaper->escapeHtmlAttr($item->getId()) ?>-qty"
+                               name="cart[<?= $escaper->escapeHtmlAttr($item->getId()) ?>][qty]"
+                               value="<?= $escaper->escapeHtmlAttr($qty) ?>"
+                               type="number"
+                               size="4"
+                               step="any"
+                               title="<?= $escaper->escapeHtmlAttr(__('Qty')) ?>"
+                               class="qty form-input px-2 py-1 w-14 text-center min-h-[36px]"
+                               required
+                               min="0"
+                               data-role="cart-item-qty"/>
+                    </label>
+                </div>
+            </div>
+        </td> -->
+*/ ?>
+
+        <td class="col qty lg:pt-2 px-4 block w-1/3 lg:w-auto lg:table-cell align-middle text-center text-base md:text-lg">
+            <span class="lg:hidden font-bold">
+                <?= $escaper->escapeHtml(__('Qty')) ?>
+            </span>
+            <div class="field qty">
+                <div class="control qty text-center">
+                    <label for="cart-<?= $escaper->escapeHtmlAttr($item->getId()) ?>-qty">
+                        <span class="label sr-only"><?= $escaper->escapeHtml(__('Qty')) ?></span>
+                        <select id="cart-<?= $escaper->escapeHtmlAttr($item->getId()) ?>-qty"
+                                name="cart[<?= $escaper->escapeHtmlAttr($item->getId()) ?>][qty]"
+                                class="qty form-select w-auto h-8 cursor-pointer text-sm 2xl:text-base pr-7 2xl:pr-8"
+                                data-role="cart-item-qty"
+                                @change="$root.querySelector('button[name=update_cart_action]').click()"
+                                required>
+                             <?php for ($i = 1; $i <= $stockQty; $i++): ?>
+                                <option value="<?= $i ?>" <?= ($qty == $i) ? 'selected' : '' ?>>
+                                    <?= $i ?>
+                                </option>
+                            <?php endfor; ?>
+                           
+                        </select>
+                    </label>
+                </div>
+            </div>
+        </td>
+
+        <td class="col subtotal px-4 block w-1/3 lg:w-auto lg:table-cell text-center align-middle text-base md:text-lg">
+            <span class="lg:hidden font-bold">
+                <?= $escaper->escapeHtml(__('Subtotal')) ?>
+            </span>
+            <?= $block->getRowTotalHtml($item) ?>
+        </td>
+
+        <td class="item-actions items-center align-middle pl-7 shopping-cart-edit">
+            <div class="flex flex-wrap items-center justify-end absolute top-7 left-5 lg:relative lg:top-0 lg:left-0 w-[30px] md:w-auto">
+                <?= /* @noEscape */ $block->getActions($item) ?>
+            </div>
+        </td>
+    </tr>
+</tbody>

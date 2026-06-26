@@ -1,0 +1,189 @@
+<?php
+   //$collection = $block->getCollection();
+   ?>
+<?php
+   $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+   $mediaURL = $objectManager->get('Magento\Store\Model\StoreManagerInterface')->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+   $baseURL = $this->getBaseUrl();
+   $brandModel = $objectManager->get('MGS\Brand\Model\Brand');
+   $storeManager = $objectManager->get(\Magento\Store\Model\StoreManagerInterface::class);
+   $brandCollection = $brandModel->getCollection()
+      ->addFieldToFilter('status', 1)
+      ->addStoreFilter($storeManager->getStore()->getId())
+      ->setPageSize(15)
+      ->setOrder('sort_order', 'ASC');
+      
+   ?>
+<section class="sec-brands py-10 md:py-12 lg:py-14">
+   <div class="container-theme w-full mx-auto block">
+      <div class="sec-title w-full flex flex-wrap items-center justify-between">
+         <div class="w-full max-w-[826px] mb-4">
+            <h2 class="text-[1.5rem] md:text-[1.65rem] lg:text-4xl text-theme-dark font-bold relative pb-3 md:pb-5 mb-3 md:mb-5">
+               <span class="w-[70px] md:w-[100px] border-b border-theme-blue bg-theme-blue absolute left-0 bottom-0">
+               </span>
+               <i class="icon icon-logo-icon mr-3 md:mr-5 text-theme-blue"></i>Wide <span class="text-theme-blue">Selection of</span> Tier Brands
+            </h2>
+            <p class="text-lg md:text-xl">We offer top tire brands worldwide, providing high-quality options for every vehicle, road condition, and driving need—performance guaranteed.</p>
+         </div>
+         <a href="<?php echo $baseURL . 'brand'; ?>" class="btn-blue-yellow text-lg"><i class="icon icon-tyre-btn text-2xl mr-2"></i> <?php echo __('View all') ?> <i class="icon icon-three-arrow text-f9 ml-2"></i></a>
+      </div>
+   </div>
+   <div class="row-one relative overflow-hidden pt-5 md:pt-6">
+      <div id="vehicle-marquee3" class="flex w-max gap-4 lg:gap-6" style="will-change: transform;">
+         <?php if ($brandCollection && $brandCollection->count() > 0) : ?>
+         <?php foreach ($brandCollection as $brand) : ?>
+         <div class="flex flex-col items-center justify-center w-1/4">
+            <a href="<?php echo $baseURL . 'tyres/brand/' . $brand->getUrlKey().'.html'; ?>" class="block group">
+               <div class="w-full flex items-center justify-center border border-[#D9D9D9] hover:border-theme-blue  transition-all duration-300 ease-in-out bg-white shadow-sm 
+                  transition-shadow px-6 md:px-10 h-[87px] md:h-[96px] xl:h-[116px]">
+                  <img
+                     src="<?php echo $mediaURL . $brand->getImage(); ?>"
+                     loading="lazy"
+                     alt="<?php echo $brand->getName(); ?>"
+                     class="max-w-[132px] md:max-w-[140px] lg:max-w-[175px] xl:max-w-[200px] object-contain "
+                     />
+               </div>
+            </a>
+         </div>
+         <?php endforeach; ?>
+         <?php else : ?>
+         <div><?php echo __('We can not find any brands'); ?></div>
+         <?php endif; ?>
+      </div>
+      <div class="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white via-white/80 to-transparent hidden sm:block"></div>
+      <div class="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white via-white/80 to-transparent hidden sm:block"></div>
+   </div>
+   <div class="row-two relative overflow-hidden mt-4 md:mt-4 lg:mt-5 xl:mt-5">
+      <div id="vehicle-marquee4" class="flex w-max gap-4 lg:gap-6" style="will-change: transform;">
+         <?php if ($brandCollection && $brandCollection->count() > 0) : ?>
+         <?php foreach ($brandCollection as $brand) : ?>
+         <div class="flex flex-col items-center justify-center w-1/4">
+            <a href="<?php echo $baseURL . 'tyres/brand/' . $brand->getUrlKey().'.html'; ?>" class="block group">
+               <div class="w-full flex items-center justify-center border border-[#D9D9D9] hover:border-theme-blue  transition-all duration-300 ease-in-out bg-white shadow-sm 
+                  transition-shadow px-6 md:px-10 h-[87px] md:h-[96px] xl:h-[116px]">
+                  <img
+                     src="<?php echo $mediaURL . $brand->getImage(); ?>"
+                     loading="lazy"
+                     alt="<?php echo $brand->getName(); ?>"
+                     class="max-w-[132px] md:max-w-[140px] lg:max-w-[175px] xl:max-w-[200px] object-contain "
+                     />
+               </div>
+            </a>
+         </div>
+         <?php endforeach; ?>
+         <?php else : ?>
+         <div><?php echo __('We can not find any brands'); ?></div>
+         <?php endif; ?>
+      </div>
+      <div class="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white via-white/80 to-transparent hidden sm:block"></div>
+      <div class="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white via-white/80 to-transparent hidden sm:block"></div>
+   </div>
+</section>
+<?php /*
+   <div class="brands-list overflow-x-hidden mb-10">
+      <ul class="flex w-full snap-x snap-mandatory">
+         <?php if ($brandCollection && $brandCollection->count() > 0) : ?>
+<?php foreach ($brandCollection as $brand) : ?>
+<li class="flex w-1/5 shrink-0 snap-start flex-col items-center justify-center p-3">
+   <a href="<?php echo $baseURL . 'tyres/brand/' . $brand->getUrlKey().'.html'; ?>" class="w-full">
+      <div class="w-full h-[120px] border border-[#D9D9D9] flex items-center justify-center px-2">
+         <img class="" src="<?php echo $mediaURL . $brand->getImage(); ?>"   alt="<?php echo $brand->getName(); ?>" />
+      </div>
+   </a>
+</li>
+<?php endforeach; ?>
+<?php else : ?>
+<div><?php echo __('We can not find any brands'); ?></div>
+<?php endif; ?>
+</ul>
+</div>
+<?php if ($brandCollection && $brandCollection->count() > 0) : ?>
+<?php endif; ?>
+*/ ?>
+<section class="sec-online relative py-10 overflow-hidden">
+   <div class="absolute left-0 top-0 bottom-0 z-[-1] md:w-full lg:w-[78%] xl:w-[63%] 2xl:w-[55.8%] hidden lg:block">
+      <picture>
+         <source srcset="<?php echo $this->getViewFileUrl('images/home/online-tire.png'); ?>" loading="lazy" alt="Online Tire" title="Online Tire" type="image/webp" media="(max-width: 767px)" width="767" height="600">
+         <source srcset="<?php echo $this->getViewFileUrl('images/home/online-tire.png'); ?>" loading="lazy" alt="Online Tire" title="Online Tire" type="image/webp" media="(min-width: 768px)" width="1074" height="600">
+         <img class="w-full h-full object-cover object-top" src="<?php echo $this->getViewFileUrl('images/home/online-tire.png'); ?>" alt="Online Tire" loading="lazy" width="1074" height="600">
+      </picture>
+   </div>
+   <div class="w-full lg:w-[60%] 2xl:w-[56%] bg-theme-blue absolute left-0 lg:left-auto top-10 bottom-10 -right-0 lg:-right-[80px] xl:-right-14 skew-x-0 lg:-skew-x-12"></div>
+   <div class="container-theme w-full mx-auto block relative px-5 lg:px-0 pt-10 lg:pt-0 pb-5 lg:pb-0">
+      <div class="flex flex-wrap justify-between">
+         <div class="w-full lg:w-[37%] flex">
+            <h2 class="uppercase text-white text-left lg:text-right">One-Stop Online <span class="inline lg:block">Tire Shop</span></h2>
+         </div>
+         <div class="w-full lg:w-[44%] xl:w-[48%] relative py-5 lg:py-12 ml-0 lg:ml-[14%]">
+            <div class="info">
+               <div class="sec-title mb-5">
+                  <h2 class="text-[1.5rem] md:text-[1.65rem] lg:text-4xl text-white font-bold relative pb-3 md:pb-5">
+                     <span class="w-[70px] md:w-[100px] border-b border-white absolute left-0 bottom-0">
+                     </span>
+                     <i class="icon icon-logo-icon mr-5 text-white"></i>Full Range. Expert Service. One Stop.
+                  </h2>
+               </div>
+               <div class="copy text-white mb-5 lg:mb-12">
+                  <p class="mb-3 leading-[1.5]">Welcome to Dial-A-Tire – your reliable source for high-quality tires and convenient automotive services across the UAE. We offer a wide range of tires to suit all vehicle types and driving conditions. Our mobile team provides on-site tire installation, battery jump-starts, and more, ensuring a smooth, safe, and hassle-free experience wherever you are.</p>
+                  <p class="leading-[1.5]">Dial-A-Tire serves customers across the UAE, including major cities like Dubai, Abu Dhabi, Sharjah, and more. Our mobile service ensures that you receive tire care wherever you are, at home, work, or on the road.</p>
+               </div>
+               <a href="#" class="btn-white-yellow"><i class="icon icon-tyre-btn text-xl sm:text-2xl lg:text-3xl mr-2"></i> Read More  <i class="icon icon-three-arrow text-f9 ml-2"></i></a>
+            </div>
+         </div>
+      </div>
+   </div>
+</section>
+<script>
+   document.addEventListener('DOMContentLoaded', function () {
+    const marquee = document.getElementById('vehicle-marquee3');
+    // Duplicate content for infinite scroll effect
+    marquee.innerHTML += marquee.innerHTML;
+    let scrollAmount = 0;
+    const speed = 1;
+    let reqId;
+    function loop() {
+      scrollAmount += speed;
+      if (scrollAmount >= marquee.scrollWidth / 2) {
+        scrollAmount = 0; // Reset when half is scrolled (1 set worth)
+      }
+      marquee.style.transform = `translateX(-${scrollAmount}px)`;
+      reqId = requestAnimationFrame(loop);
+    }
+    marquee.addEventListener('mouseenter', () => cancelAnimationFrame(reqId));
+    marquee.addEventListener('mouseleave', () => loop());
+    loop();
+   });
+
+
+   document.addEventListener('DOMContentLoaded', function () {
+    const marquee = document.getElementById('vehicle-marquee4');
+    // Duplicate content for seamless scroll
+    marquee.innerHTML += marquee.innerHTML;
+    const halfWidth = marquee.scrollWidth / 2;
+    let scrollAmount = -halfWidth; // 👈 Start from left of second half
+    const speed = 1;
+    let reqId;
+    function loop() {
+      scrollAmount += speed; // 👈 Move right
+      if (scrollAmount >= 0) {
+        scrollAmount = -halfWidth; // 👈 Reset to start from left again
+      }
+      marquee.style.transform = `translateX(${scrollAmount}px)`;
+      reqId = requestAnimationFrame(loop);
+    }
+    marquee.addEventListener('mouseenter', () => cancelAnimationFrame(reqId));
+    marquee.addEventListener('mouseleave', () => loop());
+    loop(); // Start loop
+   });
+   
+</script> 
+<style>
+   #vehicle-marquee3 {
+   transition: transform 0s linear;
+   white-space: nowrap;
+   }
+   #vehicle-marquee4 {
+   transition: transform 0s linear;
+   white-space: nowrap;
+   }
+</style>

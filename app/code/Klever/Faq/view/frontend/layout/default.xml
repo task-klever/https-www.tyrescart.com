@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="footer">
+            <block
+                class="Klever\Faq\Block\FooterFaq"
+                name="klever.footer.faq"
+                template="Klever_Faq::footer_faq_hyva.phtml"
+                before="footer-content"
+            />
+        </referenceContainer>
+    </body>
+</page>

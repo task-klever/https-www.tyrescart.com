@@ -1,0 +1,45 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Checkout\Model\Quote\Cart\TotalSegment\ExtensionAttribute\AbstractTaxDetailsExtensionAttribute;
+use Hyva\Checkout\ViewModel\Checkout\Formatter as FormatterViewModel;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Magento\Tax\Model\Config as TaxConfig;
+
+/** @var Template $block */
+/** @var FormatterViewModel $formatterViewModel */
+/** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
+/** @var TaxConfig $taxConfig */
+/** @var AbstractTaxDetailsExtensionAttribute[] $segments */
+
+$formatterViewModel = $viewModels->require(FormatterViewModel::class);
+$segments = $block->getSegment();
+$taxConfig = $block->getTaxConfig();
+$label = $block->getParentBlock()->getSegment()['title'] ?? 'Shipping';
+?>
+
+<?php if ($segments && $taxConfig->displayCartShippingBoth()): ?>
+<ul role="list">
+    <?php foreach ($segments as $key => $item): ?>
+        <li class="flex gap-4 justify-between md:gap-0">
+            <span class="tax-label">
+                <?= $escaper->escapeHtml(__('%1 Excl. Tax', $label)) ?>
+            </span>
+
+            <span class="tax-unit">
+                <?= /* @noEscape */ $formatterViewModel->currencyWithLabelingConditions($item->getExclTaxValue(), 'shipping-total-segment-tax-details') ?>
+            </span>
+        </li>
+    <?php endforeach ?>
+</ul>
+<?php endif ?>

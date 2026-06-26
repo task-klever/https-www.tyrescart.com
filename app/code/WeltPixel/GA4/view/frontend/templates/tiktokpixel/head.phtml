@@ -1,0 +1,23 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \WeltPixel\GA4\Block\TiktokPixel\Common */
+
+/** @var \WeltPixel\GA4\Helper\TiktokPixelTracking $tiktokPixelHelper */
+$tiktokPixelHelper = $this->helper('WeltPixel\GA4\Helper\TiktokPixelTracking');
+$cspNonceProvider = $tiktokPixelHelper->getCspNonceProvider();
+$tiktokPixelTrackingCode = $block->getTiktokPixelTrackingCodeSnippet();
+?>
+<?php if ($block->isTiktokPixelTrackingEnabled()) : ?>
+    <?php
+    $pattern = '/<script(.*)>/';
+    $replacement = '<script ${1}> if (window.ga4AllowServices) {';
+
+    $tiktokPixelTrackingCode =  str_replace('</script>', '} </script>', preg_replace($pattern, $replacement, $tiktokPixelTrackingCode));
+
+    if ($cspNonceProvider) {
+        $tiktokPixelTrackingCode = str_replace('<script', '<script nonce="' . $cspNonceProvider->generateNonce() . '" ', $tiktokPixelTrackingCode);
+    }
+
+    /* @noEscape */ echo $tiktokPixelTrackingCode;
+    ?>
+<?php endif; ?>

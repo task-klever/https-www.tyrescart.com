@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ecomteck
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Ecomteck.com license that is
+ * available through the world-wide-web at this URL:
+ * https://ecomteck.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Ecomteck
+ * @package     Ecomteck_CustomerCustomAttributes
+ * @copyright   Copyright (c) 2018 Ecomteck (https://ecomteck.com/)
+ * @license     https://ecomteck.com/LICENSE.txt
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="Ecomteck\CustomerCustomAttributes\Block\Adminhtml\Customer\Formtype\Edit" name="magento_customercustomattributes_formtype_edit"/>
+        </referenceContainer>
+        <referenceContainer name="left">
+            <block class="Ecomteck\CustomerCustomAttributes\Block\Adminhtml\Customer\Formtype\Edit\Tabs" name="magento_customercustomattributes_formtype_edit_tabs">
+                <block class="Ecomteck\CustomerCustomAttributes\Block\Adminhtml\Customer\Formtype\Edit\Tab\General" name="magento_customercustomattributes_formtype_edit_tab_general"/>
+                <action method="addTab">
+                    <argument name="name" xsi:type="string">magento_customercustomattributes_formtype_edit_tab_general</argument>
+                    <argument name="block" xsi:type="string">magento_customercustomattributes_formtype_edit_tab_general</argument>
+                </action>
+                <block class="Ecomteck\CustomerCustomAttributes\Block\Adminhtml\Customer\Formtype\Edit\Tab\Tree" name="magento_customercustomattributes_formtype_edit_tab_tree" template="formtype/edit/tab/tree.phtml"/>
+                <action method="addTab">
+                    <argument name="name" xsi:type="string">magento_customercustomattributes_formtype_edit_tab_tree</argument>
+                    <argument name="block" xsi:type="string">magento_customercustomattributes_formtype_edit_tab_tree</argument>
+                </action>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

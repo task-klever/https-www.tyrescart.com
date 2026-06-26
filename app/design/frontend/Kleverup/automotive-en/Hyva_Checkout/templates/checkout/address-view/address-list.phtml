@@ -1,0 +1,88 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Checkout\ViewModel\Checkout\AddressView\AddressListInterface;
+use Hyva\Theme\Model\Modal\ModalBuilderInterface;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\Modal;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Customer\Api\Data\AddressInterface;
+use Magento\Customer\Api\Data\AddressSearchResultsInterface;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\Checkout\Magewire\Checkout\AddressView\ShippingDetails\AddressList as Magewire;
+
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var Magewire $magewire */
+/** @var AddressSearchResultsInterface $shippingAddressList */
+/** @var AddressInterface $shippingAddress */
+/** @var Escaper $escaper */
+/** @var AddressListInterface $addressList */
+/** @var ModalBuilderInterface $modal */
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+$addressList = $block->getData('address_list');
+$addressListItems = $addressList->getAddressListItems();
+$addressFormBlock = $block->getChildBlock('address-form');
+$addressType = $addressList->getTypeNamespace();
+?>
+<div class="space-y-3 mb-6">
+    <?= /* @noEscape */ $block->getChildBlock($addressList->getRendererTypeAlias($addressListItems))
+        ->setData('address_list', $addressList)
+        ->setData('active_entity', $magewire->activeAddressEntity)
+        ->toHtml()
+    ?>
+
+    <?php if ($addressFormBlock): ?>
+        <?php $modal = $viewModels->require(Modal::class)
+            ->createModal()
+            ->withDialogRefName($addressFormBlock->getNameInLayout())
+            ->withContent($addressFormBlock->toHtml())
+            ->addDialogClass('w-full max-w-4xl');
+        ?>
+
+        <div id="checkout-<?= $escaper->escapeHtmlAttr($addressType) ?>-address-dialog"
+             x-data="hyvaCheckoutAddressListModal"
+             data-type-namespace="<?= $escaper->escapeHtmlAttr($addressList->getTypeNamespace()) ?>"
+             data-type-show-event="<?= $escaper->escapeHtmlAttr($addressList->getShowModalEvent()) ?>"
+             data-type-hide-event="<?= $escaper->escapeHtmlAttr($addressList->getHideModalEvent()) ?>"
+
+             data-dialog-ref-name="<?= $escaper->escapeHtmlAttr($addressFormBlock->getNameInLayout()) ?>"
+             data-focus-after-hide="<?= $escaper->escapeHtmlAttr('#checkout-' . $addressType . '-address-button') ?>"
+
+             x-on:address-form-modal-show.window="showModalEvent"
+             x-on:address-form-modal-hide.window="hideModalEvent"
+             x-on:<?= /* @noEscape */ $addressList->getShowModalEvent() ?>.window="triggerShowModal"
+             x-on:<?= /* @noEscape */ $addressList->getHideModalEvent() ?>.window="hide"
+        >
+            <?= /* @noEscape */ $modal ?>
+        </div>
+
+        <?php if ($addressList->canCreateAddresses()): ?>
+            <div>
+                <button type="button"
+                        id="checkout-<?= $escaper->escapeHtmlAttr($addressType) ?>-address-button"
+                        x-data="hyvaCheckoutAddressFormCreateNew"
+                        data-modal-address-form-block-name="<?= $escaper->escapeHtmlAttr($addressList->getModalAddressFormBlockName()) ?>"
+                        x-on:click="newAddress"
+                        class="btn btn-primary gap-2 w-full justify-center"
+                        aria-expanded="false"
+                        aria-controls="checkout-<?= $escaper->escapeHtmlAttr($addressType) ?>-address-dialog"
+                >
+                    <?= $heroicons->plusHtml('', 18, 18, ['aria-hidden' => 'true']) ?>
+                    <?= $escaper->escapeHtml(__('New Address')) ?>
+                </button>
+            </div>
+        <?php endif ?>
+    <?php endif ?>
+</div>

@@ -1,0 +1,81 @@
+<?php
+/**
+ * Banner/Offer detail page
+ *
+ * @var $block \Klever\BannerSlider\Block\OfferView
+ * @var $escaper \Magento\Framework\Escaper
+ */
+$banner = $block->getBanner();
+if (!$banner) {
+    return;
+}
+
+$bannerName = $escaper->escapeHtml($banner->getName());
+$bannerTitle = $escaper->escapeHtml($banner->getTitle() ?: $banner->getName());
+$desktopImage = $block->getBannerImageUrl($banner->getImage());
+$mobileImage = $block->getBannerImageUrl($banner->getData('image_mobile'));
+$pageContent = $banner->getData('page_content');
+$offerUrl = $banner->getUrlBanner();
+$specialOffersUrl = $block->getSpecialOffersUrl();
+?>
+
+<section class="section section-padding">
+    <!-- Breadcrumbs -->
+    <nav class="mb-6" aria-label="Breadcrumb">
+        <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+            <li>
+                <a href="<?= $escaper->escapeUrl($block->getBaseUrl()) ?>" class="hover:text-theme-blue transition"><?= $escaper->escapeHtml(__('Home')) ?></a>
+            </li>
+            <li>
+                <svg class="w-3.5 h-3.5 inline text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </li>
+            <li>
+                <a href="<?= $escaper->escapeUrl($specialOffersUrl) ?>" class="hover:text-theme-blue transition"><?= $escaper->escapeHtml(__('Special Offers')) ?></a>
+            </li>
+            <li>
+                <svg class="w-3.5 h-3.5 inline text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </li>
+            <li class="text-theme-blue font-semibold" aria-current="page"><?= $bannerName ?></li>
+        </ol>
+    </nav>
+
+    <div class="mb-4">
+        <a href="<?= $escaper->escapeUrl($specialOffersUrl) ?>" class="inline-flex items-center gap-1.5 text-sm text-theme-blue hover:underline font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <?= $escaper->escapeHtml(__('Back to Special Offers')) ?>
+        </a>
+    </div>
+
+    <!-- <h1 class="text-2xl md:text-3xl font-bold text-theme-blue mb-6"><?= $bannerTitle ?></h1> -->
+
+    <!-- Banner Image (commented out - not needed on detail page) -->
+    <?php /* if ($desktopImage): ?>
+        <div class="rounded-[10px] overflow-hidden shadow-custom-blue border border-color mb-6">
+            <?php if ($mobileImage): ?>
+                <img class="w-full h-auto hidden md:block" src="<?= $escaper->escapeUrl($desktopImage) ?>" alt="<?= $bannerName ?>" loading="lazy">
+                <img class="w-full h-auto md:hidden" src="<?= $escaper->escapeUrl($mobileImage) ?>" alt="<?= $bannerName ?>" loading="lazy">
+            <?php else: ?>
+                <img class="w-full h-auto" src="<?= $escaper->escapeUrl($desktopImage) ?>" alt="<?= $bannerName ?>" loading="lazy">
+            <?php endif; ?>
+        </div>
+    <?php endif; */ ?>
+
+    <!-- Page Content (WYSIWYG) -->
+    <?php if ($pageContent): ?>
+        <div class="rounded-[10px] shadow-custom-blue bg-gradient-to-br from-[#e0fff6]/60 via-white to-[#d1f7ec]/60 px-4 md:px-8 lg:px-10 py-4 md:py-6 lg:py-8 w-full border border-color mb-6">
+            <div class="prose max-w-none text-theme-dark/80 text-base leading-relaxed">
+                <?= /* @noEscape */ $block->filterOutputHtml($pageContent) ?>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <!-- CTA Button -->
+    <?php if ($offerUrl): ?>
+        <div class="text-center mt-6">
+            <a href="<?= $escaper->escapeUrl($offerUrl) ?>" class="inline-flex items-center gap-2 bg-theme-blue text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-theme-blue/90 transition-all shadow-lg hover:shadow-xl">
+                <?= $escaper->escapeHtml(__('Shop This Offer')) ?>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+        </div>
+    <?php endif; ?>
+</section>

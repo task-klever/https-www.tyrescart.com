@@ -1,0 +1,85 @@
+<?php
+$getFitmentProductCollection = $block->getFitmentProducts();
+
+?>
+<div class="fieldset-wrapper" id="shoe-material-type-wrapper">    
+    <div class="fieldset-wrapper-title">
+        <strong class="title">
+            <span><?php /* @escapeNotVerified */ echo __('Fitment Charges') ?></span>
+        </strong>
+    </div>
+    <div class="fieldset-wrapper-content" id="shoe-material-type-options-content">
+		<?php $i = 0;?>
+		<?php foreach($getFitmentProductCollection as $product):?>
+			<?php $getVendorPrice = $block->getVendorFitment($product->getSku()); ?>
+			<div class="admin__field-control admin__field-group-columns admin__control-group-equal admin__control-grouped">
+			   <div class="admin__field _required">
+				  <label class="admin__field-label" for="">
+				  <span>SKU</span>
+				  </label>
+				  <div class="admin__field-control">	        									
+					 <input name="fitment[<?php echo $i;?>][sku]" id="sku[<?php echo $i;?>]" class="input-text admin__control-text" value="<?php echo $product->getSku();?>">
+				  </div>
+			   </div>
+			   <div class="admin__field _required">
+				  <label class="admin__field-label" for="">
+				  <span>Product Price</span>
+				  </label>
+				  <div class="admin__field-control">	        									
+					 <input name="fitment[<?php echo $i;?>][price]" id="price[<?php echo $i;?>]" class="input-text admin__control-text" value="<?php echo $product->getPrice();?>">
+				  </div>
+			   </div>
+			   <div class="admin__field _required">
+				  <label class="admin__field-label" for="">
+				  <span>Vendor Price</span>
+				  </label>
+				  <div class="admin__field-control">	        									
+					 <input name="fitment[<?php echo $i;?>][vendor_price]" id="vendor_price[<?php echo $i;?>]" class="input-text admin__control-text" value="<?php echo $getVendorPrice;?>">
+				  </div>
+			   </div>
+			</div>
+		<?php $i++;?>	
+		<?php endforeach;?>
+    </div>
+</div>
+<script>
+    var chargesoptions = JSON.parse('<?php echo $block->getchangesOptions(); ?>');
+    var basicservicelabels = {title: "<?php echo __("Add New %1", 'Fitment Charges'); ?>", delete: "<?php echo __("Delete %1", 'Fitment Charges'); ?>", charges: "<?php echo __("Service"); ?>", cs: "<?php echo __('----------'); ?>"};
+    require([
+        'jquery',
+        'Magento_Ui/js/modal/alert'
+    ], function (jQ, alert) {
+        jQ(".add-new-size-option").click(function () {
+
+            var content = addNewMaterialOption(jQ, basicservicelabels, chargesoptions);
+
+            jQ("#shoe-material-container").prepend(content);
+        });
+
+        jQ(document).on("click", ".additionalservice-form-delete-action", function () {
+            console.log(jQ("#" + jQ(this).attr("delete-box")).length);
+            if (jQ("." + jQ(this).attr("delete-box")).length > 0) {
+                jQ("." + jQ(this).attr("delete-box")).remove();
+            }
+        });
+    });
+
+</script>
+<style>
+    .admin__field-complex-elements {
+        float: right;
+        max-width: 40%;
+
+    }
+    .admin__control-collapsible .admin__collapsible-content>.fieldset-wrapper {
+        border: 1px solid #ccc;
+        margin-top: -1px;
+        padding: 1rem;
+    }
+    [class*='admin__control-grouped']>.admin__field:first-child>.admin__field-label, .admin__control-fields>.admin__field:first-child>.admin__field-label{
+        width: 100%;
+    }
+    .admin__control-collapsible .admin__collapsible-block-wrapper .fieldset-wrapper-title .action-delete{
+        top:0.4rem;
+    }
+</style>

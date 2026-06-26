@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+
+    <body>
+        <referenceContainer name="hyva.checkout.container">
+            <!-- Insert Breadcrumbs ABOVE the columns -->
+            <block class="Magento\Framework\View\Element\Template"
+                   name="hyva.checkout.custom.breadcrumbs"
+                   template="Magento_Theme::html/breadcrumbs.phtml"
+                   before="-"/>
+            
+            <block name="hyva.checkout.columns" template="Hyva_Checkout::layout/3columns.phtml">
+                <container name="column.main" label="Column Main"/>
+                <container name="column.center" label="Column Center"/>
+                <container name="column.right" label="Column Right"/>
+            </block>
+        </referenceContainer>
+
+        <!-- Remove empty breadcrumbs container (from default checkout) -->
+        <referenceBlock name="hyva.checkout.breadcrumbs" remove="true"/>
+
+        <!-- Move checkout navigation -->
+        <move element="hyva.checkout.navigation" destination="hyva.checkout.columns"/>
+    </body>
+</page>

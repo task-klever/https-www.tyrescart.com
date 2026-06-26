@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+
+    <body>
+        <referenceBlock name="catalog.leftnav">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Magento_LayeredNavigation::layer/view.phtml</argument>
+            </action>
+        </referenceBlock>
+
+         <!-- <move element="catalog.navigation.state" destination="content.top" after="-"/>  -->
+
+         <!--  Inject applied filter state ABOVE filter block -->
+        <!-- <referenceContainer name="sidebar.main">
+            <block class="Magento\LayeredNavigation\Block\Navigation\State"
+                   name="catalog.leftnav.state"
+                   as="state"
+                   template="Magento_LayeredNavigation::layer/state.phtml"
+                   before="catalog.leftnav"/>
+        </referenceContainer> -->
+
+
+        <!-- Optional: If you want full control, remove default 'state' block -->
+         <!-- <referenceBlock name="catalog.navigation.state" remove="true" /> -->
+
+        <referenceContainer name="before.body.end">
+            <block name="attribute-filter-js"
+                   template="Hyva_SmileElasticsuite::catalog/layer/filter/js/attribute-filter-js.phtml"
+            />
+            <block name="slider-filter-js"
+                   template="Hyva_SmileElasticsuite::catalog/layer/filter/js/slider-filter-js.phtml"
+            />
+        </referenceContainer>
+
+    </body>
+</page>

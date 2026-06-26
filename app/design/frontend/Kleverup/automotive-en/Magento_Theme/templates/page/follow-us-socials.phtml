@@ -1,0 +1,157 @@
+<?php /*
+<section class="the-social">
+    <div class="social-title mt-6 mt-10 lg:mt-16">
+           <div class="container-theme w-full mx-auto block">
+      <div class="sec-title w-full">
+         <div class="w-full flex justify-between gap-6 mb-3 md:mb-5">
+            <h2 class="title-h2 text-theme-dark font-bold relative">
+               <span class="w-[70px] md:w-[100px] border-b border-theme-blue bg-theme-blue absolute left-0 bottom-0 hidden">
+               </span>
+               <i class="icon icon-logo-icon mr-1 text-theme-blue"></i>Follow us on <span class="text-theme-blue">the Socials</span>
+            </h2>
+               <div class="hidden lg:block mt-[3px]"> 
+         <a href="https://www.instagram.com/dialatireae" target="_blank" class="btn-blue-yellow"><i class="icon icon-ig text-base mr-2"></i> <?php echo __('@dialatireae') ?></a>
+      </div>
+         </div>
+      </div>
+      </div>
+    </div>
+      <div class="home-social-slider swiper-navigation-style-1 swiper-pagination-style-3 mt-3 md:mt-4 lg:mt-6">
+  <div class="slider swiper-container">
+    <div class="swiper-wrapper">
+    <div class="swiper-slide">
+        <div class="relative">
+            <div class="img_wrp w-full pb-full h-0 z-0 bg-gray-200 pb-[100%] ">
+                <figure class="absolute inset-0">
+                    <picture>
+                        <source srcset="<?php echo $this->getViewFileUrl('images/home/social-post-1.jpg'); ?>" loading="lazy" alt="social image" title="social image" type="image/jpg">
+                        <source srcset="<?php echo $this->getViewFileUrl('images/home/social-post-1.jpg'); ?>" loading="lazy" alt="social image" title="social image" type="image/jpg">
+                        <img class="w-full h-full object-cover object-top" src="<?php echo $this->getViewFileUrl('images/home/social-post-1.jpg'); ?>" alt="social image" loading="lazy">
+                    </picture>
+                </figure>
+            </div>
+        </div>
+        </div>
+        <div class="swiper-slide">
+        <div class="relative">
+            <div class="img_wrp w-full pb-full h-0 z-0 bg-gray-200 pb-[100%] ">
+                <figure class="absolute inset-0">
+                    <picture>
+                        <source srcset="<?php echo $this->getViewFileUrl('images/home/social-post-2.jpg'); ?>" loading="lazy" alt="social image" title="social image" type="image/jpg">
+                        <source srcset="<?php echo $this->getViewFileUrl('images/home/social-post-2.jpg'); ?>" loading="lazy" alt="social image" title="social image" type="image/jpg">
+                        <img class="w-full h-full object-cover object-top" src="<?php echo $this->getViewFileUrl('images/home/social-post-2.jpg'); ?>" alt="social image" loading="lazy">
+                    </picture>
+                </figure>
+            </div>
+        </div>
+        </div>
+        <div class="swiper-slide">
+        <div class="relative">
+            <div class="img_wrp w-full pb-full h-0 z-0 bg-gray-200 pb-[100%] ">
+                <figure class="absolute inset-0">
+                    <picture>
+                        <source srcset="<?php echo $this->getViewFileUrl('images/home/social-post-3.jpg'); ?>" loading="lazy" alt="social image" title="social image" type="image/jpg">
+                        <source srcset="<?php echo $this->getViewFileUrl('images/home/social-post-3.jpg'); ?>" loading="lazy" alt="social image" title="social image" type="image/jpg">
+                        <img class="w-full h-full object-cover object-top" src="<?php echo $this->getViewFileUrl('images/home/social-post-3.jpg'); ?>" alt="social image" loading="lazy">
+                    </picture>
+                </figure>
+            </div>
+        </div>
+        </div>
+        <div class="swiper-slide">
+        <div class="relative">
+            <div class="img_wrp w-full pb-full h-0 z-0 bg-gray-200 pb-[100%] ">
+                <figure class="absolute inset-0">
+                    <picture>
+                        <source srcset="<?php echo $this->getViewFileUrl('images/home/social-post-1.jpg'); ?>" loading="lazy" alt="social image" title="social image" type="image/jpg">
+                        <source srcset="<?php echo $this->getViewFileUrl('images/home/social-post-1.jpg'); ?>" loading="lazy" alt="social image" title="social image" type="image/jpg">
+                        <img class="w-full h-full object-cover object-top" src="<?php echo $this->getViewFileUrl('images/home/social-post-1.jpg'); ?>" alt="social image" loading="lazy">
+                    </picture>
+                </figure>
+            </div>
+        </div>
+        </div>
+    </div>
+ 
+    <div class="swiper-pagination-social"></div>
+    </div>
+    </div>
+   <div class="block lg:hidden py-4 text-center">
+         <a href="https://www.instagram.com/dialatireae" target="_blank" class="btn-blue-yellow"><i class="icon icon-ig text-base mr-2"></i> <?php echo __('@dialatireae') ?></a>
+      </div>
+</section>
+
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof Swiper === 'undefined') {
+    console.error('Swiper library is not loaded. Please make sure Swiper JS is included.');
+    return;
+  }
+  var sliderElement = document.querySelector(".home-social-slider .slider");
+  if (!sliderElement) {
+    console.warn('Slider element not found');
+    return;
+  }
+  var HomeSlider = new Swiper(".home-social-slider .slider", {
+    speed: 1500,
+    loop: true,
+    autoplay: {
+      delay: 3000,
+      waitForTransition: true,
+      disableOnInteraction: true,
+    },
+    flipEffect: {
+      rotate: 30,
+      slideShadows: false,
+    },
+   navigation: {
+    nextEl: ".slider-fullscreen-button-next",
+    prevEl: ".slider-fullscreen-button-prev",
+  },
+  pagination: {
+    el: '.swiper-pagination-social',
+    clickable: true,
+    },
+    breakpoints: {
+      0: {
+        slidesPerView: 1,
+        spaceBetween: 15,
+        clickable: true,
+      },
+      575: {
+        slidesPerView: 1,
+        spaceBetween: 15,
+      },
+      768: {
+        slidesPerView: 2,
+        spaceBetween: 25,
+      },
+      1024: {
+        slidesPerView: 3,
+        spaceBetween: 25,
+      },
+      1200: {
+        slidesPerView: 4,
+        spaceBetween: 25,
+      }
+    }
+  });
+  // Add hover functionality to pause/resume autoplay
+  var homeOfferSlider = document.querySelector(".home-social-slider");
+  if (homeOfferSlider) {
+    homeOfferSlider.addEventListener('mouseenter', function() {
+      HomeSlider.autoplay.stop();
+    });
+    homeOfferSlider.addEventListener('mouseleave', function() {
+      HomeSlider.autoplay.start();
+    });
+  }
+});
+</script>
+
+
+*/ ?>
+

@@ -1,0 +1,48 @@
+<?php
+/**
+ * Arabic version of tax.phtml for order emails
+ */
+// phpcs:disable Magento2.Templates.ThisInTemplate
+// phpcs:disable Squiz.PHP.GlobalKeyword.NotAllowed
+$_order  = $block->getOrder();
+$_source = $block->getSource();
+$_fullInfo = $this->helper(\Magento\Tax\Helper\Data::class)->getCalculatedTaxes($_source);
+global $taxIter;
+$taxIter++;
+?>
+
+<?php if ($_fullInfo && $block->displayFullSummary()) : ?>
+    <?php foreach ($_fullInfo as $info) : ?>
+        <?php
+            $percent    = $info['percent'];
+            $amount     = $info['tax_amount'];
+            $title      = $info['title'];
+        ?>
+        <tr class="totals tax details details-<?= (int) $taxIter ?><?= ($block->getIsPlaneMode()) ? ' plane' : '' ?>">
+            <td <?= /* @noEscape */ $block->getLabelProperties() ?> style="text-align:right;font-weight:800;font-family:'Montserrat',arial,tahoma">
+                <?= $block->escapeHtml($title) ?>
+                <?php if ($percent !== null) : ?>
+                    (<?= (float) $percent ?>%)
+                <?php endif; ?>
+            </td>
+            <td <?= /* @noEscape */ $block->getValueProperties() ?> rowspan="1" style="text-align:right;">
+                <?= /* @noEscape */ $_order->formatPrice($amount) ?>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+<?php endif; ?>
+
+<?php if ($block->displayFullSummary() && $_fullInfo && !$block->getIsPlaneMode()) : ?>
+<tr class="totals-tax-summary">
+<?php elseif ($block->displayFullSummary() && $_fullInfo && $block->getIsPlaneMode()) : ?>
+<tr class="totals-tax-summary plane">
+<?php else : ?>
+<tr class="totals-tax">
+<?php endif; ?>
+    <th <?= /* @noEscape */ $block->getLabelProperties() ?> scope="row" style="text-align:right;font-weight:800;font-family:'Montserrat',arial,tahoma">
+        الضريبة
+    </th>
+    <td <?= /* @noEscape */ $block->getValueProperties() ?> data-th="الضريبة" style="text-align:left;">
+        <?= /* @noEscape */ $_order->formatPrice($_source->getTaxAmount()) ?>
+    </td>
+</tr>

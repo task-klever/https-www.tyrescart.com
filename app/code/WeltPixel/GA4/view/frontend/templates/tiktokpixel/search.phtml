@@ -1,0 +1,45 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \WeltPixel\GA4\Block\TiktokPixel\Common */
+
+/** @var \WeltPixel\GA4\Helper\TiktokPixelTracking $tiktokPixelHelper */
+$tiktokPixelHelper = $this->helper('WeltPixel\GA4\Helper\TiktokPixelTracking');
+/** @var \Magento\CatalogSearch\Helper\Data $searchDataHelper */
+$searchDataHelper = $this->helper('Magento\CatalogSearch\Helper\Data');
+$cspNonceProvider = $tiktokPixelHelper->getCspNonceProvider();
+$eventId = $tiktokPixelHelper->getEventUID();
+$searchQuery = $searchDataHelper->getEscapedQueryText();
+
+?>
+<?php if ($block->isTiktokPixelTrackingEnabled() && $block->shouldTiktokPixelEventBeTracked(\WeltPixel\GA4\Model\Config\Source\TiktokPixel\TrackingEvents::EVENT_SEARCH)) : ?>
+<script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+    if (window.ga4AllowServices) {
+        ttq.track('Search', {
+            "query": '<?=  /* @noEscape */ $searchQuery ?>'
+        },{
+            "event_id": '<?= /* @noEscape */ $eventId ?>'
+        });
+    }
+</script>
+<?php endif; ?>
+
+<?php if ($tiktokPixelHelper->isServerSideTrackingEnabled() && $tiktokPixelHelper->shouldTikTokServerSideEventBeTracked(\WeltPixel\GA4\Model\Config\Source\TiktokPixel\TrackingEvents::EVENT_SEARCH)) : ?>
+    <script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        requirejs(['jquery'],
+            function  ($) {
+                $(document).ready(function() {
+                    var requestUrl = '<?php echo $block->escapeUrl($tiktokPixelHelper->getTikTokSSTrackUrl()); ?>';
+                    $.post({
+                        url: requestUrl,
+                        global: false,
+                        data: {
+                            'eventId': '<?= /* @noEscape */ $eventId ?>',
+                            'eventName': '<?= /* @noEscape */ \WeltPixel\GA4\Model\Config\Source\TiktokPixel\TrackingEvents::EVENT_SEARCH  ?>',
+                            'pageUrl': '<?= $block->escapeUrl($tiktokPixelHelper->getStoreCurrenUrl()) ?>',
+                            'query': '<?= /* @noEscape */ $searchQuery ?>'
+                        }
+                    });
+                });
+            });
+    </script>
+<?php endif; ?>

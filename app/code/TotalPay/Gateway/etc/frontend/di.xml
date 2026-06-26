@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <virtualType name="TotalPay\Gateway\Model\ConfigProvider" type="Magento\Payment\Model\CcGenericConfigProvider">
+        <arguments>
+            <argument name="methodCodes" xsi:type="array">
+                <item name="totalpay_checkout" xsi:type="const">TotalPay\Gateway\Model\Method\Checkout::CODE</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders" xsi:type="array">
+                <item name="totalpay_direct_config_provider" xsi:type="object">TotalPay\Gateway\Model\ConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders" xsi:type="array">
+                <item name="totalpay_checkout_iframe_provider" xsi:type="object">TotalPay\Gateway\Model\IframeConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Hyva\Checkout\Model\Magewire\Payment\PlaceOrderServiceProvider">
+        <arguments>
+            <argument name="placeOrderServiceList" xsi:type="array">
+                <item name="totalpay_checkout" xsi:type="object">TotalPay\Gateway\Model\Magewire\Payment\PlaceOrderService</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

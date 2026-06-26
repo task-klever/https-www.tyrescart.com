@@ -1,0 +1,241 @@
+<?php
+   /**
+    * Hyvä Themes - https://hyva.io
+    * Copyright © Hyvä Themes 2020-present. All rights reserved.
+    * This product is licensed per Magento install
+    * See https://hyva.io/license
+    */
+   
+   declare(strict_types=1);
+   
+   use Magento\Contact\Block\ContactForm;
+   use Magento\Contact\Helper\Data as ContactHelper;
+   use Magento\Framework\Escaper;
+   use Hyva\Theme\ViewModel\ReCaptcha;
+   
+   // phpcs:disable Magento2.Templates.ThisInTemplate.FoundThis
+   // phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+   
+   /** @var ContactForm $block */
+   /** @var Escaper $escaper */
+   /** @var ReCaptcha $recaptcha|null */
+   
+   $formId = 'contact';
+   /** @var ContactHelper $contactHelper */
+   $contactHelper = $this->helper(ContactHelper::class);
+   
+   // Do not replace this with $viewModels->require(ReCaptcha::class); that would break the dependency
+   // on the Magento_ReCaptchaContact module
+   $recaptcha = $block->getData('viewModelRecaptcha');
+   ?>
+
+
+<section class="section section-padding contact-us-page">
+   <div class="container-theme">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
+         <div class="left-content">
+            <div class="section-title mb-0 text-center md:text-right">
+               <h3><?php echo __('Get In Touch With Us - ') ?><span class="text-theme-blue"><?php echo __('tyrescart.ae') ?></span></h3>
+               <p><?php echo __('TyresCart.ae is highly rated as an Online Tyre Shop in the UAE, renowned for best tyre prices and outstanding customer service. Join our loyal customer base who rely on us for their tyre needs.') ?></p>
+            </div>
+            <div class="address-bar space-y-5 mt-6">
+               <div class="flex items-start gap-4">
+                  <div class="flex-shrink-0 w-11 h-11 rounded-full bg-[#2E7D32] flex items-center justify-center">
+                     <i class="icon icon-location text-white text-lg"></i>
+                  </div>
+                  <div>
+                     <h4 class="text-base font-bold text-gray-900 uppercase tracking-wide"><?php echo __('Address') ?></h4>
+                     <p class="text-sm text-gray-700 leading-relaxed mt-0.5"><?php echo __('DSP Trade Hub FZ-LLC, Compass Building, Al Shohada Road, AL Hamra Industrial Zone-FZ, Ras Al Khaimah, UAE') ?></p>
+                  </div>
+               </div>
+               <div class="flex items-start gap-4">
+                  <div class="flex-shrink-0 w-11 h-11 rounded-full bg-[#2E7D32] flex items-center justify-center">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="#fff" class="w-7 h-auto">
+                        <path d="M476.9 161.1C435 119.1 379.2 96 319.9 96C197.5 96 97.9 195.6 97.9 318C97.9 357.1 108.1 395.3 127.5 429L96 544L213.7 513.1C246.1 530.8 282.6 540.1 319.8 540.1L319.9 540.1C442.2 540.1 544 440.5 544 318.1C544 258.8 518.8 203.1 476.9 161.1zM319.9 502.7C286.7 502.7 254.2 493.8 225.9 477L219.2 473L149.4 491.3L168 423.2L163.6 416.2C145.1 386.8 135.4 352.9 135.4 318C135.4 216.3 218.2 133.5 320 133.5C369.3 133.5 415.6 152.7 450.4 187.6C485.2 222.5 506.6 268.8 506.5 318.1C506.5 419.9 421.6 502.7 319.9 502.7zM421.1 364.5C415.6 361.7 388.3 348.3 383.2 346.5C378.1 344.6 374.4 343.7 370.7 349.3C367 354.9 356.4 367.3 353.1 371.1C349.9 374.8 346.6 375.3 341.1 372.5C308.5 356.2 287.1 343.4 265.6 306.5C259.9 296.7 271.3 297.4 281.9 276.2C283.7 272.5 282.8 269.3 281.4 266.5C280 263.7 268.9 236.4 264.3 225.3C259.8 214.5 255.2 216 251.8 215.8C248.6 215.6 244.9 215.6 241.2 215.6C237.5 215.6 231.5 217 226.4 222.5C221.3 228.1 207 241.5 207 268.8C207 296.1 226.9 322.5 229.6 326.2C232.4 329.9 268.7 385.9 324.4 410C359.6 425.2 373.4 426.5 391 423.9C401.7 422.3 423.8 410.5 428.4 397.5C433 384.5 433 373.4 431.6 371.1C430.3 368.6 426.6 367.2 421.1 364.5z"></path>
+                     </svg>
+                  </div>
+                  <div>
+                     <h4 class="text-base font-bold text-gray-900 uppercase tracking-wide"><?php echo __('Whatsapp') ?></h4>
+                     <a href="https://api.whatsapp.com/send/?phone=971505069575" target="_blank" class="text-sm text-gray-700 hover:text-theme-blue transition-colors duration-300 mt-0.5 block [direction:ltr]">+971 50 506 9575</a>
+                  </div>
+               </div>
+               <div class="flex items-start gap-4">
+                  <div class="flex-shrink-0 w-11 h-11 rounded-full bg-[#2E7D32] flex items-center justify-center">
+                     <i class="icon icon-email text-white text-lg"></i>
+                  </div>
+                  <div>
+                     <h4 class="text-base font-bold text-gray-900 uppercase tracking-wide"><?php echo __('Email') ?></h4>
+                     <a href="mailto:info@tyrescart.ae" class="text-sm text-gray-700 hover:text-theme-blue transition-colors duration-300 mt-0.5 block">info@tyrescart.ae</a>
+                  </div>
+               </div>
+               <div class="flex items-start gap-4">
+                  <div class="flex-shrink-0 w-11 h-11 rounded-full bg-[#2E7D32] flex items-center justify-center">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                     </svg>
+                  </div>
+                  <div>
+                     <h4 class="text-base font-bold text-gray-900 uppercase tracking-wide"><?php echo __('Hours of Operation') ?></h4>
+                     <p class="text-sm text-gray-700 leading-relaxed mt-0.5"><?php echo __('Monday to Saturday: 8:30 am – 6:00 pm') ?></p>
+                     <p class="text-sm text-gray-700 leading-relaxed"><?php echo __('Sunday: Closed') ?></p>
+                  </div>
+               </div>
+               <div class="mt-6">
+                  <h4 class="text-lg font-bold text-gray-900 uppercase tracking-wide mb-3"><?php echo __('Follow Us On') ?></h4>
+                  <div class="flex items-center gap-3">
+                     <a href="https://www.facebook.com/" target="_blank" rel="noopener" class="w-8 h-8 rounded-full bg-[#2947c3] flex items-center justify-center transition-colors duration-300">
+                        <svg class="w-6 h-auto" fill="#fff" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                           <path d="M21.95 5.005l-3.306-.004c-3.206 0-5.277 2.124-5.277 5.415v2.495H10.05v4.515h3.317l-.004 9.575h4.641l.004-9.575h3.806l-.003-4.514h-3.803v-2.117c0-1.018.241-1.533 1.566-1.533l2.366-.001.01-4.256z"></path>
+                        </svg>
+                     </a>
+                     <a href="https://www.instagram.com/" target="_blank" rel="noopener" class="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-r from-[#f09433] via-[#e6683c] via-[#dc2743] via-[#cc2366] to-[#bc1888] transition-colors duration-300">
+                        <svg class="w-5 h-auto" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                           <path fill-rule="evenodd" clip-rule="evenodd" d="M12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" fill="#fff"></path>
+                           <path d="M18 5C17.4477 5 17 5.44772 17 6C17 6.55228 17.4477 7 18 7C18.5523 7 19 6.55228 19 6C19 5.44772 18.5523 5 18 5Z" fill="#fff"></path>
+                           <path fill-rule="evenodd" clip-rule="evenodd" d="M1.65396 4.27606C1 5.55953 1 7.23969 1 10.6V13.4C1 16.7603 1 18.4405 1.65396 19.7239C2.2292 20.8529 3.14708 21.7708 4.27606 22.346C5.55953 23 7.23969 23 10.6 23H13.4C16.7603 23 18.4405 23 19.7239 22.346C20.8529 21.7708 21.7708 20.8529 22.346 19.7239C23 18.4405 23 16.7603 23 13.4V10.6C23 7.23969 23 5.55953 22.346 4.27606C21.7708 3.14708 20.8529 2.2292 19.7239 1.65396C18.4405 1 16.7603 1 13.4 1H10.6C7.23969 1 5.55953 1 4.27606 1.65396C3.14708 2.2292 2.2292 3.14708 1.65396 4.27606ZM13.4 3H10.6C8.88684 3 7.72225 3.00156 6.82208 3.0751C5.94524 3.14674 5.49684 3.27659 5.18404 3.43597C4.43139 3.81947 3.81947 4.43139 3.43597 5.18404C3.27659 5.49684 3.14674 5.94524 3.0751 6.82208C3.00156 7.72225 3 8.88684 3 10.6V13.4C3 15.1132 3.00156 16.2777 3.0751 17.1779C3.14674 18.0548 3.27659 18.5032 3.43597 18.816C3.81947 19.5686 4.43139 20.1805 5.18404 20.564C5.49684 20.7234 5.94524 20.8533 6.82208 20.9249C7.72225 20.9984 8.88684 21 10.6 21H13.4C15.1132 21 16.2777 20.9984 17.1779 20.9249C18.0548 20.8533 18.5032 20.7234 18.816 20.564C19.5686 20.1805 20.1805 19.5686 20.564 18.816C20.7234 18.5032 20.8533 18.0548 20.9249 17.1779C20.9984 16.2777 21 15.1132 21 13.4V10.6C21 8.88684 20.9984 7.72225 20.9249 6.82208C20.8533 5.94524 20.7234 5.49684 20.564 5.18404C20.1805 4.43139 19.5686 3.81947 18.816 3.43597C18.5032 3.27659 18.0548 3.14674 17.1779 3.0751C16.2777 3.00156 15.1132 3 13.4 3Z" fill="#fff"></path>
+                        </svg>
+                     </a>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="w-full">
+            <form class="form contact bg-white rounded-[10px] border border-[#D9D9D9] shadow-lg p-3 md:p-8"
+               action="<?= $escaper->escapeUrl($block->getFormAction()) ?>"
+               id="<?= $escaper->escapeHtmlAttr($formId) ?>"
+               method="post"
+               x-data="initContactForm()"
+               @submit.prevent="submitForm()"
+               >
+               <fieldset>
+                  <div class="section-title mb-0 p-2">
+                     <h3><?php echo __('Send us a') ?> <span class="text-theme-blue"><?php echo __('Message') ?></span></h3>
+                  </div>
+                  <div class="flex flex-wrap">
+                     <div class="field p-2 name required py-2 w-full">
+                        <label class="label text-gray-700" for="name">
+                        <span><?= $escaper->escapeHtml(__('Name')) ?></span>
+                        </label>
+                        <input name="name" id="name" required title="<?= $escaper->escapeHtmlAttr(__('Name')) ?>"
+                           value="<?= $escaper->escapeHtmlAttr(
+                              $contactHelper->getPostValue('name')
+                                  ?: $contactHelper->getUserName()
+                              ) ?>"
+                           class="form-input w-full"
+                           type="text"
+                           placeholder="<?= $escaper->escapeHtml(__('Name')) ?>"
+                           />
+                     </div>
+                     <div class="field p-2 email required py-2 w-full md:w-1/2">
+                        <label class="label text-gray-700" for="email">
+                        <span><?= $escaper->escapeHtml(__('Email')) ?></span>
+                        </label>
+                        <input name="email" id="email" required title="<?= $escaper->escapeHtmlAttr(__('Email')) ?>"
+                           value="<?= $escaper->escapeHtmlAttr(
+                              $contactHelper->getPostValue('email')
+                                  ?: $contactHelper->getUserEmail()
+                              ) ?>"
+                           class="form-input w-full"
+                           placeholder="<?= $escaper->escapeHtmlAttr(__('Email')) ?>"
+                           type="email"/>
+                     </div>
+                     <div class="field p-2 telephone py-2 w-full md:w-1/2">
+                        <label class="label text-gray-700" for="telephone">
+                        <span><?= $escaper->escapeHtml(__('Phone Number')) ?></span>
+                        </label>
+                        <input name="telephone" id="telephone"
+                           title="<?= $escaper->escapeHtmlAttr(__('Phone Number')) ?>"
+                           value="<?= $escaper->escapeHtmlAttr(
+                              $contactHelper->getPostValue('telephone')
+                              ) ?>"
+                           class="form-input w-full"
+                           placeholder="<?= $escaper->escapeHtmlAttr(__('Phone Number')) ?>"
+                           type="text"/>
+                     </div>
+                     <div class="field p-2 comment required py-2 w-full">
+                        <label class="label text-gray-700" for="comment">
+                        <span><?= $escaper->escapeHtml(__('What’s on your mind?')) ?></span>
+                        </label>
+                        <textarea name="comment" id="comment" required
+                           title="<?= $escaper->escapeHtmlAttr(__('What’s on your mind?')) ?>"
+                           class="form-input w-full h-48" cols="5" rows="3"><?= $escaper->escapeHtml(
+                           $contactHelper->getPostValue('comment')
+                           ) ?></textarea>
+                     </div>
+                     <?= $block->getChildHtml('form.additional.info') ?>
+                     <?= $recaptcha ? $recaptcha->getInputHtml(ReCaptcha::RECAPTCHA_FORM_ID_CONTACT) : '' ?>
+                  </div>
+               </fieldset>
+               <div class="w-full p-2">
+                  <?= $block->getBlockHtml('formkey') ?>
+                  <button type="submit" title="<?= $escaper->escapeHtmlAttr(__('Submit')) ?>" class="inline-flex items-center justify-center px-6 py-2 hover:bg-black text-white text-sm md:text-base font-semibold rounded-full bg-theme-blue transition-colors duration-300">
+                  <span><?= $escaper->escapeHtml(__('Submit')) ?></span>
+                  </button>
+               </div>
+               <div class="w-full p-2">
+                  <?= $block->getChildHtml('form.additional.after') ?>
+                  <?= $recaptcha ? $recaptcha->getLegalNoticeHtml(ReCaptcha::RECAPTCHA_FORM_ID_CONTACT) : '' ?>
+               </div>
+            </form>
+            <script>
+               function initContactForm() {
+                   return {
+                       errors: 0,
+                       hasCaptchaToken: 0,
+                       submitForm() {
+                           // Do not rename $form, the variable is expected to be declared in the recaptcha output
+                           const $form = document.querySelector('#<?= $escaper->escapeJs($formId) ?>');
+                           <?= $recaptcha ? $recaptcha->getValidationJsHtml(ReCaptcha::RECAPTCHA_FORM_ID_CONTACT) : '' ?>
+                           if (this.errors === 0) {
+                               $form.submit();
+                           }
+                       }
+                   }
+               }
+            </script>
+         </div>
+      </div>
+   </div>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,486 @@
+<?php
+   /**
+    * Hyvä Themes - https://hyva.io
+    * Copyright © Hyvä Themes 2020-present. All rights reserved.
+    * This product is licensed per Magento install
+    * See https://hyva.io/license
+    */
+   
+   declare(strict_types=1);
+   
+   use Hyva\Theme\Model\ViewModelRegistry;
+   use Hyva\Theme\ViewModel\HeroiconsOutline;
+   use Hyva\Theme\ViewModel\HyvaCsp;
+   use Hyva\Theme\ViewModel\StoreConfig;
+   use Magento\Checkout\Block\Cart\Sidebar as SidebarCart;
+   use Magento\Framework\Escaper;
+   use Magento\Framework\View\Element\Template;
+   
+   /** @var Escaper $escaper */
+   /** @var Template $block */
+   /** @var ViewModelRegistry $viewModels */
+   /** @var HyvaCsp $hyvaCsp */
+   
+   /** @var HeroiconsOutline $heroicons */
+   $heroicons = $viewModels->require(HeroiconsOutline::class);
+   
+   /** @var StoreConfig $storeConfig */
+   $storeConfig = $viewModels->require(StoreConfig::class);
+   $showMiniCart = $storeConfig->getStoreConfig(SidebarCart::XML_PATH_CHECKOUT_SIDEBAR_DISPLAY);
+   ?>
+<?php
+/** Language switcher: detect current store and build alternate URL */
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$mediaURL = $objectManager->get(\Magento\Store\Model\StoreManagerInterface::class)->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+$baseUrl = $this->getBaseUrl();
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$storeManager = $objectManager->get(\Magento\Store\Model\StoreManagerInterface::class);
+$currentStore = $storeManager->getStore();
+$currentStoreCode = $currentStore->getCode();
+$isArabic = (strpos($currentStoreCode, 'ar') !== false);
+$currentUrlStr = $currentStore->getCurrentUrl(false);
+if ($isArabic) {
+    $altStoreUrl = preg_replace('#/ar(/|$)#', '/en$1', $currentUrlStr, 1);
+} else {
+    $altStoreUrl = preg_replace('#/en(/|$)#', '/ar$1', $currentUrlStr, 1);
+}
+$altStoreUrl = preg_replace('/[?&]___store=[^&]*/', '', $altStoreUrl);
+?>
+<!-- Swiper CSS: preload then apply as stylesheet to avoid render-blocking -->
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/6.4.10/swiper-bundle.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/6.4.10/swiper-bundle.min.css" rel="stylesheet" type="text/css" /></noscript>
+<script>
+   function initHeader() {
+       return {
+           searchOpen: false,
+           cart: {},
+           isCartOpen: false,
+           getData(data) {
+               if (data.cart) {
+                   this.cart = data.cart
+               }
+           },
+           isCartEmpty() {
+               return !this.cart.summary_count
+           },
+           toggleCart(event) {
+               if (event.detail && event.detail.isOpen !== undefined) {
+                   this.isCartOpen = event.detail.isOpen
+                   if (!this.isCartOpen && this.$refs && this.$refs.cartButton) {
+                       this.$refs.cartButton.focus()
+                   }
+               } else {
+                   <?php
+      /*
+       * The toggle-cart event was previously dispatched without parameter to open the drawer (not toggle).
+       * Keeping this in here for backwards compatibility.
+       */
+      ?>
+                   this.isCartOpen = true
+               }
+           }
+       }
+   }
+   
+   function initCompareHeader() {
+       return {
+           compareProducts: null,
+           itemCount: 0,
+           receiveCompareData(data) {
+               if (data['compare-products']) {
+                   this.compareProducts = data['compare-products'];
+                   this.itemCount = this.compareProducts.count;
+               }
+           }
+       }
+   }
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+<div id="header" class="bg-black main-menu" x-data="initHeader()" @private-content-loaded.window="getData(event.detail.data)">
+   <div
+      class="container-theme flex flex-wrap lg:flex-nowrap items-center justify-between w-full mx-auto mt-0 py-1 xl:py-0">
+      <div class="order-1 md:order-2 xl:order-1 w-2/5 md:w-auto sm:w-auto pb-0 header-site-logo">
+         <a class="flex items-center justify-start md:justify-center text-xl font-medium tracking-wide text-gray-800 no-underline hover:no-underline font-title"
+            href="<?php echo $this->getBaseUrl(); ?>" aria-label="Go to Home page">
+         <img src="<?php echo $this->getViewFileUrl('images/tires-logo.png'); ?>" alt="Tyrescart"
+            width="189" height="64">
+         </a>
+      </div>
+      <?= $block->getChildHtml('topmenu') ?>
+      <div class="flex items-center gap-0 md:gap-2 md:gap-1 md:order-3 order-1 mr-0 md:-mr-1 ml-auto md:ml-0 mt-[3px]">
+         <a id="compare-link" class="relative inline-block rounded p-1 hover:bg-primary/10 outline-offset-2 hidden"
+            :class="{ 'invisible': !(itemCount > 0) }"
+            href="<?= $escaper->escapeUrl($block->getUrl('catalog/product_compare/index')) ?>"
+            title="<?= $escaper->escapeHtmlAttr(__('Compare Products')) ?>" x-data="initCompareHeader()"
+            @private-content-loaded.window="receiveCompareData($event.detail.data)" :aria-label="`
+            <?= $escaper->escapeHtmlAttr(__('Compare Products')) ?>,
+            ${itemCount > 1
+            ? hyva.str('<?= $escaper->escapeJs(__('%1 Items')) ?>', itemCount)
+            : hyva.str('<?= $escaper->escapeJs(__('%1 Item')) ?>', itemCount)
+            }`">
+         <?= $heroicons->scaleHtml("md:h-6 md:w-6", 28, 28, ["aria-hidden" => "true"]) ?>
+         <span x-text="itemCount" class="absolute -top-1.5 -right-1.5 h-5 px-2 py-1 rounded-full bg-yellow-500 text-white
+            text-xs font-semibold leading-none text-center uppercase tabular-nums"
+            aria-hidden="true"></span>
+         </a>
+         <!-- Language Switcher -->
+         <a  href="<?= $escaper->escapeUrl($altStoreUrl) ?>"
+            class="hidden xl:inline-flex items-center gap-1.5 text-white hover:text-theme-green transition-colors mr-3 md:mr-2 no-underline"
+            title="<?= $isArabic ? $escaper->escapeHtmlAttr('English') : $escaper->escapeHtmlAttr('العربية') ?>">
+            <?php if ($isArabic): ?>
+                <img class="w-[24px] h-auto" src="<?php echo $mediaURL.'images/en_US.webp'; ?>" alt="English">
+                <span class="text-xs uppercase hidden md:inline relative top-[1px]">EN</span>
+            <?php else: ?>
+                <img class="w-[24px] h-auto" src="<?php echo $mediaURL.'images/ar_SA.webp'; ?>" alt="Arabic">
+                <span class="text-xs uppercase hidden md:inline">AR</span>
+            <?php endif; ?>
+         </a>
+         <button class="no-underline inline-block hover:text-black mr-1 hidden md:block" onclick="var barRoot = document.querySelector('div[x-data=&quot;fitmentBarDrawer()&quot;]'); if (barRoot) { var comp = Alpine.$data(barRoot); var isWheels = window.location.pathname.indexOf('car-wheels') !== -1; var isMotorbike = window.location.pathname.indexOf('motorcycle') !== -1; comp.isCarWheelsSearch = isWheels; comp.isVehicleOnlyTabs = isWheels || isMotorbike; comp.isSizeOnlyTab = isMotorbike; comp.openDrawer('mode'); }" id="header-search-full-icon">
+            <span class="sr-only label">
+            <?= $escaper->escapeHtml(__('Search')) ?>
+            </span>
+            <svg class="pulse-icon w-[28px] h-auto" fill="#fff" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+               viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;" xml:space="preserve">
+               <title>icon-new</title>
+               <path d="M29.6,13l-0.8,0.9l-2-1.1l-0.3-0.1c-0.3-0.2-0.7-0.1-0.9,0.2c-0.1,0.1-0.1,0.2-0.1,0.3c-0.5,1.6-1,3.3-1.5,4.9
+                  c-0.3,1-0.6,2.1-0.9,3.1c0,0.1,0,0.3-0.1,0.5l0.1,0.1c0.1-0.1,0.3-0.2,0.4-0.3l3.2-3.3c0.1-0.1,0.2-0.2,0.3-0.2
+                  c0,0.2-0.1,0.5-0.1,0.7c0,0.6,0,1.2,0,1.8c0,0.1,0,0.3-0.1,0.4c-0.6,0.7-1.2,1.4-1.8,2.1c-0.1,0.1-0.2,0.3-0.3,0.4l0.1,0.1
+                  c0.1,0,0.3,0,0.4-0.1l1.9-0.8l0.2-0.1l0.8,1.7l-1.5,0.7l-0.6,0.3c-0.1,0.1-0.2,0.1-0.3,0.2v0.1c0.1,0,0.3,0.1,0.4,0.1l3.1,0.1
+                  c0.1,0,0.2,0,0.3,0.1c0.8,0.7,1.7,1.3,2.7,1.7h-0.2L26,27.2c-0.1,0-0.3,0-0.4,0.1v0.1c0.1,0.1,0.2,0.2,0.3,0.2l7.6,3.6
+                  c0.6,0.3,0.9,0.1,1.1-0.5c0.3-0.9,0.5-1.9,0.6-2.9c0-0.1,0-0.2,0-0.2l1.2-0.1c-0.5,6.5-4.8,12-10.9,14.1C17,44.4,7.9,39.8,5.1,31.4
+                  S6.8,13.8,15.2,11C20.1,9.3,25.4,10.1,29.6,13z M18.7,31.3L18.7,31.3c-0.2,0.1-0.3,0.2-0.4,0.3c-0.2,0.3-0.4,0.7-0.6,1L14,38.9
+                  c-0.2,0.3-0.2,0.7,0.1,0.9c0.1,0.1,0.1,0.1,0.2,0.1c0.3,0.2,0.7,0.3,1,0.4c0.7,0.2,1.3,0.4,2,0.5c0.3,0.1,0.6-0.1,0.7-0.4
+                  c0-0.1,0-0.1,0-0.2c0.1-0.8,0.1-1.6,0.2-2.4s0.1-1.8,0.2-2.7c0.1-1.1,0.2-2.3,0.3-3.4C18.8,31.6,18.8,31.5,18.7,31.3z M15.5,24.1
+                  c-0.1-0.1-0.2-0.2-0.3-0.4c-0.2-0.2-0.4-0.3-0.7-0.5l-6.1-4.6c-0.2-0.2-0.6-0.2-0.9,0c-0.1,0.1-0.1,0.1-0.1,0.2
+                  c-0.5,0.9-1,1.9-1.3,2.9c-0.1,0.3,0,0.7,0.4,0.8c0.1,0,0.1,0,0.2,0l8.4,1.6C15.3,24.2,15.4,24.1,15.5,24.1z M20.8,21H21
+                  c0.1-0.1,0.2-0.3,0.2-0.4l0.8-2.2c0.7-1.9,1.3-3.8,2-5.7c0.2-0.3,0.1-0.7-0.2-0.8c-0.1,0-0.1-0.1-0.2-0.1c-1.1-0.3-2.2-0.4-3.3-0.3
+                  c-0.3,0-0.6,0.3-0.6,0.6c0,0,0,0,0,0.1c0.1,1.3,0.3,2.6,0.5,3.8l0.6,4.5C20.8,20.6,20.8,20.8,20.8,21z M18.6,21.3h0.1
+                  c0-0.2,0-0.3,0-0.5l-0.3-3.4c-0.1-1.7-0.3-3.4-0.4-5c0-0.3-0.3-0.6-0.6-0.6c0,0-0.1,0-0.1,0c-0.3,0-0.5,0.1-0.8,0.2
+                  c-0.8,0.2-1.5,0.5-2.2,0.8c-0.3,0.1-0.5,0.4-0.4,0.8c0,0.1,0.1,0.1,0.1,0.2c0.1,0.2,0.2,0.4,0.3,0.5c1.3,2.2,2.7,4.4,4,6.6
+                  C18.4,21,18.5,21.1,18.6,21.3L18.6,21.3z M15.5,28.5v-0.1c-0.1,0-0.2,0-0.4,0c-0.3,0-0.6,0.1-0.9,0.2L6.7,30c-0.3,0-0.6,0.3-0.6,0.7
+                  c0,0.1,0,0.2,0.1,0.3c0.3,1,0.7,1.9,1.2,2.8C7.6,34,7.9,34.2,8.3,34c0.1,0,0.1-0.1,0.2-0.1l1.6-1.2l5.1-3.9
+                  C15.3,28.7,15.4,28.6,15.5,28.5L15.5,28.5z M16.7,22.4L16.7,22.4c0-0.2,0-0.4-0.1-0.5c-0.8-1.4-1.6-2.9-2.4-4.3l-1.7-3.1
+                  c-0.1-0.3-0.5-0.5-0.8-0.3c-0.1,0-0.1,0.1-0.2,0.1c-0.9,0.6-1.7,1.4-2.4,2.2C9,16.7,9,17,9.3,17.3c0,0,0.1,0,0.1,0.1l0.3,0.2
+                  l6.7,4.7C16.5,22.2,16.6,22.3,16.7,22.4L16.7,22.4z M16.8,30.3L16.8,30.3c-0.2,0-0.4,0.1-0.5,0.1l-1.1,0.8l-5.9,4
+                  C9.1,35.4,9,35.7,9.1,36c0,0.1,0.1,0.1,0.1,0.2c0.7,0.8,1.5,1.5,2.3,2.1c0.3,0.2,0.6,0.2,0.9-0.1c0,0,0.1-0.1,0.1-0.1
+                  c0.1-0.2,0.3-0.5,0.4-0.7l3.7-6.8C16.7,30.5,16.8,30.4,16.8,30.3L16.8,30.3z M21,31.6L21,31.6c-0.1,0.1-0.2,0.2-0.2,0.3l-0.3,2.6
+                  c-0.2,2-0.5,3.9-0.7,5.9c-0.1,0.5,0.2,0.8,0.7,0.8c1-0.1,2-0.2,2.9-0.3c0.7-0.1,0.8-0.4,0.6-1c-0.9-2.6-1.8-5.3-2.7-7.9
+                  C21.1,31.8,21.1,31.7,21,31.6z M24.7,29.3L24.7,29.3c0,0.2,0.1,0.3,0.2,0.5l1,1.2l4.5,5.2c0.4,0.5,0.8,0.5,1.1,0
+                  c0.6-0.8,1.2-1.5,1.7-2.3c0.3-0.5,0.2-0.9-0.3-1.1l-7.8-3.3C25,29.4,24.8,29.4,24.7,29.3L24.7,29.3z M15.1,26.3v-0.1
+                  c-0.1-0.1-0.3-0.1-0.4-0.2L12,25.4l-5.5-1.3c-0.6-0.1-0.9,0.1-1,0.7c0,0.9,0,1.9,0,2.8c0,0.6,0.3,0.9,1,0.7l8.1-1.9
+                  C14.7,26.4,14.9,26.4,15.1,26.3L15.1,26.3z M23.1,30.9L23.1,30.9c-0.1,0.2-0.1,0.4,0,0.6c0.5,1.6,1,3.2,1.5,4.8l1,3.2
+                  c0.1,0.5,0.5,0.7,0.9,0.5c1-0.4,1.9-1,2.8-1.6c0.3-0.2,0.3-0.6,0.2-0.8c0,0,0-0.1-0.1-0.1c-0.1-0.2-0.3-0.3-0.4-0.5
+                  c-1.9-2-3.7-3.9-5.5-5.8C23.3,31,23.2,30.9,23.1,30.9L23.1,30.9z M20.4,28c1-0.1,1.7-0.9,1.6-1.9c-0.1-0.9-0.7-1.5-1.6-1.6
+                  c-1,0-1.7,0.8-1.8,1.7C18.6,27.2,19.4,28,20.4,28C20.3,28,20.3,28,20.4,28z M19.4,29c0-0.6-0.4-1-1-1s-1,0.4-1,1s0.4,1,1,1
+                  C18.9,30,19.3,29.6,19.4,29C19.3,29,19.3,29,19.4,29L19.4,29z M21.4,29c0,0.6,0.4,1,1,1s1-0.4,1-1s-0.4-1-1-1S21.4,28.5,21.4,29z
+                  M23.6,26.2c0.6,0,1-0.4,1-1s-0.4-1-1-1s-1,0.4-1,1S23.1,26.2,23.6,26.2z M20.3,23.8c0.6,0,1-0.4,1-1s-0.4-1-1-1s-1,0.4-1,1
+                  S19.8,23.8,20.3,23.8z M18.1,25.2c0-0.6-0.4-1-1-1s-1,0.4-1,1s0.4,1,1,1S18.1,25.8,18.1,25.2z"/>
+               <path d="M33.7,11.2c-0.4,0.1-0.9,0.2-1.3,0.4c-0.7,0.3-1.3,0.6-2,1c-0.1,0.1-0.3,0.1-0.4,0c-1.9-1.4-4.1-2.3-6.5-2.8
+                  c-4.8-1-9.7,0.2-13.6,3.2c-3.2,2.4-5.4,5.9-6.2,9.8c-1.1,5,0.1,10.2,3.4,14.1c2.4,3.1,5.8,5.2,9.7,5.9c5,1.1,10.3-0.2,14.2-3.5
+                  c3-2.4,5-5.8,5.8-9.6c0.1-0.7,0.2-1.4,0.3-2.1c0-0.1,0.1-0.2,0.2-0.3c0.5-0.2,1-0.4,1.4-0.6c0.1-0.1,0.3,0,0.3,0.1
+                  c0.3,0.3,0.7,0.6,1,0.9c0.2,0.1,0.3,0.4,0.3,0.6c-0.2,1.5-0.5,3-1,4.5c-2.6,7-7.4,11.5-14.7,13.2c-6.2,1.5-12.8-0.1-17.5-4.4
+                  c-3.6-3-5.9-7.2-6.6-11.8C-0.5,23.9,1,17.9,4.8,13.4c2.9-3.5,6.8-5.9,11.3-6.9c2-0.4,4-0.6,6-0.4C26,6.6,29.7,8,32.8,10.5L33.7,11.2
+                  z"/>
+               <path class="st0" d="M43.2,25.4L41,27.6l-1.4-1.2c-0.2-0.1-0.3-0.4-0.5-0.4s-0.4,0.1-0.6,0.3c-3.8,1.9-8.5,0.4-10.4-3.4
+                  s-0.4-8.5,3.4-10.4s8.5-0.4,10.4,3.4c1.2,2.3,1.1,5.1-0.2,7.4c-0.1,0.1-0.1,0.2,0,0.3c0,0,0,0,0,0c0.5,0.5,1,1.1,1.4,1.6
+                  C43.1,25.3,43.2,25.3,43.2,25.4z M35,25.9c3.6,0,6.5-2.9,6.5-6.5S38.6,13,35,13c-3.5,0-6.4,2.8-6.5,6.4c0,3.6,2.8,6.5,6.3,6.5
+                  C34.9,25.9,35,25.9,35,25.9z"/>
+               <path class="st0" d="M41.6,28.2l2.2-2.2c0.5,0.5,1,1,1.5,1.6l3.8,3.8c0.4,0.3,0.5,0.8,0.2,1.2c-0.1,0.1-0.1,0.2-0.2,0.2
+                  c-0.3,0.3-0.6,0.6-0.9,0.9c-0.3,0.3-0.8,0.3-1.1,0c0,0,0,0,0,0L41.6,28.2L41.6,28.2z"/>
+               <path class="st1" d="M37.3,24.9c-0.6-4-2.3-7.7-5-10.7c0,0,0.1-0.1,0.2-0.1c1.4-0.7,3.1-0.8,4.5-0.2c0.1,0,0.2,0.1,0.3,0.2
+                  c1.4,2.1,2.5,4.5,3.3,7c0,0.1,0,0.2,0,0.4C40,23,38.8,24.2,37.3,24.9z"/>
+               <path class="st1" d="M29.4,21.2l2.7-1.2l0.2-0.1c0.4-0.1,0.6-0.5,0.5-0.9c0-0.1-0.1-0.2-0.1-0.2c-0.5-0.9-1.1-1.7-1.7-2.5
+                  c-0.1-0.2-0.3-0.4-0.5-0.6l1.1-1c2.7,2.9,4.4,6.6,5,10.6L35,25.4c-0.2-0.8-0.3-1.4-0.5-2.1c-0.1-0.3-0.2-0.7-0.3-1
+                  c-0.1-0.4-0.5-0.7-0.9-0.6c-0.1,0-0.2,0-0.2,0.1L30.3,23C29.9,22.5,29.6,21.9,29.4,21.2z"/>
+            </svg>
+         </button>
+         <!--Customer Icon & Dropdown-->
+         <?= $block->getChildHtml('customer') ?>
+         <!--Cart Icon-->
+         <?php if ($showMiniCart): ?>
+         <button <?php else: ?> <a <?php endif ?> id="menu-cart-icon"
+            class="relative inline-block text-white hover:text-theme-green outline-offset-2 transition-colors mx-2"
+            x-ref="cartButton" :aria-disabled="isCartEmpty()" :aria-label="`
+            <?= $escaper->escapeHtmlAttr($showMiniCart ? __('Toggle minicart') : __('View cart')) ?>,
+            ${isCartEmpty()
+            ? '<?= $escaper->escapeHtmlAttr(__('Cart is empty')) ?>'
+            : cart.summary_count > 1
+            ? hyva.str('<?= $escaper->escapeHtmlAttr(__('%1 items')) ?>', cart.summary_count)
+            : hyva.str('<?= $escaper->escapeHtmlAttr(__('%1 item')) ?>', cart.summary_count)
+            }`" <?php if ($showMiniCart): ?> @click.prevent="() => {
+            $dispatch('toggle-cart', { isOpen: true })
+            }" @toggle-cart.window="toggleCart($event)" :aria-expanded="isCartOpen" aria-haspopup="dialog"
+            <?php else: ?> href="<?= $escaper->escapeUrl($block->getUrl('checkout/cart/index')) ?>"
+            title="<?= $escaper->escapeHtmlAttr(__('View cart')) ?>" <?php endif ?>>
+         <i class="icon icon-cart"></i>
+         <span x-text="cart.summary_count" x-show="!isCartEmpty()" x-cloak class="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-theme-blue text-white
+            text-xs font-semibold leading-none text-center uppercase tabular-nums content-center"
+            aria-hidden="true"></span>
+         <?php if ($showMiniCart): ?>
+         </button>
+         <?php else: ?>
+         </a>
+         <?php endif ?>
+      </div>
+   </div>
+   <!--Search-->
+   <div class="absolute z-10 w-full border-t shadow-sm bg-container-lighter border-container-lighter"
+      id="search-content" x-cloak x-show="searchOpen" @click.outside="searchOpen = false" @keydown.escape="
+      searchOpen = false;
+      $refs.searchButton.focus();
+      ">
+      <?= $block->getChildHtml('header-search'); ?>
+   </div>
+   <!--Cart Drawer-->
+   <?= $block->getChildHtml('cart-drawer'); ?>
+   <!--Authentication Pop-Up-->
+   <?= $block->getChildHtml('authentication-popup'); ?>
+</div>
+<script>
+   function openFitmentDrawer(mode) {
+       if (!window.Alpine) return;
+       var barRoot = document.querySelector('div[x-data="fitmentBarDrawer()"]');
+       if (!barRoot) return;
+       var barComponent = Alpine.$data(barRoot);
+       if (!barComponent || typeof barComponent.openDrawer !== 'function') return;
+       if (mode === 'vehicle-wheels') {
+           barComponent.isCarWheelsSearch = true;
+           barComponent.isVehicleOnlyTabs = true;
+           barComponent.isSizeOnlyTab = false;
+           barComponent.activeTab = 'byVehicle';
+           barComponent.openDrawer('vehicle');
+       } else if (mode === 'size-wheels') {
+           barComponent.isCarWheelsSearch = true;
+           barComponent.isVehicleOnlyTabs = true;
+           barComponent.isSizeOnlyTab = false;
+           barComponent.activeTab = 'bySize';
+           barComponent.openDrawer('size');
+       } else if (mode === 'size-motorbike') {
+           barComponent.isCarWheelsSearch = false;
+           barComponent.isVehicleOnlyTabs = true;
+           barComponent.isSizeOnlyTab = true;
+           barComponent.activeTab = 'bySize';
+           barComponent.openDrawer('size');
+       } else {
+           barComponent.isCarWheelsSearch = false;
+           barComponent.isVehicleOnlyTabs = false;
+           barComponent.isSizeOnlyTab = false;
+           if (mode === 'vehicle') barComponent.activeTab = 'byVehicle';
+           else if (mode === 'size') barComponent.activeTab = 'bySize';
+           barComponent.openDrawer(mode);
+       }
+   }
+</script>
+<div class="bottombar-sliebar">
+   <div id="tyre-size-search-full"  
+      class="fixed inset-x-0 bottom-0 h-[90vh] max-h-[90vh] md:h-[80vh] md:max-h-[80vh] lg:h-[89vh] lg:max-h-[89vh] w-full bg-white shadow-lg z-60 transform translate-y-full transition-transform transition ease-out duration-300 mx-auto overflow-hidden">
+      <div class="tyre-sidebar-content">
+         <div class="container-theme w-full py-4 lg:py-6 flex flex-col overflow-hidden h-full">
+            <div class="flex shrink-0 items-center justify-between bg-white pb-2 lg:pb-4">
+               <h3
+                  class="text-lg md:text-xl font-extrabold text-gray-900">
+                  Search <span class="text-theme-blue">Tyre Size</span>
+               </h3>
+               <button onclick="tyresizeModalClose()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:text-gray-800 transition-all">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+               </button>
+            </div>
+            <div class="relative">
+               <div id="tyre-search-popup-buttons" class="p-3 border-2 grid gap-3 grid-cols-2 md:grid-cols-4 rounded-[10px] md:rounded-full mb-3 md:mb-4" style="border-bottom:none; background-image: url('<?= $block->getViewFileUrl('images/finder-sticky-bg.webp') ?>')">
+                  <button id="tyre-search-btn-size" onclick="tyresizeModalClose(); openFitmentDrawer(window._tyreSearchContext === 'wheels' ? 'size-wheels' : (window._tyreSearchContext === 'motorbike' ? 'size-motorbike' : 'size'));" class="inline-flex items-center justify-center bg-white gap-2 hover:text-white px-6 py-2 rounded-full font-medium text-sm md:text-base hover:bg-theme-blue text-black transition-colors duration-300">
+                  <i class="icon icon-tyre-size"></i>
+                  <span><?= __('Size') ?></span>
+                  </button>
+                  <button id="tyre-search-btn-vehicle" onclick="tyresizeModalClose(); openFitmentDrawer(window._tyreSearchContext === 'wheels' ? 'vehicle-wheels' : 'vehicle');" class="inline-flex items-center justify-center bg-white gap-2 hover:text-white px-6 py-2 rounded-full font-medium text-sm md:text-base hover:bg-theme-blue text-black transition-colors duration-300">
+                  <i class="icon icon-vehicel"></i>
+                  <span><?= __('Vehicle') ?></span>
+                  </button>
+                  <button id="tyre-search-btn-brand" onclick="tyresizeModalClose(); openFitmentDrawer('brand');" class="inline-flex items-center justify-center bg-white gap-2 hover:text-white px-6 py-2 rounded-full font-medium text-sm md:text-base hover:bg-theme-blue text-black transition-colors duration-300">
+                  <i class="icon icon-tyre-brand"></i>
+                  <span><?= __('Tyres Brands') ?></span>
+                  </button>
+                  <button id="tyre-search-btn-ev" onclick="tyresizeModalClose(); openFitmentDrawer('ev');" class="inline-flex items-center justify-center bg-white gap-2 hover:text-white px-6 py-2 rounded-full font-medium text-sm md:text-base hover:bg-theme-blue text-black transition-colors duration-300">
+                  <i class="icon icon-ev"></i>
+                  <span><?= __('EV Tires') ?></span>
+                  </button>
+               </div>
+               <div class="search-popup w-full relative flex items-center">
+                  <?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Magento_Theme::html/header-search.phtml")->toHtml(); ?>
+               </div>
+               <div class="z-50 fixed inset-0 grid place-items-center bg-white/70 text-primary hidden" id="klever-loader2">
+                  <div class="flex min-h-0 flex-1 items-center justify-center">
+                     <div class="flex flex-col items-center gap-3">
+                        <svg class="animate-spin h-8 w-8 text-theme-blue" fill="none" viewBox="0 0 24 24">
+                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                        </svg>
+                        <span class="text-sm text-gray-500">Loading options...</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+   <div id="tyre-size-search-full-overlay" onclick="tyresizeModalClose()"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-all ease-in-out duration-500 sm:duration-700">
+   </div>
+</div>
+<script>
+   document.addEventListener("DOMContentLoaded", function() {
+       const headerSearchFullButton = document.getElementById("header-search-full-icon");
+       headerSearchFullButton.addEventListener("click", function(event) {
+           event.stopPropagation(); // Stop the click event from propagating further
+   
+           if (!document.getElementById('search-full-tyre-by-sizeUL-head').innerHTML.trim()) {
+               document.getElementById('klever-loader2').style.display = 'flex';
+               fetch('<?php echo $this->getBaseUrl() . 'klever-vehicle/ajax/tyreSizes'; ?>', {
+                       headers: {
+                           contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                       },
+                       body: new URLSearchParams({
+                           form_key: hyva.getFormKey(),
+                           uenc: btoa(window.location.href)
+                       }),
+                       method: "POST",
+                       mode: "cors",
+                       credentials: "include",
+                   })
+                   .then(response => response.json())
+                   .then(data => {
+                       document.getElementById('search-full-tyre-by-sizeUL-head').innerHTML = data.response;
+                       // Event listener for selecting items in the list
+                       var dropdownList = document.getElementById('search-full-tyre-by-sizeUL-head');
+                       const listItemsHead = dropdownList.getElementsByTagName('li');
+                       for (let i = 0; i < listItemsHead.length; i++) {
+                           const listItem = listItemsHead[i];
+                           listItem.addEventListener('click', () => toggleSelectionHead(listItem));
+                       }
+                       document.getElementById('hklever-loader2').style.display = 'none';
+                   })
+                   .catch(error => {
+                       document.getElementById('klever-loader2').style.display = 'none';
+                       // Handle error here
+                   });
+           } else {
+               //console.log(" no ajax");
+           }
+           var tyreSizeFullSearch = document.getElementById("tyre-size-search-full-head");
+           if (tyreSizeFullSearch) tyreSizeFullSearch.classList.remove("hidden");
+           document.getElementById("tyre-size-search-full-input-head")?.focus();
+       });
+   
+       const tyreSizeSearchFullClose = document.getElementById("tyre-size-search-full-close");
+   
+       if(tyreSizeSearchFullClose){
+           tyreSizeSearchFullClose.addEventListener("click", function(event) {
+               var tyreSizeFullSearch = document.getElementById("tyre-size-search-full-head");
+               if (tyreSizeFullSearch) tyreSizeFullSearch.classList.add("hidden");
+           });
+       }
+       document.addEventListener("click", function(event) {
+           const tyreSizeFullSearch = document.getElementById("tyre-size-search-full-head");
+           const searchPopup = document.querySelector(".search-popup");
+   
+           if (searchPopup && tyreSizeFullSearch && !searchPopup.contains(event.target)) {
+               tyreSizeFullSearch.classList.add("hidden");
+           }
+       });
+   });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+<script>
+   function tyresizeModal() {
+       // Detect page context from URL
+       var path = window.location.pathname;
+       var btnVehicle = document.getElementById('tyre-search-btn-vehicle');
+       var btnSize = document.getElementById('tyre-search-btn-size');
+       var btnBrand = document.getElementById('tyre-search-btn-brand');
+       var btnEv = document.getElementById('tyre-search-btn-ev');
+       var btnContainer = document.getElementById('tyre-search-popup-buttons');
+
+       if (path.indexOf('car-wheels') !== -1) {
+           // Car Wheels: show only Vehicle + Size
+           window._tyreSearchContext = 'wheels';
+           btnVehicle.style.display = '';
+           btnSize.style.display = '';
+           btnBrand.style.display = 'none';
+           btnEv.style.display = 'none';
+           btnContainer.classList.remove('md:grid-cols-4');
+           btnContainer.classList.add('md:grid-cols-2');
+       } else if (path.indexOf('motorcycle-tyres') !== -1) {
+           // Motorbike: show only Size
+           window._tyreSearchContext = 'motorbike';
+           btnVehicle.style.display = 'none';
+           btnSize.style.display = '';
+           btnBrand.style.display = 'none';
+           btnEv.style.display = 'none';
+           btnContainer.classList.remove('md:grid-cols-4');
+           btnContainer.classList.add('md:grid-cols-2');
+       } else {
+           // Car Tires (default): show all 4
+           window._tyreSearchContext = 'tyres';
+           btnVehicle.style.display = '';
+           btnSize.style.display = '';
+           btnBrand.style.display = '';
+           btnEv.style.display = '';
+           btnContainer.classList.remove('md:grid-cols-2');
+           btnContainer.classList.add('md:grid-cols-4');
+       }
+
+       document.getElementById("tyre-size-search-full").classList.remove("translate-y-full");
+       document.getElementById("tyre-size-search-full-overlay").classList.remove("hidden");
+       document.body.classList.add("overflow-hidden");
+
+       /* Load tyre size list if not already loaded */
+       var sizeList = document.getElementById('search-full-tyre-by-sizeUL-head');
+       if (sizeList && !sizeList.innerHTML.trim()) {
+           document.getElementById('klever-loader2').style.display = 'flex';
+           fetch('<?php echo $this->getBaseUrl() . 'klever-vehicle/ajax/tyreSizes'; ?>', {
+               headers: { contentType: "application/x-www-form-urlencoded; charset=UTF-8" },
+               body: new URLSearchParams({ form_key: hyva.getFormKey(), uenc: btoa(window.location.href) }),
+               method: "POST", mode: "cors", credentials: "include"
+           })
+           .then(response => response.json())
+           .then(data => {
+               sizeList.innerHTML = data.response;
+               var listItems = sizeList.getElementsByTagName('li');
+               for (var i = 0; i < listItems.length; i++) {
+                   listItems[i].addEventListener('click', (function(item) { return function() { toggleSelectionHead(item); }; })(listItems[i]));
+               }
+               document.getElementById('klever-loader2').style.display = 'none';
+           })
+           .catch(function() { document.getElementById('klever-loader2').style.display = 'none'; });
+       }
+       document.getElementById("tyre-size-search-full-input-head")?.focus();
+   }
+   function tyresizeModalClose() {
+       document.getElementById("tyre-size-search-full").classList.add("translate-y-full");
+       document.getElementById("tyre-size-search-full-overlay").classList.add("hidden");
+       document.body.classList.remove("overflow-hidden");
+   }
+
+    // ========== ESC key handler ==========
+       document.addEventListener('keydown', function (event) {
+           if (event.key === 'Escape' || event.key === 'Esc') {
+               // check if popup is open
+   
+               const popup = document.getElementById('tyre-size-search-full');
+               const overlay = document.getElementById('tyre-size-search-full-overlay');
+               const isOpen = popup && !popup.classList.contains('translate-y-full');
+               if (isOpen) {
+                   if (typeof tyresizeModalClose === 'function') {
+                       tyresizeModalClose();
+                   } else {
+                       // fallback DOM close
+                       if (popup) popup.classList.add('translate-y-full');
+                       if (overlay) overlay.classList.add('hidden');
+                       document.body.classList.remove('overflow-hidden');
+                   }
+               }
+           }
+       }, { passive: true });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

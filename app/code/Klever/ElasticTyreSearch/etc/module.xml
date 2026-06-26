@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Klever_ElasticTyreSearch" setup_version="1.0.0">
+        <sequence>
+            <module name="Smile_ElasticsuiteCore"/>
+            <module name="Smile_ElasticsuiteCatalog"/>
+            <module name="MGS_Brand"/>
+            <module name="MGS_Blog"/>
+            <module name="Hdweb_Vehicles"/>
+            <module name="Magento_Cms"/>
+            <module name="Magento_Catalog"/>
+        </sequence>
+    </module>
+</config>

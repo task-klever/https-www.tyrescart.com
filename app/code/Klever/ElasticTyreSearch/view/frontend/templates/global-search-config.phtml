@@ -1,0 +1,10 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+?>
+<script>
+window.KleverGlobalSearch = {
+    searchUrl: '<?= $escaper->escapeJs($block->getUrl('elastyresearch/ajax/search')) ?>'
+};
+</script>
+<script type="text/javascript" src="<?= $escaper->escapeHtmlAttr($block->getViewFileUrl('Klever_ElasticTyreSearch::js/global-search.js')) ?>"></script>

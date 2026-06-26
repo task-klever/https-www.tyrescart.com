@@ -1,0 +1,49 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \Magento\Catalog\Block\Product\View */
+
+/** @var \WeltPixel\GA4\Helper\RedditPixelTracking $redditPixelHelper */
+$redditPixelHelper = $this->helper('WeltPixel\GA4\Helper\RedditPixelTracking');
+$cspNonceProvider = $redditPixelHelper->getCspNonceProvider();
+$eventConversionId = $redditPixelHelper->getEventConversionID();
+$product = $block->getProduct();
+?>
+<?php if ($product && $redditPixelHelper->isRedditPixelTrackingEnabled() && $redditPixelHelper->shouldRedditPixelEventBeTracked(\WeltPixel\GA4\Model\Config\Source\RedditPixel\TrackingEvents::EVENT_VIEW_CONTENT)) : ?>
+<script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+    if (window.ga4AllowServices) {
+        rdt('track', 'ViewContent', {
+            "products": [
+                {
+                    "id": "<?= /* @noEscape */ $redditPixelHelper->getRedditProductId($product) ?>",
+                    "name": "<?= /* @noEscape */ addslashes(str_replace('"','&quot;',html_entity_decode($product->getName() ?? ''))) ?>",
+                    "category": "<?= /* @noEscape */ addslashes(str_replace('"','&quot;',$redditPixelHelper->getContentCategory($product->getCategoryIds()))) ?>"
+                }
+            ],
+            "conversionId": "<?= /* @noEscape */ $eventConversionId ?>"
+        });
+    }
+</script>
+<?php endif; ?>
+
+
+<?php if ($product && $redditPixelHelper->isServerSideTrackingEnabled() && $redditPixelHelper->shouldRedditServerSideEventBeTracked(\WeltPixel\GA4\Model\Config\Source\RedditPixel\TrackingEvents::EVENT_VIEW_CONTENT)) : ?>
+    <script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        requirejs(['jquery'],
+            function  ($) {
+                $(document).ready(function() {
+                    var requestUrl = '<?php echo $block->escapeUrl($redditPixelHelper->getRedditSSTrackUrl()); ?>';
+                    $.post({
+                        url: requestUrl,
+                        global: false,
+                        data: {
+                            'eventId': '<?= /* @noEscape */ $eventConversionId ?>',
+                            'eventName': '<?= /* @noEscape */ \WeltPixel\GA4\Model\Config\Source\RedditPixel\TrackingEvents::EVENT_VIEW_CONTENT  ?>',
+                            'pageUrl': '<?= $block->escapeUrl($redditPixelHelper->getStoreCurrenUrl()) ?>',
+                            'productId': '<?= /* @noEscape */ $product->getId() ?>'
+                        }
+                    });
+                });
+            });
+    </script>
+<?php endif; ?>
+

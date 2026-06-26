@@ -1,0 +1,58 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Checkout\Model\Form\EntityField\AbstractEntityField;
+use Hyva\Checkout\ViewModel\Form\Field as FormFieldViewModel;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsSolid;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
+/** @var Template $block */
+
+/** @var HeroiconsSolid $heroiconsSolid */
+$heroiconsSolid = $viewModels->require(HeroiconsSolid::class);
+
+/** @var FormFieldViewModel $formFieldViewModel */
+$formFieldViewModel = $viewModels->require(FormFieldViewModel::class);
+
+/** @var AbstractEntityField $element */
+$element = $block->getData('element');
+?>
+<?php if ($element->hasTooltip() && $formFieldViewModel->designConfig()->showTooltipAsClassic()): ?>
+    <div
+        class="tooltip relative"
+        x-data="hyvaCheckoutFormElementTooltip"
+        x-bind="wrapper"
+    >
+        <button
+            type="button"
+            class="block hover:cursor-pointer"
+            aria-label="<?= $escaper->escapeHtmlAttr(__('More information')) ?>"
+            aria-describedby="<?= $escaper->escapeHtmlAttr($attributes['id'] ?? $element->getId()) ?>_tooltip"
+            x-bind="trigger"
+        >
+            <?= $heroiconsSolid->questionMarkCircleHtml('', 20, 20, ['aria-hidden' => 'true']) ?>
+        </button>
+
+        <div
+            id="<?= $escaper->escapeHtmlAttr($attributes['id'] ?? $element->getId()) ?>_tooltip"
+            role="tooltip"
+            class="absolute top-full -right-2.5 w-52 mt-3 px-3 py-2 bg-gray-800 text-white text-sm shadow-lg rounded-md"
+            x-show="visible"
+            x-cloak
+        >
+            <div class="absolute right-4 -top-3 h-3 w-3 bg-inherit rotate-45 transform origin-bottom-left"></div>
+            <?= $escaper->escapeHtml(__($element->getTooltip())) ?>
+        </div>
+    </div>
+<?php endif ?>

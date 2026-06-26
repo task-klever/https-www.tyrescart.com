@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Magento\CatalogSearch\Block\SearchResult\ListProduct" type="Hdweb\Tyrefinder\Block\Product\ListProduct" />
+	<preference for="Magento\Catalog\Block\Product\ListProduct" type="Hdweb\Tyrefinder\Block\Product\ListProduct" />
+    <preference for="Hyva\Theme\ViewModel\ProductListItem" type="Hdweb\Tyrefinder\ViewModel\ProductListItem" />
+    <type name="Magento\Checkout\Controller\Cart\Add">
+        <plugin name="hdweb_tyrefinder_add_to_cart" type="Hdweb\Tyrefinder\Plugin\AddToCartPlugin" sortOrder="10"/>
+    </type>
+</config>

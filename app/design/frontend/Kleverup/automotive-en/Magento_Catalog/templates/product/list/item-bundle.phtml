@@ -1,0 +1,965 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Hyva\Theme\ViewModel\HeroiconsSolid;
+use Hyva\Theme\ViewModel\BlockJsDependencies;
+use Hyva\Theme\ViewModel\ProductCompare;
+use Hyva\Theme\ViewModel\ProductListItem;
+use Hyva\Theme\ViewModel\ProductPage;
+use Hyva\Theme\ViewModel\Wishlist;
+use Magento\Catalog\Block\Product\AbstractProduct;
+use Magento\Catalog\Helper\Output as CatalogOutputHelper;
+use Magento\Catalog\ViewModel\Product\OptionsData as ProductOptionsData;
+use Magento\Framework\Escaper;
+use Hdweb\Tyrefinder\Helper\Productlisting as ListingHelper;
+use Hyva\Theme\ViewModel\ProductPrice;
+use Magento\Catalog\Pricing\Price\RegularPrice;
+use Magento\Catalog\Pricing\Price\FinalPrice;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundThis
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+// phpcs:disable Generic.Files.LineLength.TooLong
+// phpcs:disable Generic.WhiteSpace.ScopeIndent
+
+/** @var AbstractProduct $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var ProductPage $productViewModel */
+$productViewModel = $viewModels->require(ProductPage::class);
+
+/** @var ProductListItem $productListItemViewModel */
+$productListItemViewModel = $viewModels->require(ProductListItem::class);
+
+/** @var CatalogOutputHelper $catalogOutputHelper */
+$catalogOutputHelper = $this->helper(CatalogOutputHelper::class);
+
+/** @var ProductCompare $compareViewModel */
+$compareViewModel = $viewModels->require(ProductCompare::class);
+/** @var Wishlist $wishlistViewModel */
+$wishlistViewModel = $viewModels->require(Wishlist::class);
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+/** @var HeroiconsSolid $heroiconsSolid */
+$heroiconsSolid = $viewModels->require(HeroiconsSolid::class);
+
+$productOptionsViewmodel = $viewModels->require(ProductOptionsData::class);
+
+/** @var Magento\Catalog\Model\Product $product */
+$imageDisplayArea = $block->getData('image_display_area');
+$templateType = $block->getData('template_type');
+$viewMode = $block->getData('view_mode');
+$showDescription = $block->getData('show_description');
+
+$bundleItems = $block->getData('bundleItems');
+if (!$bundleItems) {
+    $bundleItems = [['frontProduct' => $block->getData('frontProduct'), 'rearProduct' => $block->getData('rearProduct')]];
+}
+foreach ($bundleItems as $_bundleIdx => $_bundleItem):
+    $frontProduct = $_bundleItem['frontProduct'];
+    $rearProduct = $_bundleItem['rearProduct'];
+    if (!$frontProduct || !$rearProduct) { continue; }
+$showAddToWishlist = $wishlistViewModel->isEnabled();
+$showAddToCompare = $compareViewModel->showInProductList();
+$viewIsGrid = $viewMode === 'grid';
+
+$hideDetails       = $block->getData('hide_details') ?: false;
+$hideRatingSummary = $block->getData('hide_rating_summary') ?: false;
+
+$imageCustomAttributes = $frontProduct->getData('image_custom_attributes')
+    ?? $block->getData('image_custom_attributes')
+    ?? [];
+
+
+// Ensure the required JS is rendered on the page
+$viewModels->require(BlockJsDependencies::class)->setBlockTemplateDependency($block, 'Magento_Catalog::product/list/js/price-box.phtml');
+
+
+// ---
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface');
+$currency = $storeManager->getStore()->getCurrentCurrencyCode();
+$listingHelper = $this->helper(ListingHelper::class);
+$mediaUrl = $objectManager->get('Magento\Store\Model\StoreManagerInterface')
+    ->getStore()
+    ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+
+//Front Product
+$frontProductId = $frontProduct->getId();
+$frontProductPartsCategory = '';
+if ($frontProduct->getPartsCategory()) {
+    $frontProductPartsCategory = $frontProduct->getAttributeText('parts_category');
+}
+$frontProductName = $catalogOutputHelper->productAttribute($frontProduct, $frontProduct->getName(), 'name');
+$frontProductBrand = $catalogOutputHelper->productAttribute($frontProduct, $frontProduct->getBrand(), 'brand');
+
+if ($frontProductBrand) {
+    $frontProductBrandDetails = $listingHelper->getBrandDetails($frontProductBrand);
+    if ($frontProductBrandDetails) {
+        $frontProductBrandImage = $listingHelper->getBrandImageUrl($frontProductBrandDetails);
+        $frontProduct_brand_title = $frontProductBrandDetails->getName();
+        $frontProductBrandUrl = $listingHelper->getBrandUrl($frontProductBrandDetails);
+    }else{
+        $selectedBrandInFrontProduct = $frontProduct->getAttributeText('brand');
+        $frontProductBrandUrl = $listingHelper->getNotCreatedBrandUrl($frontProductPartsCategory, $selectedBrandInFrontProduct);
+    }
+}
+
+
+
+$front_prod_qty =  $listingHelper->getProductAvailableQty($frontProduct->getSku());
+$frontStockQty = 0;
+if ($front_prod_qty >= 8) {
+    $frontStockQty = 8;
+} else {
+    $frontStockQty = $front_prod_qty;
+}
+
+$frontSet1price = $listingHelper->getSet1price($frontProduct);
+$frontSet2price = $listingHelper->getSet2price($frontProduct);
+$frontSet4price = $listingHelper->getSet4price($frontProduct);
+
+/** @var ProductPrice $productPriceViewModel */
+
+$productPriceViewModel = $viewModels->require(ProductPrice::class);
+$frontUnitRegularPrice = $productPriceViewModel->getPriceValue(RegularPrice::PRICE_CODE, $frontProduct);
+$frontUnitFinalPrice = $productPriceViewModel->getPriceValue(FinalPrice::PRICE_CODE, $frontProduct);
+$frontProductOfferRule = $listingHelper->isAnyRuleExist($frontProduct);
+$frontIsOfferProduct = 'No';
+$frontDiscountAmount = '';
+$frontDiscountQty = '';
+$front_banner_img_name = '';
+if (isset($frontProductOfferRule) && !empty($frontProductOfferRule) && $frontProductOfferRule['rule_id'] != '') {
+    if ($frontProductOfferRule['offer_price']) {
+        $frontIsOfferProduct = 'Yes';
+        $frontDiscountAmount = $frontProductOfferRule['discount_amount'];
+        $frontDiscountQty = $frontProductOfferRule['discount_qty_step'];
+        $rule=$objectManager->create('Magento\SalesRule\Model\Rule')->load($frontProductOfferRule['rule_id']);
+        $front_banner_img_name =  $rule->getRuleBanner();
+    }
+}
+
+$front_oem_tyres = $frontProduct->getResource()->getAttribute("oem_tyres")->getFrontend()->getValue($frontProduct);
+$frontOrigin = $frontProduct->getAttributeText('country');
+$front_tyre_type = $frontProduct->getAttributeText('tyre_type');
+$frontYear = $frontProduct->getAttributeText('year');
+$frontPriceIncludedText = $frontProduct->getAttributeText('price_included_text');
+$frontRunflat = $frontProduct->getAttributeText('runflat');
+
+$frontWidth = $frontProduct->getAttributeText('width');
+$frontHeight = $frontProduct->getAttributeText('height');
+$frontRim = $frontProduct->getAttributeText('rim');
+$frontEV = $frontProduct->getAttributeText('ev');
+$frontTyreSize = $frontProduct->getAttributeText('tyre_size');
+$frontPattern = '';
+if ($frontProduct->getPattern()) {
+    $frontPattern = $frontProduct->getAttributeText('pattern');
+}
+$frontOemMarking = '';
+if ($frontProduct->getOemMarking()) {
+    $frontOemMarking = $frontProduct->getAttributeText('oem_marking');
+}
+$frontLoadIndex = '';
+if ($frontProduct->getLoadIndex()) {
+    $frontLoadIndex = $frontProduct->getLoadIndex();
+}
+$frontWarranty = '';
+if ($frontProduct->getWarrantyPeriod()) {
+    $frontWarranty = $frontProduct->getAttributeText('warranty_period');
+}
+//End Front Product
+
+
+//Rear Product
+$rearProductId = $rearProduct->getId();
+$rearProductPartsCategory = '';
+if ($rearProduct->getPartsCategory()) {
+    $rearProductPartsCategory = $rearProduct->getAttributeText('parts_category');
+}
+$rearProductName = $catalogOutputHelper->productAttribute($rearProduct, $rearProduct->getName(), 'name');
+$rearProductBrand = $catalogOutputHelper->productAttribute($rearProduct, $rearProduct->getBrand(), 'brand');
+
+if ($rearProductBrand) {
+    $rearProductBrandDetails = $listingHelper->getBrandDetails($rearProductBrand);
+    if ($rearProductBrandDetails) {
+        $rearProductBrandImage = $listingHelper->getBrandImageUrl($rearProductBrandDetails);
+        $rearProduct_brand_title = $rearProductBrandDetails->getName();
+        $rearProductBrandUrl = $listingHelper->getBrandUrl($rearProductBrandDetails);
+    }else{
+        $selectedBrandInRearProduct = $rearProduct->getAttributeText('brand');
+        $rearProductBrandUrl = $listingHelper->getNotCreatedBrandUrl($rearProductPartsCategory, $selectedBrandInRearProduct);
+    }
+}
+
+$rear_prod_qty =  $listingHelper->getProductAvailableQty($rearProduct->getSku());
+$rearStockQty = 0;
+if ($rear_prod_qty >= 8) {
+    $rearStockQty = 8;
+} else {
+    $rearStockQty = $rear_prod_qty;
+}
+
+$rearSet1price = $listingHelper->getSet1price($rearProduct);
+$rearSet2price = $listingHelper->getSet2price($rearProduct);
+$rearSet4price = $listingHelper->getSet4price($rearProduct);
+
+$rearUnitRegularPrice = $productPriceViewModel->getPriceValue(RegularPrice::PRICE_CODE, $rearProduct);
+$rearUnitFinalPrice = $productPriceViewModel->getPriceValue(FinalPrice::PRICE_CODE, $rearProduct);
+$rearProductOfferRule = $listingHelper->isAnyRuleExist($rearProduct);
+$rearIsOfferProduct = 'No';
+$rearDiscountAmount = '';
+$rearDiscountQty = '';
+$rear_banner_img_name = '';
+if (isset($rearProductOfferRule) && !empty($rearProductOfferRule) && $rearProductOfferRule['rule_id'] != '') {
+    if ($rearProductOfferRule['offer_price']) {
+        $rearIsOfferProduct = 'Yes';
+        $rearDiscountAmount = $rearProductOfferRule['discount_amount'];
+        $rearDiscountQty = $rearProductOfferRule['discount_qty_step'];
+         $rule=$objectManager->create('Magento\SalesRule\Model\Rule')->load($rearProductOfferRule['rule_id']);
+        $rear_banner_img_name =  $rule->getRuleBanner();
+    }
+}
+
+$rear_oem_tyres = $rearProduct->getResource()->getAttribute("oem_tyres")->getFrontend()->getValue($rearProduct);
+$rearOrigin = $rearProduct->getAttributeText('country');
+$rear_tyre_type = $rearProduct->getAttributeText('tyre_type');
+$rearYear = $rearProduct->getAttributeText('year');
+$rearPriceIncludedText = $rearProduct->getAttributeText('price_included_text');
+$rearRunflat = $rearProduct->getAttributeText('runflat');
+
+$rearWidth = $rearProduct->getAttributeText('width');
+$rearHeight = $rearProduct->getAttributeText('height');
+$rearRim = $rearProduct->getAttributeText('rim');
+$rearEV = $rearProduct->getAttributeText('ev');
+$rearTyreSize = $rearProduct->getAttributeText('tyre_size');
+$rearPattern = '';
+if ($rearProduct->getPattern()) {
+    $rearPattern = $rearProduct->getAttributeText('pattern');
+}
+$rearOemMarking = '';
+if ($rearProduct->getOemMarking()) {
+    $rearOemMarking = $rearProduct->getAttributeText('oem_marking');
+}
+$rearLoadIndex = '';
+if ($rearProduct->getLoadIndex()) {
+    $rearLoadIndex = $rearProduct->getLoadIndex();
+}
+$rearWarranty = '';
+if ($rearProduct->getWarrantyPeriod()) {
+    $rearWarranty = $rearProduct->getAttributeText('warranty_period');
+}
+//End Rear Product
+
+
+
+$front_price = "";
+$rear_price = "";
+$bundleset4price = "";
+$front_price = preg_replace('/[^\\d.]+/', '', $frontSet2price);
+$rear_price = preg_replace('/[^\\d.]+/', '', $rearSet2price);
+$bundleset4price = $front_price + $rear_price;
+
+$_suggestedSizeHelper = $this->helper('Hdweb\Tyrefinder\Helper\Data');
+$frontHasSuggestedSize = $_suggestedSizeHelper->hasSuggestedSize($frontWidth, $frontHeight, $frontRim);
+$rearHasSuggestedSize = $_suggestedSizeHelper->hasSuggestedSize($rearWidth, $rearHeight, $rearRim);
+?>
+
+<li class="bundle-list flex flex-col">
+<?php if ($frontProduct->isSaleable()): ?>
+<form method="post"
+    action="<?= $escaper->escapeUrl($productViewModel->getAddToCartUrl($frontProduct, ['useUencPlaceholder' => true])) ?>"
+    class="item product product-item product_addtocart_form grow flex flex-col w-full"
+    <?php if ($frontProduct->getOptions()): ?> enctype="multipart/form-data" <?php endif; ?>
+    <?php foreach ($block->getData('product_data_attributes') as $attribute => $include): ?> <?php if ($include): ?>
+    <?= $escaper->escapeHtml(sprintf('data-%s', $attribute)); ?>="<?= $escaper->escapeHtmlAttr($frontProduct->getData($attribute)); ?>"
+    <?php endif; ?> <?php endforeach; ?>>
+    <?= /** @noEscape */ $block->getBlockHtml('formkey') ?>
+    <input type="hidden" name="product" value="<?= (int)$frontProductId ?>" />
+    <input type="hidden" name="bundleproduct" value="<?php echo  $rearProduct->getId(); ?>">
+<?php else: ?>
+<div class="item product product-item flex flex-col w-full"
+    <?php foreach ($block->getData('product_data_attributes') as $attribute => $include): ?> <?php if ($include): ?>
+    <?= $escaper->escapeHtml(sprintf('data-%s', $attribute)); ?>="<?= $escaper->escapeHtmlAttr($frontProduct->getData($attribute)); ?>"
+    <?php endif; ?> <?php endforeach; ?>>
+<?php endif; ?>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-0 items-end">
+
+        <!-- ========== FRONT PRODUCT (same structure as item.phtml) ========== -->
+        <div class="bundle-front-card h-full rounded-tl-[10px] rounded-tr-[10px]  md:rounded-tr-[0px] border border-[#eee] flex-col md:flex-row flex-wrap list-view overflow-hidden rounded-br-none border-r-1 md:border-r-0">
+            <?php if (isset($frontProductOfferRule) && !empty($frontProductOfferRule) && $frontProductOfferRule['rule_id'] != '') : ?>
+                <?php if (isset($front_banner_img_name) && !empty($front_banner_img_name)) { ?>
+                    <div class="product-offer-img w-full overflow-hidden w-full" data-rule-id="<?php echo $frontProductOfferRule['rule_id']; ?>">
+                        <img class="w-full h-auto" src="<?php echo $mediaUrl . 'salesrule/offerimage/' . $front_banner_img_name; ?>" alt="Offer Image">
+                    </div>
+                <?php } else { ?>
+                    <div class="product-offer-img w-full overflow-hidden relative" data-rule-id="<?php echo $frontProductOfferRule['rule_id']; ?>">
+                        <img class="w-full h-auto" src="<?php echo $this->getViewFileUrl('images/pages/green-color-bg.webp'); ?>" alt="">
+                        <span class="position-text text-[1.1rem] text-white uppercase font-secondary font-bold leading-none absolute left-1/2 top-1/2 w-full h-full inline-block text-center content-center -translate-x-1/2 -translate-y-1/2 transform"><?php echo $frontProductOfferRule['rule_name']; ?></span>
+                    </div>
+                <?php } ?>
+            <?php endif; ?>
+            <div class="product-wrap flex flex-wrap bg-white rounded-[10px] overflow-hidden">
+                <div class="product-left w-2/5 md:w-full relative flex flex-col">
+                    <?php if($frontWarranty != ''): ?>
+                        <div class="hidden md:block warrantry-text [direction:ltr] absolute bottom-0 px-2 left-0 bg-[#ffffffe6] z-[4] rounded-tr-[10px]">
+                            <span class="uppercase text-black text-xs font-medium"><?php echo $frontWarranty; ?></span>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($frontYear) : ?>
+                      <div class="hidden md:block absolute bottom-[6px] right-0 z-[4] text-black text-xs font-medium px-2">
+                        <span class="uppercase text-black text-xs font-medium"><?php echo $frontYear; ?></span>
+                      </div>
+                    <?php endif; ?>
+                    <div class="hidden md:block car-brands-img absolute right-0 top-[40%] -translate-y-1/2 z-[8] px-2 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#d8e9f3] [&::-webkit-scrollbar-thumb]:bg-theme-blue dark:[&::-webkit-scrollbar-track]:bg-[#d8e9f3] dark:[&::-webkit-scrollbar-thumb]:bg-theme-blue h-[130px] overflow-x-hidden content-center">
+                        <?php if ($front_oem_tyres) : ?>
+                                <?php $front_oem_tyresArray = explode(', ', $front_oem_tyres); ?>
+                                <?php foreach ($front_oem_tyresArray as $front_oem_tyresData) : ?>
+                                    <?php
+                                        $front_oem_tyresData = str_replace(" ", "-", strtolower($front_oem_tyresData));
+                                        $oemTyresImg = $mediaUrl . 'cars-logo/' . $front_oem_tyresData . '.png';
+                                    ?>
+                                    <img src="<?php echo $oemTyresImg; ?>" title="<?php echo $front_oem_tyresData; ?>" alt="<?php echo $front_oem_tyresData; ?>" class="car-brand-img max-h-3 sm:max-h-7 max-w-5 sm:max-w-[23px] lazy mt-1">
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                    </div>
+                    <a href="<?= $escaper->escapeUrl($frontProduct->getProductUrl()) ?>"
+                        title="<?= $escaper->escapeHtmlAttr($frontProduct->getName()) ?>"
+                        class="product photo product-item-photo relative block overflow-hidden mx-auto h-full content-center  tyres-image mb-1 md:mb-0 md:h-[11rem] gride-image"
+                        tabindex="-1">
+                        <?= $block->getImage($frontProduct, $imageDisplayArea)
+                            ->setTemplate('Magento_Catalog::product/list/image.phtml')
+                            ->setData('custom_attributes', $imageCustomAttributes)
+                            ->setProductId($frontProductId)
+                            ->toHtml(); ?>
+                    </a>
+                    <div class="px-1 md:flex md:hidden items-center justify-center relative -top-[0.4rem]">
+                        <div class="custom-sroll-height flex items-center justify-center gap-x-1 lg:gap-x-1  overflow-x-auto overflow-y-hidden flex items-center pl-0 ml-0 [scroll-padding-left:0] snap-x snap-mandatory [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#d8e9f3] [&::-webkit-scrollbar-thumb]:bg-theme-blue dark:[&::-webkit-scrollbar-track]:bg-[#d8e9f3] dark:[&::-webkit-scrollbar-thumb]:bg-theme-blue">
+                           <?php if ($front_oem_tyres) : ?>
+                                <?php $front_oem_tyresArray = explode(', ', $front_oem_tyres); ?>
+                                <?php foreach ($front_oem_tyresArray as $front_oem_tyresData) : ?>
+                                    <?php
+                                        $front_oem_tyresData = str_replace(" ", "-", strtolower($front_oem_tyresData));
+                                        $oemTyresImg = $mediaUrl . 'cars-logo/' . $front_oem_tyresData . '.png';
+                                    ?>
+                                    <img src="<?php echo $oemTyresImg; ?>" title="<?php echo $front_oem_tyresData; ?>" alt="<?php echo $front_oem_tyresData; ?>" class="max-h-4">
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                     <div class="car-logo px-2 pb-2 flex items-center justify-center h-auto md:h-[22px] relative mt-auto md:hidden">
+                        <?php if ($front_tyre_type == 'Car') : ?>
+                            <?php
+                            ?>
+                            <div class="mx-auto" x-data="buyTyreSearchModal()">
+                                <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $frontWidth; ?>','<?php echo $frontHeight; ?>','<?php echo $frontRim; ?>','<?php echo $frontProduct->getName(); ?>', <?= $frontHasSuggestedSize ? 'true' : 'false' ?>)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 47.747 16.977" class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]">
+                                        <g id="Group_243" data-name="Group 243" transform="translate(0)">
+                                            <path id="Path_411" data-name="Path 411" d="M-122.615,146.25a14.294,14.294,0,0,0,.9,1.807,1.609,1.609,0,0,0,.935.518c1.073.245,2.161.424,3.313.642a4.4,4.4,0,0,1,2.574-3.96,4.107,4.107,0,0,1,2.686-.294,4.432,4.432,0,0,1,3.413,4.935l21.435.432a4.315,4.315,0,0,1,1.162-4.224,4.061,4.061,0,0,1,3.118-1.236,4.36,4.36,0,0,1,4.163,5.139c.687-.113,1.356-.194,2.011-.338,1.472-.323,1.693-.616,1.987-2.158a5.746,5.746,0,0,0-.342-2.547,2.327,2.327,0,0,0-1.6-1.7,39.349,39.349,0,0,0-7.593-2.017,16.658,16.658,0,0,1-3.88-1.389c-1.793-.78-3.566-1.607-5.351-2.407a21.266,21.266,0,0,0-9.744-1.617,33.618,33.618,0,0,0-11.928,2.885,20.127,20.127,0,0,1-5.156,1.381c-1.089.153-1.255.357-1.256,1.444,0,.358-.012.716,0,1.073a2.047,2.047,0,0,1-.454,1.677,2.842,2.842,0,0,0-.391.931Zm30.034-4.853a.274.274,0,0,1-.12.014c-2.485-.069-4.97-.144-7.455-.2-.27-.007-.33-.139-.381-.359-.23-.982-.476-1.96-.714-2.939-.071-.291-.135-.584-.222-.962,3.475.284,6.78.76,9.465,2.868Zm-9.58-.407a.745.745,0,0,1-.153.049c-2.3-.068-4.594-.135-6.89-.218a.451.451,0,0,1-.317-.243,1.572,1.572,0,0,1,.174-1.881,8.174,8.174,0,0,0,.455-.7.938.938,0,0,1,.418-.325,17.885,17.885,0,0,1,5.381-.687.411.411,0,0,1,.315.232C-102.558,138.468-102.363,139.723-102.161,140.989Zm-11.361-.195a1.036,1.036,0,0,1,.612-1.247c.563-.291,1.137-.561,1.714-.823.506-.23,1.022-.436,1.534-.653-.557.9-1.154,1.725-1.762,2.543a.451.451,0,0,1-.3.172C-112.325,140.8-112.928,140.794-113.522,140.794Z" transform="translate(122.615 -135.806)" />
+                                            <path id="Path_412" data-name="Path 412" d="M512.565,314.14a3.6,3.6,0,1,0,3.6,3.624A3.629,3.629,0,0,0,512.565,314.14Zm.312,1.314,1.1.473c-.269.253-.451.444-.653.61-.235.192-.407.1-.443-.176A8.107,8.107,0,0,1,512.877,315.454Zm0,4.553c0-.385-.021-.647.006-.906s.2-.346.412-.185.426.372.718.632Zm-2.582-2.585.5-1.186c.23.3.4.5.543.717.06.089.121.236.086.313a.392.392,0,0,1-.29.149C510.886,317.437,510.64,317.422,510.295,317.422Zm.463,1.772-.445-1.135c.352,0,.615-.021.874.005.3.03.368.2.177.436C511.2,318.705,511.02,318.9,510.757,319.194Zm4.1-1.678-1.151-.247c.2-.267.4-.534.6-.8.012-.015.057,0,.144-.009Zm-.416,1.52-.189.072c-.151-.194-.314-.38-.449-.584a.47.47,0,0,1-.082-.321c.014-.063.158-.13.248-.137.259-.018.52-.006.861-.006Zm-2.194-3.58a7.38,7.38,0,0,1-.008.906c-.039.276-.2.369-.445.165-.2-.165-.407-.324-.714-.568Zm-1.139,4.083c.3-.255.48-.424.679-.567a.428.428,0,0,1,.309-.082c.067.017.138.154.145.242.019.255.007.513.007.871Z" transform="translate(-503.07 -304.356)" />
+                                            <path id="Path_413" data-name="Path 413" d="M-32.965,314.14a3.616,3.616,0,0,0-3.619,3.614,3.631,3.631,0,0,0,3.609,3.579,3.607,3.607,0,0,0,3.585-3.545A3.6,3.6,0,0,0-32.965,314.14Zm.3,1.326,1.144.474c-.3.256-.5.447-.72.612s-.389.1-.418-.169S-32.665,315.835-32.665,315.466Zm1.5.812.453,1.144c-.355,0-.617.017-.876,0-.306-.025-.363-.2-.185-.434C-31.619,316.775-31.436,316.585-31.17,316.278Zm.472,1.782-.484,1.09c-.26-.282-.452-.465-.612-.673s-.1-.386.177-.413S-31.093,318.06-30.7,318.06Zm-2.6-2.6c0,.355.012.614-.007.871-.006.088-.074.225-.14.244a.419.419,0,0,1-.314-.071c-.208-.15-.4-.328-.682-.57Zm-1.483.8c.25.3.428.492.58.7a.415.415,0,0,1,.067.313c-.019.066-.156.131-.244.138-.258.018-.518.007-.863.007Zm.011,2.963-.474-1.164c.356,0,.619-.018.878,0,.287.025.382.18.194.428C-34.341,318.712-34.523,318.919-34.774,319.224Zm2.107.794c0-.357-.014-.6.007-.846a.379.379,0,0,1,.15-.279.394.394,0,0,1,.308.076c.213.145.409.314.708.55Zm-1.762-.474c.29-.253.468-.426.666-.572a.429.429,0,0,1,.312-.081c.065.016.136.154.142.242.019.258.007.519.007.871Z" transform="translate(72.415 -304.356)" />
+                                        </g>
+                                    </svg>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($front_tyre_type == 'SUV') : ?>
+                            <?php
+                            ?>
+                            <div class="mx-auto" x-data="buyTyreSearchModal()">
+                                <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $frontWidth; ?>','<?php echo $frontHeight; ?>','<?php echo $frontRim; ?>','<?php echo $frontProduct->getName(); ?>', <?= $frontHasSuggestedSize ? 'true' : 'false' ?>)">
+                                    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" width="47.747" height="16.977" viewBox="0 0 321 138" class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]">
+                                        <title>suv-svg</title>
+                                        <style>.s0{fill:rgb(0,0,0);}</style>
+                                        <g id="Layer"><g id="Layer"><path id="Layer" fill-rule="evenodd" class="s0" d="m16.1 14.5c3.2-7.4 10.4-12.3 18.3-12.7 58.5-2.9 107.2-1.9 148.7 3.2 3.6 0.4 7 1.8 9.9 4l21 16.3c17.7 13.9 44.6 0.3 90.8 21 15.8 7.2 22.2 39.4 9.1 54.9-3.9 4.7-9 7.1-14.9 7.2 0.1-0.8 0.1-1.6 0.1-2.4 0-25.1-20.4-45.5-45.4-45.5-25.1 0-45.5 20.4-45.5 45.5 0 0.8 0 1.6 0.1 2.4h-89.9c0.1-0.8 0.1-1.6 0.1-2.4 0-25.1-20.4-45.5-45.5-45.5-25.1 0-45.5 20.4-45.5 45.5 0 0.8 0 1.6 0.1 2.4h-1.7c-13.8 0-25.1-11.3-25.1-25.6-0.2-9.6 0.9-35.3 15.3-68.3zm135.8 33.1h49.7c1.3 0 2.7-0.5 3.6-1.5l6.3-6.3c-5.1-2.9-5.8-4.1-26.9-20.2-0.9-0.8-2-1.2-3.2-1.3-9.4-1.1-19.3-2.1-29.5-2.8zm-53-12.2c2.8 2.3-0.3-0.4 10.8 10.7 0.9 1 2.3 1.5 3.6 1.5h25.3v-32.9c-12.6-0.7-25.8-1.1-39.7-1.1zm-13.4-4.3v-17.5c-16 0.1-32.8 0.6-50.6 1.5-2.9 0.2-5.5 2-6.7 4.7-1.7 3.9-3.2 7.7-4.5 11.3z"/></g><path id="Layer" class="s0" d="m73 138.1c-17.8 0-32.1-14.3-32.1-32.1 0-17.8 14.3-32.1 32.1-32.1 17.8 0 32.1 14.3 32.1 32.1 0 17.8-14.3 32.1-32.1 32.1z"/><path id="Layer" class="s0" d="m221.5 106c0 17.7 14.4 32.1 32.1 32.1 17.7 0 32.1-14.4 32.1-32.1 0-17.7-14.4-32.1-32.1-32.1-17.7-0.1-32.1 14.4-32.1 32.1z"/></g>
+                                    </svg>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($front_tyre_type == 'Truck Van') : ?>
+                            <?php
+                            ?>
+                            <div class="mx-auto" x-data="buyTyreSearchModal()">
+                                <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $frontWidth; ?>','<?php echo $frontHeight; ?>','<?php echo $frontRim; ?>','<?php echo $frontProduct->getName(); ?>', <?= $frontHasSuggestedSize ? 'true' : 'false' ?>)">
+                                    <svg class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]" fill="#000000" version="1.1" xmlns="http://www.w3.org/2000/svg" width="100" height="80" viewBox="0 0 612 612" xml:space="preserve">
+                                        <g><path d="M612,327.56v-21.606c0-10.533-4.213-20.628-11.701-28.037L484.107,162.958c-7.384-7.306-17.352-11.403-27.739-11.403h-58.622v-21.988c0-16.336-13.243-29.58-29.58-29.58H29.58C13.243,99.987,0,113.23,0,129.567V327.56H612z M432.551,190.303c0-2.563,2.071-4.634,4.635-4.634h21.396c1.184,0,2.366,0.494,3.253,1.282l91.006,86.865c3.057,2.86,0.986,7.987-3.154,7.987h-112.5c-2.563,0-4.635-2.07-4.635-4.634V190.303z M612,343.903v65.486c0,16.336-13.243,29.578-29.579,29.578h-31.65c-5.719-39.242-39.539-69.412-80.357-69.412c-40.721,0-74.54,30.17-80.259,69.412h-160.42c-5.718-39.242-39.538-69.412-80.259-69.412c-40.721,0-74.541,30.17-80.259,69.412H29.58C13.243,438.968,0,425.726,0,409.39v-65.486H612z M470.456,389.313c-33.883,0-61.351,27.467-61.351,61.35s27.469,61.35,61.351,61.35s61.35-27.467,61.35-61.35S504.339,389.313,470.456,389.313z M470.456,481.339c-16.941,0-30.675-13.734-30.675-30.676s13.732-30.674,30.675-30.674c16.941,0,30.676,13.732,30.676,30.674S487.397,481.339,470.456,481.339z M149.464,389.313c-33.883,0-61.35,27.467-61.35,61.35s27.468,61.35,61.35,61.35s61.35-27.467,61.35-61.35S183.346,389.313,149.464,389.313z M149.464,481.339c-16.941,0-30.676-13.734-30.676-30.676s13.734-30.674,30.676-30.674c16.941,0,30.675,13.732,30.675,30.674S166.405,481.339,149.464,481.339z"/></g>
+                                    </svg>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <?php if($frontWarranty != ''): ?>
+                        <div class="warrantry-text [direction:ltr] relative mt-auto flex items-center border-t border-[#eee] justify-center bottom-0  h-[2rem] md:hidden">
+                            <span class="uppercase text-black font-medium block relative text-xs"><?php echo $frontWarranty; ?></span>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($showAddToWishlist): ?>
+                        <div class="hidden wishlist-btn group absolute bottom-[6.3rem] md:bottom-[8rem] absolute w-6 lg:w-9 bg-theme-yellow rounded-tl-[30px] rounded-bl-[30px] right-0 hover:bg-theme-blue transition-all duration-300 ease-in-out">
+                            <?= $block->getChildBlock('wishlist_bundle')->setData('product', $frontProduct)->toHtml() ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($showAddToCompare): ?>
+                        <div class="hidden compare-btn group absolute bottom-[9rem] md:bottom-[11rem] absolute w-6 lg:w-9 bg-theme-yellow rounded-tl-[30px] rounded-bl-[30px] right-0 hover:bg-theme-blue transition-all duration-300 ease-in-out">
+                            <button x-data="initCompareOnProductList()" x-defer="intersect"
+                                @click.prevent="addToCompare(<?= (int)$frontProductId ?>)"
+                                aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Compare') . ' ' . $frontProductName) ?>"
+                                type="button"
+                                class="rounded-full w-6 h-5 lg:w-9 lg:h-8 bg-gray-200 p-0 border-0 inline-flex shrink-0 items-center justify-center bg-theme-yellow group-hover:bg-theme-blue transition-all duration-300 ease-in-out"
+                                data-addto="compare">
+                                <?= $heroicons->scaleHtml("w-4 h-4 lg:w-5 lg:h-5 group-hover:text-white text-black transition-all duration-300 ease-in-out", 25, 25, ['aria-hidden' => 'true']) ?>
+                            </button>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($addToBlock = $block->getChildBlock('addto')): ?>
+                        <?= $addToBlock->setProduct($frontProduct)->getChildHtml() ?>
+                    <?php endif; ?>
+                </div>
+                <div class="product-right border-t-none md:border-t border-[#eee] flex w-3/5 md:w-full border-l md:border-l-0">
+                    <div class="product-info relative flex flex-col grow w-full md:w-4/6">
+                        <div class="item-info">
+                            <div class="grideproduct-name md:flex md:flex-col">
+                                <div class="product-name-brand flex gap-0 md:gap-1 md:gap-3 px-2 sm:px-3 pt-1 pb-0 md:pb-1 items-center flex-col md:flex-row">
+                                    <div class="product-brand w-full md:w-1/2">
+                                     <div class="w-max flex items-center h-[30px] md:h-auto my-1 md:my-0">
+                                        <?php if ($frontProductBrand) : ?>
+                                            <?php if ($frontProductBrandDetails) : ?>
+                                                    <a class="inline-block font-medium text-[0.9rem]" href="<?php echo $frontProductBrandUrl; ?>">
+                                                        <?php if ($frontProductBrandImage) : ?>
+                                                            <img loading="lazy" class="h-auto w-auto object-contain max-w-[110px] md:max-w-[120px]" src="<?php echo $frontProductBrandImage; ?>" alt="<?php echo __($frontProduct_brand_title); ?>" title="<?php echo __($frontProduct_brand_title); ?>" />
+                                                        <?php else: ?>
+                                                            <span><?php echo __($frontProduct_brand_title); ?></span>
+                                                        <?php endif; ?>
+                                                    </a>
+                                            <?php else: ?>
+                                                <?php if (isset($selectedBrandInFrontProduct)) : ?>
+                                                    <div class="mt-2 mb-1 items-center justify-center text-primary font-semibold text-lg text-center flex">
+                                                        <a href="<?php echo $frontProductBrandUrl; ?>">
+                                                            <span><?php echo __($selectedBrandInFrontProduct); ?></span>
+                                                        </a>
+                                                    </div>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    </div>
+                                    </div>
+                                    <div class="product-name w-full md:w-1/2">
+                                        <div class="product-name border-border-color [display:-webkit-box] [-webkit-line-clamp:1] [-webkit-box-orient:vertical] overflow-hidden flex text-primary font-semibold text-[0.9rem] h-auto rounded-tr-xl sm:bg-white">
+                                           <a class="product-item-link text-theme-dark hover:text-theme-blue transition-all duration-300 ease-in-out [direction:ltr]"
+                                        href="<?= $escaper->escapeUrl($frontProduct->getProductUrl()) ?>"
+                                        title="<?php echo $frontPattern . ' ' . $frontOemMarking; ?>"
+                                        :id="`slide-desc-<?= $escaper->escapeHtmlAttr($frontProduct->getId()) ?>-${$id('slider-id')}`">
+                                        <?php echo $frontPattern . ' ' . $frontOemMarking; ?>
+                                    </a>
+                                        </div>
+                                        <div class="flex flex-wrap md:flex-nowrap gap-x-[5px] items-center md:h-auto mb-0 md:mb-0.5">
+                                        <?php if($frontEV): ?>
+                                        <img src="<?php echo $mediaUrl.'klever/icons/ev-icon.png'; ?>" title="<?php echo __('EV Compatible'); ?>" alt="<?php echo __('EV Compatible'); ?>" class="lazy w-auto max-h-4 2xl:max-h-6">
+                                    <?php endif; ?>
+                                    <?php if($frontTyreSize): ?>
+                                        <p class="tyre-size whitespace-nowrap w-auto max-w-full sm:text-left mr-1 md:mr-0 text-[0.9rem] [direction:ltr]"><?php echo $frontTyreSize." ".$frontLoadIndex; ?></p>
+                                    <?php endif; ?>
+                                    <div class="product-year md:hidden">
+                                        <?php if ($frontYear) : ?>
+                                            <span class="block text-sm"><?php echo $frontYear; ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="year-run flex items-center md:hidden">
+                                        <div class="flex mr-1 min-h-auto md:min-h-[22px] lg:min-h-[24px]">
+                                            <?php if ($frontOrigin) : ?>
+                                                <span class="mr-1 block text-xs font-semibold"><?php echo __($frontOrigin); ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <?php if ($frontRunflat) : ?>
+                                            <span class="leading-tight">
+                                                <img class="max-w-[58px]" src="<?php echo $mediaUrl . 'klever/icons/run-flat.svg'; ?>" alt="Run Flat" />
+                                            </span>
+                                        <?php endif; ?>
+                                    </div> 
+                                    </div>
+                                    </div>
+                                </div>
+                                <div class="car-logo px-2 sm:px-3 py-2 border-t border-b border-[#eee] min-h-auto md:min-h-[33px] flex items-center justify-between hidden md:flex">
+                        <?php if ($front_tyre_type == 'Car') : ?>
+                            <?php
+                            ?>
+                            <div class="mr-auto" x-data="buyTyreSearchModal()">
+                                <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $frontWidth; ?>','<?php echo $frontHeight; ?>','<?php echo $frontRim; ?>','<?php echo $frontProduct->getName(); ?>', <?= $frontHasSuggestedSize ? 'true' : 'false' ?>)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 47.747 16.977" class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]">
+                                        <g id="Group_243" data-name="Group 243" transform="translate(0)">
+                                            <path id="Path_411" data-name="Path 411" d="M-122.615,146.25a14.294,14.294,0,0,0,.9,1.807,1.609,1.609,0,0,0,.935.518c1.073.245,2.161.424,3.313.642a4.4,4.4,0,0,1,2.574-3.96,4.107,4.107,0,0,1,2.686-.294,4.432,4.432,0,0,1,3.413,4.935l21.435.432a4.315,4.315,0,0,1,1.162-4.224,4.061,4.061,0,0,1,3.118-1.236,4.36,4.36,0,0,1,4.163,5.139c.687-.113,1.356-.194,2.011-.338,1.472-.323,1.693-.616,1.987-2.158a5.746,5.746,0,0,0-.342-2.547,2.327,2.327,0,0,0-1.6-1.7,39.349,39.349,0,0,0-7.593-2.017,16.658,16.658,0,0,1-3.88-1.389c-1.793-.78-3.566-1.607-5.351-2.407a21.266,21.266,0,0,0-9.744-1.617,33.618,33.618,0,0,0-11.928,2.885,20.127,20.127,0,0,1-5.156,1.381c-1.089.153-1.255.357-1.256,1.444,0,.358-.012.716,0,1.073a2.047,2.047,0,0,1-.454,1.677,2.842,2.842,0,0,0-.391.931Zm30.034-4.853a.274.274,0,0,1-.12.014c-2.485-.069-4.97-.144-7.455-.2-.27-.007-.33-.139-.381-.359-.23-.982-.476-1.96-.714-2.939-.071-.291-.135-.584-.222-.962,3.475.284,6.78.76,9.465,2.868Zm-9.58-.407a.745.745,0,0,1-.153.049c-2.3-.068-4.594-.135-6.89-.218a.451.451,0,0,1-.317-.243,1.572,1.572,0,0,1,.174-1.881,8.174,8.174,0,0,0,.455-.7.938.938,0,0,1,.418-.325,17.885,17.885,0,0,1,5.381-.687.411.411,0,0,1,.315.232C-102.558,138.468-102.363,139.723-102.161,140.989Zm-11.361-.195a1.036,1.036,0,0,1,.612-1.247c.563-.291,1.137-.561,1.714-.823.506-.23,1.022-.436,1.534-.653-.557.9-1.154,1.725-1.762,2.543a.451.451,0,0,1-.3.172C-112.325,140.8-112.928,140.794-113.522,140.794Z" transform="translate(122.615 -135.806)" />
+                                            <path id="Path_412" data-name="Path 412" d="M512.565,314.14a3.6,3.6,0,1,0,3.6,3.624A3.629,3.629,0,0,0,512.565,314.14Zm.312,1.314,1.1.473c-.269.253-.451.444-.653.61-.235.192-.407.1-.443-.176A8.107,8.107,0,0,1,512.877,315.454Zm0,4.553c0-.385-.021-.647.006-.906s.2-.346.412-.185.426.372.718.632Zm-2.582-2.585.5-1.186c.23.3.4.5.543.717.06.089.121.236.086.313a.392.392,0,0,1-.29.149C510.886,317.437,510.64,317.422,510.295,317.422Zm.463,1.772-.445-1.135c.352,0,.615-.021.874.005.3.03.368.2.177.436C511.2,318.705,511.02,318.9,510.757,319.194Zm4.1-1.678-1.151-.247c.2-.267.4-.534.6-.8.012-.015.057,0,.144-.009Zm-.416,1.52-.189.072c-.151-.194-.314-.38-.449-.584a.47.47,0,0,1-.082-.321c.014-.063.158-.13.248-.137.259-.018.52-.006.861-.006Zm-2.194-3.58a7.38,7.38,0,0,1-.008.906c-.039.276-.2.369-.445.165-.2-.165-.407-.324-.714-.568Zm-1.139,4.083c.3-.255.48-.424.679-.567a.428.428,0,0,1,.309-.082c.067.017.138.154.145.242.019.255.007.513.007.871Z" transform="translate(-503.07 -304.356)" />
+                                            <path id="Path_413" data-name="Path 413" d="M-32.965,314.14a3.616,3.616,0,0,0-3.619,3.614,3.631,3.631,0,0,0,3.609,3.579,3.607,3.607,0,0,0,3.585-3.545A3.6,3.6,0,0,0-32.965,314.14Zm.3,1.326,1.144.474c-.3.256-.5.447-.72.612s-.389.1-.418-.169S-32.665,315.835-32.665,315.466Zm1.5.812.453,1.144c-.355,0-.617.017-.876,0-.306-.025-.363-.2-.185-.434C-31.619,316.775-31.436,316.585-31.17,316.278Zm.472,1.782-.484,1.09c-.26-.282-.452-.465-.612-.673s-.1-.386.177-.413S-31.093,318.06-30.7,318.06Zm-2.6-2.6c0,.355.012.614-.007.871-.006.088-.074.225-.14.244a.419.419,0,0,1-.314-.071c-.208-.15-.4-.328-.682-.57Zm-1.483.8c.25.3.428.492.58.7a.415.415,0,0,1,.067.313c-.019.066-.156.131-.244.138-.258.018-.518.007-.863.007Zm.011,2.963-.474-1.164c.356,0,.619-.018.878,0,.287.025.382.18.194.428C-34.341,318.712-34.523,318.919-34.774,319.224Zm2.107.794c0-.357-.014-.6.007-.846a.379.379,0,0,1,.15-.279.394.394,0,0,1,.308.076c.213.145.409.314.708.55Zm-1.762-.474c.29-.253.468-.426.666-.572a.429.429,0,0,1,.312-.081c.065.016.136.154.142.242.019.258.007.519.007.871Z" transform="translate(72.415 -304.356)" />
+                                        </g>
+                                    </svg>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($front_tyre_type == 'SUV') : ?>
+                            <?php
+                            ?>
+                            <div class="mr-auto" x-data="buyTyreSearchModal()">
+                                <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $frontWidth; ?>','<?php echo $frontHeight; ?>','<?php echo $frontRim; ?>','<?php echo $frontProduct->getName(); ?>', <?= $frontHasSuggestedSize ? 'true' : 'false' ?>)">
+                                    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" width="47.747" height="16.977" viewBox="0 0 321 138" class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]">
+                                        <title>suv-svg</title>
+                                        <style>.s0{fill:rgb(0,0,0);}</style>
+                                        <g id="Layer"><g id="Layer"><path id="Layer" fill-rule="evenodd" class="s0" d="m16.1 14.5c3.2-7.4 10.4-12.3 18.3-12.7 58.5-2.9 107.2-1.9 148.7 3.2 3.6 0.4 7 1.8 9.9 4l21 16.3c17.7 13.9 44.6 0.3 90.8 21 15.8 7.2 22.2 39.4 9.1 54.9-3.9 4.7-9 7.1-14.9 7.2 0.1-0.8 0.1-1.6 0.1-2.4 0-25.1-20.4-45.5-45.4-45.5-25.1 0-45.5 20.4-45.5 45.5 0 0.8 0 1.6 0.1 2.4h-89.9c0.1-0.8 0.1-1.6 0.1-2.4 0-25.1-20.4-45.5-45.5-45.5-25.1 0-45.5 20.4-45.5 45.5 0 0.8 0 1.6 0.1 2.4h-1.7c-13.8 0-25.1-11.3-25.1-25.6-0.2-9.6 0.9-35.3 15.3-68.3zm135.8 33.1h49.7c1.3 0 2.7-0.5 3.6-1.5l6.3-6.3c-5.1-2.9-5.8-4.1-26.9-20.2-0.9-0.8-2-1.2-3.2-1.3-9.4-1.1-19.3-2.1-29.5-2.8zm-53-12.2c2.8 2.3-0.3-0.4 10.8 10.7 0.9 1 2.3 1.5 3.6 1.5h25.3v-32.9c-12.6-0.7-25.8-1.1-39.7-1.1zm-13.4-4.3v-17.5c-16 0.1-32.8 0.6-50.6 1.5-2.9 0.2-5.5 2-6.7 4.7-1.7 3.9-3.2 7.7-4.5 11.3z"/></g><path id="Layer" class="s0" d="m73 138.1c-17.8 0-32.1-14.3-32.1-32.1 0-17.8 14.3-32.1 32.1-32.1 17.8 0 32.1 14.3 32.1 32.1 0 17.8-14.3 32.1-32.1 32.1z"/><path id="Layer" class="s0" d="m221.5 106c0 17.7 14.4 32.1 32.1 32.1 17.7 0 32.1-14.4 32.1-32.1 0-17.7-14.4-32.1-32.1-32.1-17.7-0.1-32.1 14.4-32.1 32.1z"/></g>
+                                    </svg>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($front_tyre_type == 'Truck Van') : ?>
+                            <?php
+                            ?>
+                            <div class="mr-auto" x-data="buyTyreSearchModal()">
+                                <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $frontWidth; ?>','<?php echo $frontHeight; ?>','<?php echo $frontRim; ?>','<?php echo $frontProduct->getName(); ?>', <?= $frontHasSuggestedSize ? 'true' : 'false' ?>)">
+                                    <svg class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]" fill="#000000" version="1.1" xmlns="http://www.w3.org/2000/svg" width="100" height="80" viewBox="0 0 612 612" xml:space="preserve">
+                                        <g><path d="M612,327.56v-21.606c0-10.533-4.213-20.628-11.701-28.037L484.107,162.958c-7.384-7.306-17.352-11.403-27.739-11.403h-58.622v-21.988c0-16.336-13.243-29.58-29.58-29.58H29.58C13.243,99.987,0,113.23,0,129.567V327.56H612z M432.551,190.303c0-2.563,2.071-4.634,4.635-4.634h21.396c1.184,0,2.366,0.494,3.253,1.282l91.006,86.865c3.057,2.86,0.986,7.987-3.154,7.987h-112.5c-2.563,0-4.635-2.07-4.635-4.634V190.303z M612,343.903v65.486c0,16.336-13.243,29.578-29.579,29.578h-31.65c-5.719-39.242-39.539-69.412-80.357-69.412c-40.721,0-74.54,30.17-80.259,69.412h-160.42c-5.718-39.242-39.538-69.412-80.259-69.412c-40.721,0-74.541,30.17-80.259,69.412H29.58C13.243,438.968,0,425.726,0,409.39v-65.486H612z M470.456,389.313c-33.883,0-61.351,27.467-61.351,61.35s27.469,61.35,61.351,61.35s61.35-27.467,61.35-61.35S504.339,389.313,470.456,389.313z M470.456,481.339c-16.941,0-30.675-13.734-30.675-30.676s13.732-30.674,30.675-30.674c16.941,0,30.676,13.732,30.676,30.674S487.397,481.339,470.456,481.339z M149.464,389.313c-33.883,0-61.35,27.467-61.35,61.35s27.468,61.35,61.35,61.35s61.35-27.467,61.35-61.35S183.346,389.313,149.464,389.313z M149.464,481.339c-16.941,0-30.676-13.734-30.676-30.676s13.734-30.674,30.676-30.674c16.941,0,30.675,13.732,30.675,30.674S166.405,481.339,149.464,481.339z"/></g>
+                                    </svg>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                            <?php if ($frontRunflat) : ?>
+                                <span class="leading-tight">
+                                    <img class="max-w-[58px]" src="<?php echo $mediaUrl . 'klever/icons/run-flat.svg'; ?>" alt="Run Flat" />
+                                </span>
+                            <?php endif; ?> 
+                         <div class="text-right ml-auto w-1/3 sm:w-auto">
+                            <?php if ($frontOrigin) : ?>
+                                <span class="block text-xs font-medium"><?php echo __($frontOrigin); ?></span>
+                            <?php endif; ?>
+                        </div> 
+                    </div>
+                                <div class="product-bottom product-box px-2 md:px-3 pt-0 pb-2 md:pt-1.5 md:pb-1 h-auto md:h-full content-end">
+                                    <div class="replacement text-[0.625rem] sm:text-xs">
+                                        <span class="cursor-pointer text-gray-500 uppercase tracking-wide" onclick="OpenFittedPrice('Tyres')"><?php echo $frontPriceIncludedText; ?></span>
+                                    </div>
+                                    <?php if ($frontProduct->getData('tabby_payment') == 1) : ?>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-[0.688rem] text-gray-600"><?php echo __('Pay In Installments'); ?></span>
+                                        <img src="/media/tabby-tamara-full.webp" alt="Tabby & Tamara" class="h-[20px] w-auto">
+                                    </div>
+                                    <?php endif; ?>
+                                    <div class="front-price-section flex gap-1 flex-col md:flex-row set-price-box text-theme-dark mt-0 id-<?php echo $frontProduct->getId(); ?>">
+                                        <div class="product-price-details flex-1">
+                                            <div class="text-theme-dark flex items-end leading-none mt-1 h-[19.2px]" x-data="initPriceBox()" x-defer="intersect"
+                                                @update-prices-<?= (int)$frontProductId ?>.window="updatePrice($event.detail);">
+                                                <?= /* @noEscape */ $productListItemViewModel->getProductPriceHtml($frontProduct) ?>
+                                                <?php /*<span class="text-xs 2xl:text-sm ml-1 2xl:ml-2 whitespace-nowrap">/ tyre</span> */ ?>
+                                            </div>
+                                            <div class="relative set-price-box">
+                                                <span class="set4 set-of font-normal"><?php echo __('Set of 2:'); ?></span>
+                                                <span class="aed currency price"><?php echo $currency; ?> </span>
+                                                <span class="setfourprice set-of-price"><?php echo $frontSet2price; ?></span>
+                                            </div> 
+                                            
+                                        </div>
+                                        <div class="set4-price flex items-end gap-x-1.5 justify-end w-auto mb-1">
+                                            <?php if ($frontProduct->isSaleable()): ?>
+                                            <select
+                                                class="mr-2 form-select cursor-pointer text-sm form-select-bundle front-qty-select-<?php echo $frontProduct->getId(); ?>"
+                                                name="qty" onchange="changeBundlePrice(
+                                                    this,
+                                                    <?php echo $frontUnitRegularPrice; ?>,
+                                                    <?php echo $frontUnitFinalPrice; ?>,
+                                                    '<?php echo $frontProductPartsCategory; ?>',
+                                                    '<?php echo $frontIsOfferProduct; ?>',
+                                                    '<?php echo $frontDiscountAmount; ?>',
+                                                    '<?php echo $frontDiscountQty; ?>',
+                                                    '<?php echo $frontProduct->getId(); ?>',
+                                                    '<?php echo $rearProduct->getId(); ?>',
+                                                    'front'
+                                                )">
+                                                <?php for ($cnt = 1; $cnt <= $frontStockQty; $cnt++) : ?>
+                                                    <option value=<?php echo $cnt; ?> <?php if ($cnt == 2) : ?> selected <?php endif ?>>
+                                                        <?php echo $cnt; ?>
+                                                    </option>
+                                                <?php endfor; ?>
+                                            </select>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== REAR PRODUCT (same structure as item.phtml) ========== -->
+        <div class="bundle-rear-card h-full rounded-tr-[0px] md:rounded-tr-[10px] border-t-0 md:border-t border border-[#eee] flex-col md:flex-row flex-wrap list-view overflow-hidden rounded-tl-none rounded-bl-none">
+            <?php if (isset($rearProductOfferRule) && !empty($rearProductOfferRule) && $rearProductOfferRule['rule_id'] != '') : ?>
+                <?php if (isset($rear_banner_img_name) && !empty($rear_banner_img_name)) { ?>
+                    <div class="product-offer-img w-full overflow-hidden w-full" data-rule-id="<?php echo $rearProductOfferRule['rule_id']; ?>">
+                        <img class="w-full h-auto" src="<?php echo $mediaUrl . 'salesrule/offerimage/' . $rear_banner_img_name; ?>" alt="Offer Image">
+                    </div>
+                <?php } else { ?>
+                    <div class="product-offer-img w-full overflow-hidden relative" data-rule-id="<?php echo $rearProductOfferRule['rule_id']; ?>">
+                        <img class="w-full h-auto" src="<?php echo $this->getViewFileUrl('images/pages/green-color-bg.webp'); ?>" alt="">
+                        <span class="position-text text-[1.1rem] text-white uppercase font-secondary font-bold leading-none absolute left-1/2 top-1/2 w-full h-full inline-block text-center content-center -translate-x-1/2 -translate-y-1/2 transform"><?php echo $rearProductOfferRule['rule_name']; ?></span>
+                    </div>
+                <?php } ?>
+            <?php endif; ?>
+            <div class="product-wrap flex flex-wrap bg-white rounded-[10px] overflow-hidden">
+                <div class="product-left w-2/5 md:w-full relative flex flex-col">
+                    <?php if($rearWarranty != ''): ?>
+                        <div class="hidden md:block warrantry-text [direction:ltr] absolute bottom-0 px-2 left-0 bg-[#ffffffe6] z-[4] rounded-tr-[10px]">
+                            <span class="uppercase text-black text-xs font-medium"><?php echo $rearWarranty; ?></span>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($rearYear) : ?>
+                        <div class="hidden md:block absolute bottom-[6px] right-0 z-[4] text-black text-xs font-medium px-2">
+                        <span class="uppercase text-black text-xs font-medium"><?php echo $rearYear; ?></span>
+                        </div>
+                    <?php endif; ?>
+                     <div class="hidden md:block car-brands-img absolute right-0 top-[40%] -translate-y-1/2 z-[8] px-2 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#d8e9f3] [&::-webkit-scrollbar-thumb]:bg-theme-blue dark:[&::-webkit-scrollbar-track]:bg-[#d8e9f3] dark:[&::-webkit-scrollbar-thumb]:bg-theme-blue h-[130px] overflow-x-hidden content-center">
+                        <?php if ($rear_oem_tyres) : ?>
+                                <?php $rear_oem_tyresArray = explode(', ', $rear_oem_tyres); ?>
+                                <?php foreach ($rear_oem_tyresArray as $rear_oem_tyresData) : ?>
+                                    <?php
+                                        $rear_oem_tyresData = str_replace(" ", "-", strtolower($rear_oem_tyresData));
+                                        $oemTyresImg = $mediaUrl . 'cars-logo/' . $rear_oem_tyresData . '.png';
+                                    ?>
+                                    <img src="<?php echo $oemTyresImg; ?>" title="<?php echo $rear_oem_tyresData; ?>" alt="<?php echo $rear_oem_tyresData; ?>" class="car-brand-img max-h-3 sm:max-h-7 max-w-5 sm:max-w-[23px] lazy mt-1">
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                    </div>
+                    <a href="<?= $escaper->escapeUrl($rearProduct->getProductUrl()) ?>"
+                        title="<?= $escaper->escapeHtmlAttr($rearProduct->getName()) ?>"
+                        class="product photo product-item-photo relative block overflow-hidden mx-auto h-full content-center  tyres-image mb-1 md:mb-0 md:h-[11rem] gride-image"
+                        tabindex="-1">
+                        <?= $block->getImage($rearProduct, $imageDisplayArea)
+                            ->setTemplate('Magento_Catalog::product/list/image.phtml')
+                            ->setData('custom_attributes', $imageCustomAttributes)
+                            ->setProductId($rearProductId)
+                            ->toHtml(); ?>
+                    </a>
+                    <div class="px-1 md:flex md:hidden items-center justify-center relative -top-[0.4rem]">
+                        <div class="custom-sroll-height flex items-center justify-center gap-x-1 lg:gap-x-1  overflow-x-auto overflow-y-hidden flex items-center pl-0 ml-0 [scroll-padding-left:0] snap-x snap-mandatory [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#d8e9f3] [&::-webkit-scrollbar-thumb]:bg-theme-blue dark:[&::-webkit-scrollbar-track]:bg-[#d8e9f3] dark:[&::-webkit-scrollbar-thumb]:bg-theme-blue">
+                            <?php if ($rear_oem_tyres) : ?>
+                                <?php $rear_oem_tyresArray = explode(', ', $rear_oem_tyres); ?>
+                                <?php foreach ($rear_oem_tyresArray as $rear_oem_tyresData) : ?>
+                                    <?php
+                                        $rear_oem_tyresData = str_replace(" ", "-", strtolower($rear_oem_tyresData));
+                                        $oemTyresImg = $mediaUrl . 'cars-logo/' . $rear_oem_tyresData . '.png';
+                                    ?>
+                                    <img src="<?php echo $oemTyresImg; ?>" title="<?php echo $rear_oem_tyresData; ?>" alt="<?php echo $rear_oem_tyresData; ?>" class="max-h-4">
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="car-logo px-2 pb-2 flex items-center justify-center h-auto md:h-[22px] relative mt-auto md:hidden">
+                        <?php if ($rear_tyre_type == 'Car') : ?>
+                            <?php
+                            ?>
+                            <div class="mx-auto" x-data="buyTyreSearchModal()">
+                                <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $rearWidth; ?>','<?php echo $rearHeight; ?>','<?php echo $rearRim; ?>','<?php echo $rearProduct->getName(); ?>', <?= $rearHasSuggestedSize ? 'true' : 'false' ?>)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 47.747 16.977" class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]">
+                                        <g id="Group_243" data-name="Group 243" transform="translate(0)">
+                                            <path id="Path_411" data-name="Path 411" d="M-122.615,146.25a14.294,14.294,0,0,0,.9,1.807,1.609,1.609,0,0,0,.935.518c1.073.245,2.161.424,3.313.642a4.4,4.4,0,0,1,2.574-3.96,4.107,4.107,0,0,1,2.686-.294,4.432,4.432,0,0,1,3.413,4.935l21.435.432a4.315,4.315,0,0,1,1.162-4.224,4.061,4.061,0,0,1,3.118-1.236,4.36,4.36,0,0,1,4.163,5.139c.687-.113,1.356-.194,2.011-.338,1.472-.323,1.693-.616,1.987-2.158a5.746,5.746,0,0,0-.342-2.547,2.327,2.327,0,0,0-1.6-1.7,39.349,39.349,0,0,0-7.593-2.017,16.658,16.658,0,0,1-3.88-1.389c-1.793-.78-3.566-1.607-5.351-2.407a21.266,21.266,0,0,0-9.744-1.617,33.618,33.618,0,0,0-11.928,2.885,20.127,20.127,0,0,1-5.156,1.381c-1.089.153-1.255.357-1.256,1.444,0,.358-.012.716,0,1.073a2.047,2.047,0,0,1-.454,1.677,2.842,2.842,0,0,0-.391.931Zm30.034-4.853a.274.274,0,0,1-.12.014c-2.485-.069-4.97-.144-7.455-.2-.27-.007-.33-.139-.381-.359-.23-.982-.476-1.96-.714-2.939-.071-.291-.135-.584-.222-.962,3.475.284,6.78.76,9.465,2.868Zm-9.58-.407a.745.745,0,0,1-.153.049c-2.3-.068-4.594-.135-6.89-.218a.451.451,0,0,1-.317-.243,1.572,1.572,0,0,1,.174-1.881,8.174,8.174,0,0,0,.455-.7.938.938,0,0,1,.418-.325,17.885,17.885,0,0,1,5.381-.687.411.411,0,0,1,.315.232C-102.558,138.468-102.363,139.723-102.161,140.989Zm-11.361-.195a1.036,1.036,0,0,1,.612-1.247c.563-.291,1.137-.561,1.714-.823.506-.23,1.022-.436,1.534-.653-.557.9-1.154,1.725-1.762,2.543a.451.451,0,0,1-.3.172C-112.325,140.8-112.928,140.794-113.522,140.794Z" transform="translate(122.615 -135.806)" />
+                                            <path id="Path_412" data-name="Path 412" d="M512.565,314.14a3.6,3.6,0,1,0,3.6,3.624A3.629,3.629,0,0,0,512.565,314.14Zm.312,1.314,1.1.473c-.269.253-.451.444-.653.61-.235.192-.407.1-.443-.176A8.107,8.107,0,0,1,512.877,315.454Zm0,4.553c0-.385-.021-.647.006-.906s.2-.346.412-.185.426.372.718.632Zm-2.582-2.585.5-1.186c.23.3.4.5.543.717.06.089.121.236.086.313a.392.392,0,0,1-.29.149C510.886,317.437,510.64,317.422,510.295,317.422Zm.463,1.772-.445-1.135c.352,0,.615-.021.874.005.3.03.368.2.177.436C511.2,318.705,511.02,318.9,510.757,319.194Zm4.1-1.678-1.151-.247c.2-.267.4-.534.6-.8.012-.015.057,0,.144-.009Zm-.416,1.52-.189.072c-.151-.194-.314-.38-.449-.584a.47.47,0,0,1-.082-.321c.014-.063.158-.13.248-.137.259-.018.52-.006.861-.006Zm-2.194-3.58a7.38,7.38,0,0,1-.008.906c-.039.276-.2.369-.445.165-.2-.165-.407-.324-.714-.568Zm-1.139,4.083c.3-.255.48-.424.679-.567a.428.428,0,0,1,.309-.082c.067.017.138.154.145.242.019.255.007.513.007.871Z" transform="translate(-503.07 -304.356)" />
+                                            <path id="Path_413" data-name="Path 413" d="M-32.965,314.14a3.616,3.616,0,0,0-3.619,3.614,3.631,3.631,0,0,0,3.609,3.579,3.607,3.607,0,0,0,3.585-3.545A3.6,3.6,0,0,0-32.965,314.14Zm.3,1.326,1.144.474c-.3.256-.5.447-.72.612s-.389.1-.418-.169S-32.665,315.835-32.665,315.466Zm1.5.812.453,1.144c-.355,0-.617.017-.876,0-.306-.025-.363-.2-.185-.434C-31.619,316.775-31.436,316.585-31.17,316.278Zm.472,1.782-.484,1.09c-.26-.282-.452-.465-.612-.673s-.1-.386.177-.413S-31.093,318.06-30.7,318.06Zm-2.6-2.6c0,.355.012.614-.007.871-.006.088-.074.225-.14.244a.419.419,0,0,1-.314-.071c-.208-.15-.4-.328-.682-.57Zm-1.483.8c.25.3.428.492.58.7a.415.415,0,0,1,.067.313c-.019.066-.156.131-.244.138-.258.018-.518.007-.863.007Zm.011,2.963-.474-1.164c.356,0,.619-.018.878,0,.287.025.382.18.194.428C-34.341,318.712-34.523,318.919-34.774,319.224Zm2.107.794c0-.357-.014-.6.007-.846a.379.379,0,0,1,.15-.279.394.394,0,0,1,.308.076c.213.145.409.314.708.55Zm-1.762-.474c.29-.253.468-.426.666-.572a.429.429,0,0,1,.312-.081c.065.016.136.154.142.242.019.258.007.519.007.871Z" transform="translate(72.415 -304.356)" />
+                                        </g>
+                                    </svg>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($rear_tyre_type == 'SUV') : ?>
+                            <?php
+                            ?>
+                            <div class="mx-auto" x-data="buyTyreSearchModal()">
+                                <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $rearWidth; ?>','<?php echo $rearHeight; ?>','<?php echo $rearRim; ?>','<?php echo $rearProduct->getName(); ?>', <?= $rearHasSuggestedSize ? 'true' : 'false' ?>)">
+                                    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" width="47.747" height="16.977" viewBox="0 0 321 138" class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]">
+                                        <title>suv-svg</title>
+                                        <style>.s0{fill:rgb(0,0,0);}</style>
+                                        <g id="Layer"><g id="Layer"><path id="Layer" fill-rule="evenodd" class="s0" d="m16.1 14.5c3.2-7.4 10.4-12.3 18.3-12.7 58.5-2.9 107.2-1.9 148.7 3.2 3.6 0.4 7 1.8 9.9 4l21 16.3c17.7 13.9 44.6 0.3 90.8 21 15.8 7.2 22.2 39.4 9.1 54.9-3.9 4.7-9 7.1-14.9 7.2 0.1-0.8 0.1-1.6 0.1-2.4 0-25.1-20.4-45.5-45.4-45.5-25.1 0-45.5 20.4-45.5 45.5 0 0.8 0 1.6 0.1 2.4h-89.9c0.1-0.8 0.1-1.6 0.1-2.4 0-25.1-20.4-45.5-45.5-45.5-25.1 0-45.5 20.4-45.5 45.5 0 0.8 0 1.6 0.1 2.4h-1.7c-13.8 0-25.1-11.3-25.1-25.6-0.2-9.6 0.9-35.3 15.3-68.3zm135.8 33.1h49.7c1.3 0 2.7-0.5 3.6-1.5l6.3-6.3c-5.1-2.9-5.8-4.1-26.9-20.2-0.9-0.8-2-1.2-3.2-1.3-9.4-1.1-19.3-2.1-29.5-2.8zm-53-12.2c2.8 2.3-0.3-0.4 10.8 10.7 0.9 1 2.3 1.5 3.6 1.5h25.3v-32.9c-12.6-0.7-25.8-1.1-39.7-1.1zm-13.4-4.3v-17.5c-16 0.1-32.8 0.6-50.6 1.5-2.9 0.2-5.5 2-6.7 4.7-1.7 3.9-3.2 7.7-4.5 11.3z"/></g><path id="Layer" class="s0" d="m73 138.1c-17.8 0-32.1-14.3-32.1-32.1 0-17.8 14.3-32.1 32.1-32.1 17.8 0 32.1 14.3 32.1 32.1 0 17.8-14.3 32.1-32.1 32.1z"/><path id="Layer" class="s0" d="m221.5 106c0 17.7 14.4 32.1 32.1 32.1 17.7 0 32.1-14.4 32.1-32.1 0-17.7-14.4-32.1-32.1-32.1-17.7-0.1-32.1 14.4-32.1 32.1z"/></g>
+                                    </svg>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($rear_tyre_type == 'Truck Van') : ?>
+                            <?php
+                            ?>
+                            <div class="mx-auto" x-data="buyTyreSearchModal()">
+                                <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $rearWidth; ?>','<?php echo $rearHeight; ?>','<?php echo $rearRim; ?>','<?php echo $rearProduct->getName(); ?>', <?= $rearHasSuggestedSize ? 'true' : 'false' ?>)">
+                                    <svg class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]" fill="#000000" version="1.1" xmlns="http://www.w3.org/2000/svg" width="100" height="80" viewBox="0 0 612 612" xml:space="preserve">
+                                        <g><path d="M612,327.56v-21.606c0-10.533-4.213-20.628-11.701-28.037L484.107,162.958c-7.384-7.306-17.352-11.403-27.739-11.403h-58.622v-21.988c0-16.336-13.243-29.58-29.58-29.58H29.58C13.243,99.987,0,113.23,0,129.567V327.56H612z M432.551,190.303c0-2.563,2.071-4.634,4.635-4.634h21.396c1.184,0,2.366,0.494,3.253,1.282l91.006,86.865c3.057,2.86,0.986,7.987-3.154,7.987h-112.5c-2.563,0-4.635-2.07-4.635-4.634V190.303z M612,343.903v65.486c0,16.336-13.243,29.578-29.579,29.578h-31.65c-5.719-39.242-39.539-69.412-80.357-69.412c-40.721,0-74.54,30.17-80.259,69.412h-160.42c-5.718-39.242-39.538-69.412-80.259-69.412c-40.721,0-74.541,30.17-80.259,69.412H29.58C13.243,438.968,0,425.726,0,409.39v-65.486H612z M470.456,389.313c-33.883,0-61.351,27.467-61.351,61.35s27.469,61.35,61.351,61.35s61.35-27.467,61.35-61.35S504.339,389.313,470.456,389.313z M470.456,481.339c-16.941,0-30.675-13.734-30.675-30.676s13.732-30.674,30.675-30.674c16.941,0,30.676,13.732,30.676,30.674S487.397,481.339,470.456,481.339z M149.464,389.313c-33.883,0-61.35,27.467-61.35,61.35s27.468,61.35,61.35,61.35s61.35-27.467,61.35-61.35S183.346,389.313,149.464,389.313z M149.464,481.339c-16.941,0-30.676-13.734-30.676-30.676s13.734-30.674,30.676-30.674c16.941,0,30.675,13.732,30.675,30.674S166.405,481.339,149.464,481.339z"/></g>
+                                    </svg>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <?php if($rearWarranty != ''): ?>
+                        <div class="warrantry-text [direction:ltr] relative mt-auto flex items-center border-t border-[#eee] justify-center bottom-0  h-[2rem] md:hidden">
+                            <span class="uppercase text-black font-medium block relative text-xs"><?php echo $rearWarranty; ?></span>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($showAddToWishlist): ?>
+                        <div class="hidden wishlist-btn group absolute bottom-[6.3rem] md:bottom-[8rem] absolute w-6 lg:w-9 bg-theme-yellow rounded-tl-[30px] rounded-bl-[30px] right-0 hover:bg-theme-blue transition-all duration-300 ease-in-out">
+                            <?= $block->getChildBlock('wishlist_bundle')->setData('product', $rearProduct)->toHtml() ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($showAddToCompare): ?>
+                        <div class="hidden compare-btn group absolute bottom-[9rem] md:bottom-[11rem] absolute w-6 lg:w-9 bg-theme-yellow rounded-tl-[30px] rounded-bl-[30px] right-0 hover:bg-theme-blue transition-all duration-300 ease-in-out">
+                            <button x-data="initCompareOnProductList()" x-defer="intersect"
+                                @click.prevent="addToCompare(<?= (int)$rearProductId ?>)"
+                                aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Compare') . ' ' . $rearProductName) ?>"
+                                type="button"
+                                class="rounded-full w-6 h-5 lg:w-9 lg:h-8 bg-gray-200 p-0 border-0 inline-flex shrink-0 items-center justify-center bg-theme-yellow group-hover:bg-theme-blue transition-all duration-300 ease-in-out"
+                                data-addto="compare">
+                                <?= $heroicons->scaleHtml("w-4 h-4 lg:w-5 lg:h-5 group-hover:text-white text-black transition-all duration-300 ease-in-out", 25, 25, ['aria-hidden' => 'true']) ?>
+                            </button>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($addToBlock = $block->getChildBlock('addto')): ?>
+                        <?= $addToBlock->setProduct($rearProduct)->getChildHtml() ?>
+                    <?php endif; ?>
+                </div>
+                <div class="product-right border-t-none md:border-t border-[#eee] flex w-3/5 md:w-full border-l md:border-l-0">
+                    <div class="product-info relative flex flex-col grow w-full md:w-4/6">
+                        <div class="item-info">
+                            <div class="grideproduct-name md:flex md:flex-col">
+                                <div class="product-name-brand flex gap-0 md:gap-1 md:gap-3 px-2 sm:px-3 pt-1 pb-0 md:pb-1 items-center flex-col md:flex-row">
+                                   <div class="product-brand w-full md:w-1/2">
+                                   <div class="w-max flex items-center h-[30px] md:h-auto my-1 md:my-0">
+                                    <?php if ($rearProductBrand) : ?>
+                                        <?php if ($rearProductBrandDetails) : ?>
+                                                <a class="inline-block font-medium text-[0.9rem]" href="<?php echo $rearProductBrandUrl; ?>">
+                                                    <?php if ($rearProductBrandImage) : ?>
+                                                        <img loading="lazy" class="h-auto w-auto object-contain max-w-[110px] md:max-w-[120px]" src="<?php echo $rearProductBrandImage; ?>" alt="<?php echo __($rearProduct_brand_title); ?>" title="<?php echo __($rearProduct_brand_title); ?>" />
+                                                    <?php else: ?>
+                                                        <span><?php echo __($rearProduct_brand_title); ?></span>
+                                                    <?php endif; ?>
+                                                </a>
+                                        <?php else: ?>
+                                            <?php if (isset($selectedBrandInRearProduct)) : ?>
+                                                <div class="mt-2 mb-1 items-center justify-center text-primary font-semibold text-lg text-center flex">
+                                                    <a href="<?php echo $rearProductBrandUrl; ?>">
+                                                        <span><?php echo __($selectedBrandInRearProduct); ?></span>
+                                                    </a>
+                                                </div>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                   </div>
+                                   </div>
+                                    <div class="product-name w-full md:w-1/2">
+                                        <div class="product-name border-border-color [display:-webkit-box] [-webkit-line-clamp:1] [-webkit-box-orient:vertical] overflow-hidden flex text-primary font-semibold text-[0.9rem] h-auto rounded-tr-xl sm:bg-white">
+                                           <a class="product-item-link text-theme-dark hover:text-theme-blue transition-all duration-300 ease-in-out [direction:ltr]"
+                                        href="<?= $escaper->escapeUrl($rearProduct->getProductUrl()) ?>"
+                                        title="<?php echo $rearPattern . ' ' . $rearOemMarking; ?>"
+                                        :id="`slide-desc-<?= $escaper->escapeHtmlAttr($rearProduct->getId()) ?>-${$id('slider-id')}`">
+                                        <?php echo $rearPattern . ' ' . $rearOemMarking; ?>
+                                    </a>
+                                        </div>
+                                <div class="flex flex-wrap md:flex-nowrap gap-x-[5px] items-center md:h-auto mb-0 md:mb-0.5">
+                                    <?php if($rearEV): ?>
+                                        <img src="<?php echo $mediaUrl.'klever/icons/ev-icon.png'; ?>" title="<?php echo __('EV Compatible'); ?>" alt="<?php echo __('EV Compatible'); ?>" class="lazy w-auto max-h-4 2xl:max-h-6">
+                                    <?php endif; ?>
+                                    <?php if($rearTyreSize): ?>
+                                        <p class="tyre-size whitespace-nowrap w-auto max-w-full sm:text-left mr-1 md:mr-0 text-[0.9rem] [direction:ltr]"><?php echo $rearTyreSize." ".$rearLoadIndex; ?></p>
+                                    <?php endif; ?>
+                                      <div class="product-year md:hidden">
+                                        <?php if ($rearYear) : ?>
+                                            <span class="block text-sm"><?php echo $rearYear; ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="year-run flex items-center md:hidden">
+                                        <div class="flex mr-1 min-h-auto md:min-h-[22px] lg:min-h-[24px]">
+                                            <?php if ($rearOrigin) : ?>
+                                            <span class="mr-1 block text-xs font-semibold"><?php echo __($rearOrigin); ?></span>
+                                        <?php endif; ?>
+                                        </div>
+                                <?php if ($rearRunflat) : ?>
+                                    <span class="leading-tight">
+                                        <img class="max-w-[58px]" src="<?php echo $mediaUrl . 'klever/icons/run-flat.svg'; ?>" alt="Run Flat" />
+                                    </span>
+                                <?php endif; ?>
+                                    </div> 
+                                </div>
+                                    </div>
+                                </div>
+                    <div class="car-logo px-2 sm:px-3 py-2 border-t border-b border-[#eee] min-h-auto md:min-h-[33px] flex items-center justify-between hidden md:flex">
+                        <?php if ($rear_tyre_type == 'Car') : ?>
+                            <?php
+                            ?>
+                            <div class="mr-auto" x-data="buyTyreSearchModal()">
+                                <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $rearWidth; ?>','<?php echo $rearHeight; ?>','<?php echo $rearRim; ?>','<?php echo $rearProduct->getName(); ?>', <?= $rearHasSuggestedSize ? 'true' : 'false' ?>)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 47.747 16.977" class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]">
+                                        <g id="Group_243" data-name="Group 243" transform="translate(0)">
+                                            <path id="Path_411" data-name="Path 411" d="M-122.615,146.25a14.294,14.294,0,0,0,.9,1.807,1.609,1.609,0,0,0,.935.518c1.073.245,2.161.424,3.313.642a4.4,4.4,0,0,1,2.574-3.96,4.107,4.107,0,0,1,2.686-.294,4.432,4.432,0,0,1,3.413,4.935l21.435.432a4.315,4.315,0,0,1,1.162-4.224,4.061,4.061,0,0,1,3.118-1.236,4.36,4.36,0,0,1,4.163,5.139c.687-.113,1.356-.194,2.011-.338,1.472-.323,1.693-.616,1.987-2.158a5.746,5.746,0,0,0-.342-2.547,2.327,2.327,0,0,0-1.6-1.7,39.349,39.349,0,0,0-7.593-2.017,16.658,16.658,0,0,1-3.88-1.389c-1.793-.78-3.566-1.607-5.351-2.407a21.266,21.266,0,0,0-9.744-1.617,33.618,33.618,0,0,0-11.928,2.885,20.127,20.127,0,0,1-5.156,1.381c-1.089.153-1.255.357-1.256,1.444,0,.358-.012.716,0,1.073a2.047,2.047,0,0,1-.454,1.677,2.842,2.842,0,0,0-.391.931Zm30.034-4.853a.274.274,0,0,1-.12.014c-2.485-.069-4.97-.144-7.455-.2-.27-.007-.33-.139-.381-.359-.23-.982-.476-1.96-.714-2.939-.071-.291-.135-.584-.222-.962,3.475.284,6.78.76,9.465,2.868Zm-9.58-.407a.745.745,0,0,1-.153.049c-2.3-.068-4.594-.135-6.89-.218a.451.451,0,0,1-.317-.243,1.572,1.572,0,0,1,.174-1.881,8.174,8.174,0,0,0,.455-.7.938.938,0,0,1,.418-.325,17.885,17.885,0,0,1,5.381-.687.411.411,0,0,1,.315.232C-102.558,138.468-102.363,139.723-102.161,140.989Zm-11.361-.195a1.036,1.036,0,0,1,.612-1.247c.563-.291,1.137-.561,1.714-.823.506-.23,1.022-.436,1.534-.653-.557.9-1.154,1.725-1.762,2.543a.451.451,0,0,1-.3.172C-112.325,140.8-112.928,140.794-113.522,140.794Z" transform="translate(122.615 -135.806)" />
+                                            <path id="Path_412" data-name="Path 412" d="M512.565,314.14a3.6,3.6,0,1,0,3.6,3.624A3.629,3.629,0,0,0,512.565,314.14Zm.312,1.314,1.1.473c-.269.253-.451.444-.653.61-.235.192-.407.1-.443-.176A8.107,8.107,0,0,1,512.877,315.454Zm0,4.553c0-.385-.021-.647.006-.906s.2-.346.412-.185.426.372.718.632Zm-2.582-2.585.5-1.186c.23.3.4.5.543.717.06.089.121.236.086.313a.392.392,0,0,1-.29.149C510.886,317.437,510.64,317.422,510.295,317.422Zm.463,1.772-.445-1.135c.352,0,.615-.021.874.005.3.03.368.2.177.436C511.2,318.705,511.02,318.9,510.757,319.194Zm4.1-1.678-1.151-.247c.2-.267.4-.534.6-.8.012-.015.057,0,.144-.009Zm-.416,1.52-.189.072c-.151-.194-.314-.38-.449-.584a.47.47,0,0,1-.082-.321c.014-.063.158-.13.248-.137.259-.018.52-.006.861-.006Zm-2.194-3.58a7.38,7.38,0,0,1-.008.906c-.039.276-.2.369-.445.165-.2-.165-.407-.324-.714-.568Zm-1.139,4.083c.3-.255.48-.424.679-.567a.428.428,0,0,1,.309-.082c.067.017.138.154.145.242.019.255.007.513.007.871Z" transform="translate(-503.07 -304.356)" />
+                                            <path id="Path_413" data-name="Path 413" d="M-32.965,314.14a3.616,3.616,0,0,0-3.619,3.614,3.631,3.631,0,0,0,3.609,3.579,3.607,3.607,0,0,0,3.585-3.545A3.6,3.6,0,0,0-32.965,314.14Zm.3,1.326,1.144.474c-.3.256-.5.447-.72.612s-.389.1-.418-.169S-32.665,315.835-32.665,315.466Zm1.5.812.453,1.144c-.355,0-.617.017-.876,0-.306-.025-.363-.2-.185-.434C-31.619,316.775-31.436,316.585-31.17,316.278Zm.472,1.782-.484,1.09c-.26-.282-.452-.465-.612-.673s-.1-.386.177-.413S-31.093,318.06-30.7,318.06Zm-2.6-2.6c0,.355.012.614-.007.871-.006.088-.074.225-.14.244a.419.419,0,0,1-.314-.071c-.208-.15-.4-.328-.682-.57Zm-1.483.8c.25.3.428.492.58.7a.415.415,0,0,1,.067.313c-.019.066-.156.131-.244.138-.258.018-.518.007-.863.007Zm.011,2.963-.474-1.164c.356,0,.619-.018.878,0,.287.025.382.18.194.428C-34.341,318.712-34.523,318.919-34.774,319.224Zm2.107.794c0-.357-.014-.6.007-.846a.379.379,0,0,1,.15-.279.394.394,0,0,1,.308.076c.213.145.409.314.708.55Zm-1.762-.474c.29-.253.468-.426.666-.572a.429.429,0,0,1,.312-.081c.065.016.136.154.142.242.019.258.007.519.007.871Z" transform="translate(72.415 -304.356)" />
+                                        </g>
+                                    </svg>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($rear_tyre_type == 'SUV') : ?>
+                            <?php
+                            ?>
+                            <div class="mr-auto" x-data="buyTyreSearchModal()">
+                                <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $rearWidth; ?>','<?php echo $rearHeight; ?>','<?php echo $rearRim; ?>','<?php echo $rearProduct->getName(); ?>', <?= $rearHasSuggestedSize ? 'true' : 'false' ?>)">
+                                    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" width="47.747" height="16.977" viewBox="0 0 321 138" class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]">
+                                        <title>suv-svg</title>
+                                        <style>.s0{fill:rgb(0,0,0);}</style>
+                                        <g id="Layer"><g id="Layer"><path id="Layer" fill-rule="evenodd" class="s0" d="m16.1 14.5c3.2-7.4 10.4-12.3 18.3-12.7 58.5-2.9 107.2-1.9 148.7 3.2 3.6 0.4 7 1.8 9.9 4l21 16.3c17.7 13.9 44.6 0.3 90.8 21 15.8 7.2 22.2 39.4 9.1 54.9-3.9 4.7-9 7.1-14.9 7.2 0.1-0.8 0.1-1.6 0.1-2.4 0-25.1-20.4-45.5-45.4-45.5-25.1 0-45.5 20.4-45.5 45.5 0 0.8 0 1.6 0.1 2.4h-89.9c0.1-0.8 0.1-1.6 0.1-2.4 0-25.1-20.4-45.5-45.5-45.5-25.1 0-45.5 20.4-45.5 45.5 0 0.8 0 1.6 0.1 2.4h-1.7c-13.8 0-25.1-11.3-25.1-25.6-0.2-9.6 0.9-35.3 15.3-68.3zm135.8 33.1h49.7c1.3 0 2.7-0.5 3.6-1.5l6.3-6.3c-5.1-2.9-5.8-4.1-26.9-20.2-0.9-0.8-2-1.2-3.2-1.3-9.4-1.1-19.3-2.1-29.5-2.8zm-53-12.2c2.8 2.3-0.3-0.4 10.8 10.7 0.9 1 2.3 1.5 3.6 1.5h25.3v-32.9c-12.6-0.7-25.8-1.1-39.7-1.1zm-13.4-4.3v-17.5c-16 0.1-32.8 0.6-50.6 1.5-2.9 0.2-5.5 2-6.7 4.7-1.7 3.9-3.2 7.7-4.5 11.3z"/></g><path id="Layer" class="s0" d="m73 138.1c-17.8 0-32.1-14.3-32.1-32.1 0-17.8 14.3-32.1 32.1-32.1 17.8 0 32.1 14.3 32.1 32.1 0 17.8-14.3 32.1-32.1 32.1z"/><path id="Layer" class="s0" d="m221.5 106c0 17.7 14.4 32.1 32.1 32.1 17.7 0 32.1-14.4 32.1-32.1 0-17.7-14.4-32.1-32.1-32.1-17.7-0.1-32.1 14.4-32.1 32.1z"/></g>
+                                    </svg>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($rear_tyre_type == 'Truck Van') : ?>
+                            <?php
+                            ?>
+                            <div class="mr-auto" x-data="buyTyreSearchModal()">
+                                <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $rearWidth; ?>','<?php echo $rearHeight; ?>','<?php echo $rearRim; ?>','<?php echo $rearProduct->getName(); ?>', <?= $rearHasSuggestedSize ? 'true' : 'false' ?>)">
+                                    <svg class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]" fill="#000000" version="1.1" xmlns="http://www.w3.org/2000/svg" width="100" height="80" viewBox="0 0 612 612" xml:space="preserve">
+                                        <g><path d="M612,327.56v-21.606c0-10.533-4.213-20.628-11.701-28.037L484.107,162.958c-7.384-7.306-17.352-11.403-27.739-11.403h-58.622v-21.988c0-16.336-13.243-29.58-29.58-29.58H29.58C13.243,99.987,0,113.23,0,129.567V327.56H612z M432.551,190.303c0-2.563,2.071-4.634,4.635-4.634h21.396c1.184,0,2.366,0.494,3.253,1.282l91.006,86.865c3.057,2.86,0.986,7.987-3.154,7.987h-112.5c-2.563,0-4.635-2.07-4.635-4.634V190.303z M612,343.903v65.486c0,16.336-13.243,29.578-29.579,29.578h-31.65c-5.719-39.242-39.539-69.412-80.357-69.412c-40.721,0-74.54,30.17-80.259,69.412h-160.42c-5.718-39.242-39.538-69.412-80.259-69.412c-40.721,0-74.541,30.17-80.259,69.412H29.58C13.243,438.968,0,425.726,0,409.39v-65.486H612z M470.456,389.313c-33.883,0-61.351,27.467-61.351,61.35s27.469,61.35,61.351,61.35s61.35-27.467,61.35-61.35S504.339,389.313,470.456,389.313z M470.456,481.339c-16.941,0-30.675-13.734-30.675-30.676s13.732-30.674,30.675-30.674c16.941,0,30.676,13.732,30.676,30.674S487.397,481.339,470.456,481.339z M149.464,389.313c-33.883,0-61.35,27.467-61.35,61.35s27.468,61.35,61.35,61.35s61.35-27.467,61.35-61.35S183.346,389.313,149.464,389.313z M149.464,481.339c-16.941,0-30.676-13.734-30.676-30.676s13.734-30.674,30.676-30.674c16.941,0,30.675,13.732,30.675,30.674S166.405,481.339,149.464,481.339z"/></g>
+                                    </svg>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                            <?php if ($rearRunflat) : ?>
+                                <span class="leading-tight">
+                                    <img class="max-w-[58px]" src="<?php echo $mediaUrl . 'klever/icons/run-flat.svg'; ?>" alt="Run Flat" />
+                                </span>
+                            <?php endif; ?>
+                        <div class="text-right ml-auto w-1/3 sm:w-auto">
+                            <?php if ($rearOrigin) : ?>
+                                <span class="block text-xs font-medium"><?php echo __($rearOrigin); ?></span>
+                            <?php endif; ?>
+                        </div> 
+                    </div>
+                                <div class="product-bottom product-box px-2 md:px-3 pt-0 pb-2 md:pt-1.5 md:pb-1 h-auto md:h-full content-end">
+                                    <div class="replacement text-[0.625rem] sm:text-xs">
+                                        <span class="cursor-pointer text-gray-500 uppercase tracking-wide" onclick="OpenFittedPrice('Tyres')"><?php echo $rearPriceIncludedText; ?></span>
+                                    </div>
+                                    <?php if ($rearProduct->getData('tabby_payment') == 1) : ?>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-[0.688rem] text-gray-600"><?php echo __('Pay In Installments'); ?></span>
+                                        <img src="/media/tabby-tamara-full.webp" alt="Tabby & Tamara" class="h-[20px] w-auto">
+                                    </div>
+                                    <?php endif; ?>
+                                    <div class="rear-price-section flex gap-1 flex-col md:flex-row set-price-box text-theme-dark mt-0 id-<?php echo $rearProduct->getId(); ?>">
+                                     <div class="product-price-details flex-1">
+                                         <div class="text-theme-dark flex items-end leading-none mt-1 h-[19.2px]" x-data="initPriceBox()" x-defer="intersect"
+                                        @update-prices-<?= (int)$rearProductId ?>.window="updatePrice($event.detail);">
+                                        <?= /* @noEscape */ $productListItemViewModel->getProductPriceHtml($rearProduct) ?>
+                                       <?php /* <span class="text-xs 2xl:text-sm ml-1 2xl:ml-2 whitespace-nowrap">/ tyre</span> */ ?>
+                                       </div>
+                                        <div class="relative set-price-box">
+                                            <span class="set4 set-of font-normal"><?php echo __('Set of 2:'); ?></span>
+                                            <span class="aed currency price"><?php echo $currency; ?> </span>
+                                            <span class="setfourprice set-of-price"><?php echo $rearSet2price; ?></span>
+                                        </div>
+                                       
+                                     </div>
+                                        <div class="set4-price flex items-end gap-x-1.5 justify-end w-auto mb-1">
+                                            <?php if ($rearProduct->isSaleable()): ?>
+                                            <select
+                                                class="mr-2 form-select cursor-pointer text-sm form-select-bundle rear-qty-select-<?php echo $rearProduct->getId(); ?>"
+                                                name="bundleqty" onchange="changeBundlePrice(
+                                                    this,
+                                                    <?php echo $rearUnitRegularPrice; ?>,
+                                                    <?php echo $rearUnitFinalPrice; ?>,
+                                                    '<?php echo $rearProductPartsCategory; ?>',
+                                                    '<?php echo $rearIsOfferProduct; ?>',
+                                                    '<?php echo $rearDiscountAmount; ?>',
+                                                    '<?php echo $rearDiscountQty; ?>',
+                                                    '<?php echo $frontProduct->getId(); ?>',
+                                                    '<?php echo $rearProduct->getId(); ?>',
+                                                    'rear'
+                                                )">
+                                                <?php for ($cnt = 1; $cnt <= $rearStockQty; $cnt++) : ?>
+                                                    <option value=<?php echo $cnt; ?> <?php if ($cnt == 2) : ?> selected <?php endif ?>>
+                                                        <?php echo $cnt; ?>
+                                                    </option>
+                                                <?php endfor; ?>
+                                            </select>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+
+
+
+
+    
+    <!-- ========== BOTTOM SECTION: Bundle Price + Add to Cart ========== -->
+    <div class="bundle-add-to-cart-and-price grid grid-cols-2 rounded-b-[10px] overflow-hidden">
+        <div class="bundle-set-price-box id-<?php echo $frontProduct->getId(); ?>-<?php echo $rearProduct->getId(); ?> bg-black text-white flex items-center justify-center px-3 py-2">
+            <div class="set-price font-bold text-sm md:text-base uppercase flex items-center gap-1">
+                <span class="set-of"><?php echo __('SET OF 4'); ?></span>
+                <span class="aed currency price"><?php echo $currency; ?></span>
+                <span class="bundle-set-of-price"><?php echo number_format($bundleset4price, 2); ?></span>
+            </div>
+        </div>
+
+        <?php if ($frontProduct->isSaleable() && $rearProduct->isSaleable()): ?>
+            <button
+                class="w-full bg-theme-blue hover:bg-black text-white font-medium text-sm md:text-base flex items-center justify-center gap-2 px-4 py-1 md:py-2 min-h-[34px] md:min-h-[44px] transition-colors duration-300 addcart"
+                title="<?= $escaper->escapeHtmlAttr(__('Add to Cart') . ' ' . $frontProductName) ?>"
+                aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Cart') . ' ' . $frontProductName) ?>"
+                data-addto="cart">
+                <?= $heroicons->shoppingCartHtml('w-5 text-white', 24, 24, ['aria-hidden' => 'true']) ?>
+                <span class="inline">
+                    <?= $escaper->escapeHtml(__('Add To Cart')) ?>
+                </span>
+            </button>
+        <?php else: ?>
+            <?php
+                $productName = $frontProductName .' - ' . $rearProductName;
+                $whatsappUrl = "https://api.whatsapp.com/send/?phone=+971505065565&text=I would like to enquire about " . $productName;
+            ?>
+            <!-- Mobile: WhatsApp redirect -->
+            <a href="<?php echo $whatsappUrl; ?>" target="_blank"
+                class="md:hidden w-full bg-theme-blue hover:bg-black text-white font-medium text-sm flex items-center justify-center gap-2 px-4 py-1 md:py-2 min-h-[34px] md:min-h-[44px] transition-colors duration-300 whitespace-nowrap"
+                title="<?= $escaper->escapeHtmlAttr(__('Contact Us')) ?>">
+                <svg class="w-4" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.097">
+                    </path>
+                </svg>
+                <span class="inline"><?= $escaper->escapeHtml(__('Contact Us')) ?></span>
+            </a>
+            <!-- Desktop: Open enquiry popup -->
+            <button type="button"
+                onclick="openProductEnquiryModal('<?= $escaper->escapeJs($productName) ?>')"
+                class="hidden md:flex w-full bg-theme-blue hover:bg-black text-white font-medium text-base items-center justify-center gap-2 px-4 py-1 md:py-2 min-h-[34px] md:min-h-[44px] transition-colors duration-300 whitespace-nowrap"
+                title="<?= $escaper->escapeHtmlAttr(__('Contact Us')) ?>">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                <span class="inline"><?= $escaper->escapeHtml(__('Contact Us')) ?></span>
+            </button>
+        <?php endif; ?>
+    </div>
+
+<?php if ($frontProduct->isSaleable()): ?>
+</form>
+<?php else: ?>
+</div>
+<?php endif; ?>
+</li>
+<?php endforeach; ?>

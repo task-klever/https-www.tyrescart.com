@@ -1,0 +1,65 @@
+<?php $makes = $block->getMakes(); ?>
+<form id="vehicle-information-form"
+      class="vehicle-information-form"
+      x-data="initCheckoutVehicleInfoForm"
+      @submit.prevent="submitCheckoutVehicleInfo">
+    <div class="grid grid-cols-12 gap-x-2">
+        <div class="col-span-12 md:col-span-6 mb-4">
+            <div class="vehicle-plate required">
+                <label class="label font-semibold text-f16 text-black mb-2 leading-none" for="vInfoVehiclePlate"><span><?= __('Vehicle Plate') ?></span></label>
+                <div class="control">
+                    <input name="vehicle_plate" class="form-input" required autocomplete="off"
+                           id="vInfoVehiclePlate" type="text"
+                           x-ref="plateInput"
+                           data-validate='{"required": true}'>
+                </div>
+            </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 mb-4">
+            <div class="make required">
+                <label class="label font-semibold text-f16 text-black mb-2 leading-none" for="vInfoVehicleMake"><span><?= __('Make') ?></span></label>
+                <div class="control">
+                    <select id="vInfoVehicleMake" name="vehicle_make"
+                            class="form-select w-full"
+                            x-ref="makeSelect"
+                            data-validate='{"required": true}'
+                            @change="loadModels">
+                        <option value=""><?= __('Select Make') ?></option>
+                        <?php foreach ($makes as $make): ?>
+                            <option value="<?= $make['value'] ?>"><?= $make['label'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 mb-4 md:mb-0">
+            <div class="model required">
+                <label class="label font-semibold text-f16 text-black mb-2 leading-none" for="vInfoVehicleModel"><span><?= __('Model') ?></span></label>
+                <div class="control">
+                    <select id="vInfoVehicleModel" name="vehicle_model"
+                            class="form-select w-full"
+                            x-ref="modelSelect"
+                            data-validate='{"required": true}'
+                            @change="loadYears">
+                        <option value=""><?= __('Select Model') ?></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-span-12 md:col-span-6">
+            <div class="year required">
+                <label class="label font-semibold text-f16 text-black mb-2 leading-none" for="vInfoVehicleYear"><span><?= __('Year') ?></span></label>
+                <div class="">
+                    <select id="vInfoVehicleYear" name="vehicle_year"
+                            class="form-select w-full"
+                            x-ref="yearSelect"
+                            data-validate='{"required": true}'
+                            @change="saveYearSelection">
+                        <option value=""><?= __('Select Year') ?></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="hide" id="checkout-vehicleinfo-submit-btn"></button>
+</form>

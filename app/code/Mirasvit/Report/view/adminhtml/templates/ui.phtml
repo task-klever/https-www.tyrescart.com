@@ -1,0 +1,58 @@
+<?php
+
+use Mirasvit\Core\Service\CspService;
+
+/** @var \Mirasvit\Report\Ui\Report\Block\ReportBlock $block */
+
+$nonce = CspService::getNonce();
+?>
+<style<?php if ($nonce): ?> nonce="<?= $block->escapeHtml($nonce) ?>"<?php endif; ?>>
+    .spinner {
+        position: fixed;
+        left: calc(50% - 5rem);
+        top: calc(50% - 5rem);
+    }
+
+    .Polaris-Spinner--sizeLarge svg {
+        height: 2.75rem;
+        width: 2.75rem;
+    }
+
+    .Polaris-Spinner svg {
+        animation: p-motion-keyframes-spin 500ms linear infinite;
+        fill: #65b47d;
+    }
+
+    @keyframes p-motion-keyframes-spin {
+        to {
+            transform: rotate(1turn)
+        }
+    }
+
+    .page-main-actions {
+        display: none;
+    }
+</style>
+
+<div id="root">
+    <div class="spinner Polaris-Spinner Polaris-Spinner--sizeLarge">
+        <svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15.542 1.487A21.507 21.507 0 00.5 22c0 11.874 9.626 21.5 21.5 21.5 9.847 0 18.364-6.675 20.809-16.072a1.5 1.5 0 00-2.904-.756C37.803 34.755 30.473 40.5 22 40.5 11.783 40.5 3.5 32.217 3.5 22c0-8.137 5.3-15.247 12.942-17.65a1.5 1.5 0 10-.9-2.863z"></path>
+        </svg>
+    </div>
+</div>
+
+<link rel="stylesheet" type="text/css" media="all" href="<?= $block->escapeUrl($block->getCssUrl()) ?>"/>
+<script src="<?= $block->escapeUrl($block->getVendorJsUrl()) ?>" async></script>
+<script src="<?= $block->escapeUrl($block->getAppJsUrl()) ?>" async></script>
+
+<script<?php if ($nonce): ?> nonce="<?= $block->escapeHtml($nonce) ?>"<?php endif; ?>>
+    require(['jquery'], function ($) {
+        function reportDemo() {
+            $('.notices-wrapper, .notifications-counter, #menu-mirasvit-core-menu').remove();
+            $('canvas').css('height', '200px');
+        }
+
+        window.reportDemo = reportDemo
+    });
+</script>

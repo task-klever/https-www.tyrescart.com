@@ -1,0 +1,48 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \WeltPixel\GA4\Block\RedditPixel\Common */
+
+/** @var \WeltPixel\GA4\Helper\RedditPixelTracking $redditPixelHelper */
+$redditPixelHelper = $this->helper('WeltPixel\GA4\Helper\RedditPixelTracking');
+$cspNonceProvider = $redditPixelHelper->getCspNonceProvider();
+$eventConversionId = $redditPixelHelper->getEventConversionID();
+$orderId = $block->getOrderId();
+?>
+
+<?php if ($redditPixelHelper->isRedditPixelTrackingEnabled() && $block->shouldRedditPixelEventBeTracked(\WeltPixel\GA4\Model\Config\Source\RedditPixel\TrackingEvents::EVENT_PURCHASE)) :
+    ?>
+    <script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        if (window.ga4AllowServices) {
+            rdt('track', 'Purchase', {
+                products: <?= /* @noEscape */ $block->getProductsForPurchase() ?>,
+                currency: "<?= /* @noEscape */ $redditPixelHelper->getCurrencyCode() ?>",
+                itemCount: <?= /* @noEscape */ $block->getOrderItemCount() ?>,
+                transactionId: "<?= /* @noEscape */ $block->getOrderTransactionId() ?>",
+                value: "<?= /* @noEscape */ $block->getOrderValue() ?>",
+                conversionId: "<?= /* @noEscape */ $eventConversionId ?>"
+            });
+        }
+    </script>
+<?php endif; ?>
+
+
+<?php if ($redditPixelHelper->isServerSideTrackingEnabled() && $redditPixelHelper->shouldRedditServerSideEventBeTracked(\WeltPixel\GA4\Model\Config\Source\RedditPixel\TrackingEvents::EVENT_PURCHASE)) : ?>
+    <script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        requirejs(['jquery'],
+            function  ($) {
+                $(document).ready(function() {
+                    var requestUrl = '<?php echo $block->escapeUrl($redditPixelHelper->getRedditSSTrackUrl()); ?>';
+                    $.post({
+                        url: requestUrl,
+                        global: false,
+                        data: {
+                            'eventId': '<?= /* @noEscape */ $eventConversionId ?>',
+                            'eventName': '<?= /* @noEscape */ \WeltPixel\GA4\Model\Config\Source\RedditPixel\TrackingEvents::EVENT_PURCHASE  ?>',
+                            'pageUrl': '<?= $block->escapeUrl($redditPixelHelper->getStoreCurrenUrl()) ?>',
+                            'orderId': '<?=  /* @noEscape */ $orderId ?>'
+                        }
+                    });
+                });
+            });
+    </script>
+<?php endif; ?>

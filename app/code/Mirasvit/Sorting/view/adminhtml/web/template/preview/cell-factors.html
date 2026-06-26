@@ -1,0 +1,27 @@
+<div class="mst-sorting-preview__cell-factors">
+    <!-- ko repeat: {foreach: $row().factors, item: 'f'} -->
+    <div class="mst-sorting-preview__cell-factor">
+        <div class="label">
+            <label text="f().label"></label>
+        </div>
+
+        <div class="score">
+            <span text="parseFloat(f().score).toFixed(2)"></span>
+        </div>
+
+        <div class="bar">
+            <!-- ko if: f().score > 0 -->
+            <div class="positive" data-bind="style: { width: f().score / 2 + '%' }"></div>
+            <!-- /ko -->
+
+            <!-- ko if: f().score < 0 -->
+            <div class="negative" data-bind="style: { width: Math.abs(f().score) / 2 + '%' }"></div>
+            <!-- /ko -->
+        </div>
+
+        <div class="value">
+            <span text="f().value"></span>
+        </div>
+    </div>
+    <!-- /ko -->
+</div>

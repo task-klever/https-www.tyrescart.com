@@ -1,0 +1,42 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Checkout\ViewModel\Checkout\Formatter as FormatterViewModel;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var FormatterViewModel $formatterViewModel */
+
+$formatterViewModel = $viewModels->require(FormatterViewModel::class);
+
+$quoteItem = $block->getData('quote_item');
+$options = $quoteItem['options'] ?? null;
+?>
+<?php if ($options): ?>
+    <table class="leading-relaxed text-sm table-auto">
+        <tbody>
+            <?php foreach ($options as $option): ?>
+                <tr>
+                    <td class="text-slate-500">
+                        <?= $escaper->escapeHtml(__($option['label'])) ?>
+                    </td>
+
+                    <td class="font-bold pl-8 text-slate-800 w-full">
+                        <?= /* @noEscape */ __($option['value']) ?>
+                    </td>
+                </tr>
+            <?php endforeach ?>
+        </tbody>
+    </table>
+<?php endif ?>

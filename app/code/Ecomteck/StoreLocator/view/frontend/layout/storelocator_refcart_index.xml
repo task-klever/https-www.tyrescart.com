@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <title>Select Installer</title>
+        <script src="Ecomteck_StorePickup::js/refcart-installer.js"/>
+    </head>
+    <body>
+        <attribute name="class" value="storelocator-refcart"/>
+        <referenceBlock name="fitting_location" remove="true"/>
+        <referenceContainer name="footer-container" remove="true"/>
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template" name="refcart.installer" template="Ecomteck_StorePickup::cart/refcart.phtml" cacheable="false"/>
+        </referenceContainer>
+    </body>
+</page>

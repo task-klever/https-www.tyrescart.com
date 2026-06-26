@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Add new fields to banner admin form -->
+    <type name="Mageplaza\BannerSlider\Block\Adminhtml\Banner\Edit\Tab\Banner">
+        <plugin name="klever_banner_form_fields"
+                type="Klever\BannerSlider\Plugin\BannerFormPlugin"
+                sortOrder="10"/>
+    </type>
+    <!-- Handle mobile image upload + url_key generation on save -->
+    <type name="Mageplaza\BannerSlider\Controller\Adminhtml\Banner\Save">
+        <plugin name="klever_banner_save_plugin"
+                type="Klever\BannerSlider\Plugin\BannerSavePlugin"
+                sortOrder="10"/>
+    </type>
+</config>

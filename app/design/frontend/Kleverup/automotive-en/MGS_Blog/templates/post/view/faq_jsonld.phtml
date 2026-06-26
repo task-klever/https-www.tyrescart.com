@@ -1,0 +1,9 @@
+<?php
+$jsonLd = $block->getJsonLdData();
+if (!$jsonLd) {
+    return;
+}
+?>
+<script type="application/ld+json">
+<?= /* @noEscape */ $jsonLd ?>
+</script>

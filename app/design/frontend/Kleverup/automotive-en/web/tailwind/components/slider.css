@@ -1,0 +1,80 @@
+.snap {
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    & > div {
+        scroll-snap-align: start;
+    }
+}
+
+/* Splide slider (moved from Mageplaza_BannerSlider::css/hyvacompat/style.css) */
+.splide .splide__list {
+    transition: height .5s ease-in-out;
+}
+.splide .splide__slide__container .container {
+    max-width: unset;
+    padding: 0;
+}
+.splide .splide__slide img {
+    vertical-align: bottom;
+    width: 100%;
+}
+
+/* Hide stray elements that leak into the grid as siblings of js_slide */
+/* Hide stray elements that leak into the grid as siblings */
+.related-grid-track > .fitment-bar-wrapper,
+.related-grid-track > script,
+.related-grid-track > style {
+    display: none !important;
+}
+
+/* Related grid slider: force vertical card layout */
+.related-grid-item .product-item {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+}
+.related-grid-item .product-wrap {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+}
+.related-grid-item .product-left,
+.related-grid-item .product-right,
+.related-grid-item .product-info {
+    width: 100% !important;
+}
+.related-grid-item .product-right {
+    border-left: 0 !important;
+    border-top-width: 1px !important;
+}
+.related-grid-item .product-name-brand {
+    flex-direction: column !important;
+}
+.related-grid-item .product-brand,
+.related-grid-item .product-name {
+    width: 100% !important;
+}
+.related-grid-item .product-bottom .grid {
+    grid-template-columns: 1fr !important;
+}
+.related-grid-item .product-image-photo {
+    @apply w-full max-w-[180px] mx-auto;
+}
+/* Hide desktop-only overlays that don't fit in narrow slider slots */
+.related-grid-item .car-brands-img {
+    display: none !important;
+}
+.related-grid-item .grideproduct-name > .car-logo {
+    display: none !important;
+}
+/* Stack price and cart button vertically */
+.related-grid-item .product-bottom .flex.items-center {
+    flex-wrap: wrap !important;
+}
+.related-grid-item .product-bottom button {
+    width: 100% !important;
+}

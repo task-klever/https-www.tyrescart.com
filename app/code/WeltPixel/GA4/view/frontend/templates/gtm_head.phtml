@@ -1,0 +1,20 @@
+<?php
+// @codingStandardsIgnoreFile
+?>
+<?php
+$_helper = $this->helper('WeltPixel\GA4\Helper\Data');
+$gtmCodeSnippetForHead = $_helper->getGtmCodeSnippetForHead();
+$cspNonceProvider = $_helper->getCspNonceProvider();
+
+$pattern = '/<script((?![^>]*\bsrc\b)[^>]*)>([\s\S]*?)<\/script>/';
+$replacement = '<script${1}> if (window.ga4AllowServices) {${2}} </script>';
+$gtmCodeSnippetForHead = preg_replace($pattern, $replacement, $gtmCodeSnippetForHead);
+
+if ($cspNonceProvider) {
+    $gtmCodeSnippetForHead = str_replace('<script', '<script nonce="' . $cspNonceProvider->generateNonce() . '" ', $gtmCodeSnippetForHead);
+}
+
+?>
+<?php if ($_helper->isEnabled()) : ?>
+    <?php /* @noEscape */ echo $gtmCodeSnippetForHead; ?>
+<?php endif; ?>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="catalog.compare.sidebar" remove="true"/>
+        <referenceBlock name="wishlist_sidebar" remove="true"/>
+        <referenceContainer name="sidebar.additional">
+            <block class="MGS\Blog\Block\Sidebar" name="blog.sidebar" template="MGS_Blog::sidebar.phtml" after="-"/>
+        </referenceContainer>
+        <referenceBlock name="head.additional">
+            <block class="Magento\Framework\View\Element\Template" name="script.sharethis" template="MGS_ThemeSettings::html/sharethis/script.phtml" ifconfig="themesettings/sharethis/share_blog_detail"/>
+        </referenceBlock>
+
+        <!-- Inject breadcrumbs into blog post page -->
+        <referenceBlock name="breadcrumbs">
+            <action method="addCrumb">
+                <argument name="crumbName" xsi:type="string">home</argument>
+                <argument name="crumbInfo" xsi:type="array">
+                    <item name="label" xsi:type="string">Home</item>
+                    <item name="title" xsi:type="string">Go to Home Page</item>
+                    <item name="link" xsi:type="string">/</item>
+                </argument>
+            </action>
+
+            <action method="addCrumb">
+                <argument name="crumbName" xsi:type="string">blog</argument>
+                <argument name="crumbInfo" xsi:type="array">
+                    <item name="label" xsi:type="string">Blog</item>
+                    <item name="title" xsi:type="string">Blog</item>
+                    <item name="link" xsi:type="string">/blog/</item>
+                </argument>
+            </action>
+
+            <block class="Magento\Framework\View\Element\Template"
+                   name="blog.post.breadcrumb"
+                   template="MGS_Blog::post/breadcrumb.phtml"/>
+        </referenceBlock>
+        
+        <referenceContainer name="content">
+            <block class="MGS\Blog\Block\Post\View" name="post_view" template="MGS_Blog::post/view.phtml">
+                <block class="Magento\Framework\View\Element\Template" name="blog.detail.sharethis" template="MGS_ThemeSettings::html/sharethis/html.phtml" ifconfig="themesettings/sharethis/share_blog_detail"/>
+                <block class="MGS\Blog\Block\Post\View\Comment" name="post_view_comment" template="MGS_Blog::post/view/comment.phtml">
+                    <block class="MGS\Blog\Block\Post\View\Commentlist" name="post_view_comment_list" template="MGS_Blog::post/view/comment/list.phtml"/>
+                </block>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

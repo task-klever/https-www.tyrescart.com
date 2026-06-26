@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+    <route url="/V1/orders/:order_id/iframe" method="POST">
+        <service class="TotalPay\Gateway\Api\PaymentInformationInterface" method="getIframeUrl" />
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
+
+    <route url="/V1/guest-carts/:cartId/totalpay-restore-cart" method="POST">
+        <service class="TotalPay\Gateway\Api\PaymentInformationInterface" method="restoreCart"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/carts/mine/totalpay-restore-cart" method="POST">
+        <service class="TotalPay\Gateway\Api\PaymentInformationInterface" method="restoreCart"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="cartId" force="true">%cart_id%</parameter>
+        </data>
+    </route>
+</routes>

@@ -1,0 +1,18 @@
+{
+    "purchase_order": {
+        "column": {
+            "invoice_number": true,
+            "invoice_date": true,
+            "invoice_due_date": true,
+            "payment_date": true,
+            "payemnt_term_days": true,
+            "invoice_status": true,
+            "invoice_remarks": true,
+            "invoice_upload": true,
+            "pickup_location": true,
+            "dropoff_location": true,
+            "reference_po": true,
+            "comment": true
+        }
+    }
+}

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ecomteck
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Ecomteck.com license that is
+ * available through the world-wide-web at this URL:
+ * https://ecomteck.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Ecomteck
+ * @package     Ecomteck_CustomerCustomAttributes
+ * @copyright   Copyright (c) 2018 Ecomteck (https://ecomteck.com/)
+ * @license     https://ecomteck.com/LICENSE.txt
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="customer_form_template_handle"/>
+    <body>
+        <referenceBlock name="customer_address_edit">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Ecomteck_CustomerCustomAttributes::customer/address/edit.phtml</argument>
+            </action>
+            <block class="Ecomteck\CustomerCustomAttributes\Block\Form" name="customer_form_user_attributes" template="form/userattributes.phtml" cacheable="false">
+                <action method="setFormCode">
+                    <argument name="code" xsi:type="string">customer_address_edit</argument>
+                </action>
+            </block>
+        </referenceBlock>
+    </body>
+</page>

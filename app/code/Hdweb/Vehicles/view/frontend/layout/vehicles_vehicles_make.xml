@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
+    <body>
+         <referenceBlock name="breadcrumbs">
+            <!-- Insert parent crumb (always static text with link to car-brands) -->
+            <action method="addCrumb">
+                <argument name="crumbName" xsi:type="string">buycar</argument>
+                <argument name="crumbInfo" xsi:type="array">
+                    <item name="label" xsi:type="string">Buy Car, SUV Tires Online at Best Price in UAE</item>
+                    <item name="title" xsi:type="string">Buy Car, SUV Tires Online at Best Price in UAE</item>
+                    <item name="link" xsi:type="string">{{store url="tyres/cars"}}</item>
+                </argument>
+            </action>
+
+            <!-- The brand crumb is already added dynamically by your action (vehicles_vehicles_make),
+                 so we don't duplicate it here -->
+        </referenceBlock>
+        <referenceContainer name="content">
+            <block class="Hdweb\Vehicles\Block\Make" name="makes" template="Hdweb_Vehicles::make.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

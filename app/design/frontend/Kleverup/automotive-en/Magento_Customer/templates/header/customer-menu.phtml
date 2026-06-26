@@ -1,0 +1,86 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Customer\Block\Account\Customer;
+use Magento\Framework\Escaper;
+
+/** @var Customer $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+?>
+ <button
+        type="button"
+        id="whishlist"
+        class="block text-white hover:text-theme-green outline-offset-2 transition-colors mx-2 hidden"
+        @click="open = !open"
+        :aria-expanded="open ? 'true' : 'false'"
+        aria-label="<?= $escaper->escapeHtmlAttr(__('Whishlist')) ?>"
+        aria-haspopup="true">
+        <i class="icon icon-favourite"></i>
+    </button>
+
+<div
+    class="relative flex mx-2"
+    x-data="{ open: false }"
+    @keyup.escape="open = false"
+    @click.outside="open = false"
+>
+    <button
+        type="button"
+        id="customer-menu"
+        class="block text-white hover:text-theme-green outline-offset-2 transition-colors"
+        @click="open = !open"
+        :aria-expanded="open ? 'true' : 'false'"
+        aria-label="<?= $escaper->escapeHtmlAttr(__('My Account')) ?>"
+        aria-haspopup="true"
+    >
+        <i class="icon icon-user"></i>
+    </button>
+    <nav
+        class="right-account absolute right-0 top-full z-20 w-42 mt-[0.9rem] lg:mt-[1.45rem] -mr-4 overflow-auto origin-top-right  shadow-lg sm:w-48  bg-white"
+        x-cloak
+        x-show="open"
+        aria-labelledby="customer-menu"
+    >
+        <?php if ($block->customerLoggedIn()): ?>
+            <?= $block->getChildHtml('header.customer.logged.in.links') ?>
+        <?php else: ?>
+            <?= $block->getChildHtml('header.customer.logged.out.links') ?>
+        <?php endif; ?>
+    </nav>
+</div>
+<script>
+    function customerMenu() {
+        return {
+            open: false,
+            isLoggedIn: false,
+            init() {
+                require(['Magento_Customer/js/customer-data'], (customerData) => {
+                    const sections = customerData.get('customer');
+                    this.isLoggedIn = sections()?.firstname ? true : false;
+                    sections.subscribe((data) => {
+                        this.isLoggedIn = data?.firstname ? true : false;
+                    });
+                });
+            }
+        }
+    }
+</script>
+
+
+
+
+
+

@@ -1,0 +1,26 @@
+<?php
+/**
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var array $quote_items
+ */
+$quoteItems = $block->getData('quote_items') ?: [];
+?>
+<?php if (!empty($quoteItems)): ?>
+    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <thead>
+            <tr style="background-color: #f5f5f5;">
+                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Product Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($quoteItems as $item): ?>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        <?= $block->escapeHtml($item['name']) ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php endif; ?>
+

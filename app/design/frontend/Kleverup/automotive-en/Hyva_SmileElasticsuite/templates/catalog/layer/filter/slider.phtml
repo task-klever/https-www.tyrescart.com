@@ -1,0 +1,73 @@
+<?php
+use Magento\Framework\Escaper;
+use Smile\ElasticsuiteCatalog\Block\Navigation\Renderer\Slider;
+/** @var Slider $block */
+/** @var Escaper $escaper */
+$jsConfig = $this->getJsonConfig();
+$isPriceSlider = str_contains($block->getDataRole(), 'price');
+?>
+<div class="smile-es-range-slider" data-role="<?= $block->getDataRole(); ?>">
+    <div x-data="rangeSlider(<?= $escaper->escapeHtmlAttr($jsConfig) ?>, <?= $isPriceSlider ? 'true' : 'false' ?>)" x-init="initialize()" class="relative max-w-xl w-full">
+        <div class="flex justify-between items-center mb-8 text-[0.7rem] gap-1">
+            <div>
+                <span class="sr-only"><?= $escaper->escapeHtml(__('Minimum value')) ?></span>
+                <span x-model="minprice" x-text="fromLabel" class="px-3 py-2 border border-gray-200 rounded w-24 text-center"></span>
+            </div>
+            <div>
+                <span class="sr-only"><?= $escaper->escapeHtml(__('Maximum value')) ?></span>
+                <span x-model="maxprice" x-text="toLabel" class="px-3 py-2 border border-gray-200 rounded w-24 text-center"></span>
+            </div>
+        </div>
+        <div class="es-range-slider relative rounded-md bg-gray-200"
+            role="group"
+            aria-label="<?= $escaper->escapeHtmlAttr(__('Range slider')) ?>"
+            aria-describedby="range-handler"
+        >
+            <input
+                type="range"
+                step="1" x-bind:min="min"
+                x-bind:max="max"
+                x-on:input="mintrigger"
+                @focus="() => updateFocusState('min', true)"
+                @blur="() => updateFocusState('min', false)"
+                x-bind:style="'z-index: ' + minZindex"
+                x-model="minprice"
+                class="absolute pointer-events-none appearance-none h-2 w-full opacity-0 cursor-pointer"
+                aria-label="<?= $escaper->escapeHtmlAttr(__('Minimum price value, use left and right arrows to adjust.')) ?>"
+            />
+            <input
+                type="range"
+                step="1"
+                x-bind:min="min"
+                x-bind:max="max"
+                x-on:input="maxtrigger"
+                @focus="() => updateFocusState('max', true)"
+                @blur="() => updateFocusState('max', false)"
+                x-bind:style="'z-index: ' + maxZindex"
+                x-model="maxprice"
+                class="absolute pointer-events-none appearance-none h-2 w-full opacity-0 cursor-pointer"
+                aria-label="<?= $escaper->escapeHtmlAttr(__('Maximum price value, use left and right arrows to adjust.')) ?>"
+            />
+            <div class="relative z-10 h-2" style="height: 0.5rem; margin-right: 1.5rem;">
+                <div class="absolute z-10 left-0 right-0 bottom-0 top-0"></div>
+                <div class="absolute z-20 top-0 bottom-0 rounded-md bg-primary" x-bind:style="'right:'+ (100 - 1 - maxthumb)+'%; left:'+ minthumb+'%'"></div>
+                <div :class="{ 'ring': minfocused }" class="absolute z-30 w-6 h-6 top-0 left-0 bg-primary rounded-full -mt-2 thumb"  x-bind:style="'left: '+minthumb+'%'"></div>
+                <div :class="{ 'ring': maxfocused }" class="absolute z-30 w-6 h-6 top-0 right-0 bg-primary rounded-full -mt-2 thumb" x-bind:style="'left: '+maxthumb+'%'"></div>
+            </div>
+        </div>
+        <div class="mt-8 mb-8 h-6 flex justify-between items-center">
+            <div x-html="message"></div>
+            <div class="">
+                <a
+                    class="w-auto mr-auto btn btn-primary justify-center text-sm px-4 md:px-2 lg:px-4"
+                    x-model="url"
+                    :href="url"
+                    :aria-label="
+                        hyva.str('<?= $escaper->escapeJs(__('Apply pricing filtering, minimum price %1, maximum price %2')) ?>', minprice, maxprice) + ', ' +
+                        hyva.str('<?= $escaper->escapeJs(__('%1 products available')) ?>', count)">
+                    <span><?= __('OK'); ?></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

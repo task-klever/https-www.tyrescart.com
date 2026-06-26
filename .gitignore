@@ -1,0 +1,60 @@
+## Magento 2 Standard .gitignore
+
+# Root files
+/.buildpath
+/.cache
+/.metadata
+/.project
+/.settings
+/.vscode
+atlassian*
+/nbproject
+/robots.txt
+/sitemap*
+*.DS_Store
+/.idea
+/.gitattributes
+
+# Composer
+/vendor/*
+
+# Magento core generated
+/generated/*
+!/generated/.htaccess
+
+# Temporary files
+/var/*
+!/var/.htaccess
+
+# Static content (deployed)
+/pub/static/*
+!/pub/static/.htaccess
+!/pub/static/adminhtml/
+!/pub/static/frontend/
+
+# Media
+/pub/media/*
+!/pub/media/.htaccess
+!/pub/media/catalog/
+!/pub/media/customer/
+!/pub/media/downloadable/
+!/pub/media/import/
+!/pub/media/wysiwyg/
+!/pub/media/tmp/
+
+# Node
+/node_modules
+
+# Auth
+/auth.json
+/app/etc/env.php
+
+# Backup files
+*.bak.*
+
+# Temp/debug files
+/pub/faq_debug.php
+/pub/opcache_clear_temp.php
+
+# Logs
+*.log

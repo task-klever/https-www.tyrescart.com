@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="MGS\Brand\Block\Brand\Patternview" name="brand.patternview" template="MGS_Brand::brand/patterview.phtml"/>
+        </referenceContainer>
+        <referenceBlock name="script-alpine-js">
+            <block name="alpine-plugin-ajax-cart" template="Magento_Theme::page/js/plugins/ajax-cart.phtml">
+                <arguments>
+                    <argument name="delay" xsi:type="number">500</argument>
+                    <argument name="show_sku" xsi:type="boolean">true</argument>
+                    <!-- <argument name="display_on_success" xsi:type="string">false</argument> -->
+                    <!-- <argument name="display_on_success" xsi:type="string">minicart</argument> -->
+                    <argument name="display_on_success" xsi:type="string">modal</argument>
+                    <!-- <argument name="form_selectors" xsi:type="string">#product_addtocart_form, .product_addtocart_form, #custom_form</argument> -->
+                </arguments>
+            </block>
+        </referenceBlock>
+    </body>
+</page>

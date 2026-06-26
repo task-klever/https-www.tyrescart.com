@@ -1,0 +1,98 @@
+<?php
+/**
+ * Footer FAQ template for Hyva theme
+ * Displays FAQ accordion in footer based on FAQ Group's footer_slugs field
+ *
+ * @var $block \Klever\Faq\Block\FooterFaq
+ * @var $escaper \Magento\Framework\Escaper
+ */
+if (!$block->shouldShow()) {
+    return;
+}
+$matchedGroups = $block->getMatchingFaqGroups();
+if (empty($matchedGroups)) {
+    return;
+}
+?>
+<?php
+// Collect all FAQ items for JSON-LD and rendering
+$allFaqItems = [];
+foreach ($matchedGroups as $group) {
+    $faqCollection = $block->getFaqCollection((int)$group->getId());
+    if ($faqCollection->getSize()) {
+        $allFaqItems[] = ['group' => $group, 'faqs' => $faqCollection];
+    }
+}
+if (empty($allFaqItems)) {
+    return;
+}
+// Build JSON-LD FAQPage schema
+$jsonLdQuestions = [];
+foreach ($allFaqItems as $item) {
+    foreach ($item['faqs'] as $faq) {
+        $translatedContent = (string)__($faq->getContent());
+        $plainText = strip_tags($block->filterOutputHtml($translatedContent));
+        $plainText = trim(preg_replace('/\s+/', ' ', $plainText));
+        $jsonLdQuestions[] = [
+            '@type' => 'Question',
+            'name' => (string)__($faq->getTitle()),
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => $plainText,
+            ],
+        ];
+    }
+}
+$jsonLd = [
+    '@context' => 'https://schema.org',
+    '@type' => 'FAQPage',
+    'mainEntity' => $jsonLdQuestions,
+];
+?>
+<script type="application/ld+json"><?= /* @noEscape */ json_encode($jsonLd, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?></script>
+<div class="footer-faq-section section-padding bg-[#f5f5f5]" x-data="{ openFaq: null }">
+    <div class="container-theme">
+        <?php foreach ($allFaqItems as $item): ?>
+            <div class="section-title text-center">
+                <?php
+                    $groupName = $escaper->escapeHtml(__($item['group']->getGroupName()));
+                    $groupNameParts = explode(' ', $groupName, 2);
+                    $firstWord = $groupNameParts[0];
+                    $restWords = isset($groupNameParts[1]) ? ' ' . $groupNameParts[1] : '';
+                ?>
+                <h3 class="text-theme-blue"><span class="text-black"><?= $firstWord ?></span><?= $restWords ?></h3>
+            </div>
+            <div class="rounded-[10px] shadow-custom-blue bg-gradient-to-br from-[#e0fff6]/60 via-white to-[#d1f7ec]/60 px-3 md:px-8 lg:px-10 py-1.5 md:py-4 lg:py-5 w-full border border-color">
+                <div class="divide-y divide-theme-blue/30">
+                    <?php foreach ($item['faqs'] as $index => $faq): ?>
+                        <div class="py-2 md:py-4">
+                            <button
+                                type="button"
+                                @click="openFaq = openFaq === <?= (int)$faq->getFaqId() ?> ? null : <?= (int)$faq->getFaqId() ?>"
+                                :aria-expanded="openFaq === <?= (int)$faq->getFaqId() ?> ? 'true' : 'false'"
+                                class="flex w-full items-center justify-between cursor-pointer font-medium text-base md:text-lg text-black transition text-left"
+                                :class="{ 'text-theme-blue': openFaq === <?= (int)$faq->getFaqId() ?> }"
+                            >
+                                <span><?= $escaper->escapeHtml(__($faq->getTitle())) ?></span>
+                                <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': openFaq === <?= (int)$faq->getFaqId() ?> }">
+                                    <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </span>
+                            </button>
+                            <div
+                                x-ref="faq<?= (int)$faq->getFaqId() ?>"
+                                class="overflow-hidden transition-all duration-300 ease-in-out"
+                                :style="openFaq === <?= (int)$faq->getFaqId() ?> ? `max-height: ${$refs['faq<?= (int)$faq->getFaqId() ?>'].scrollHeight}px` : 'max-height: 0px'"
+                            >
+                                <div class="mt-3 text-theme-dark/80 text-base pl-1">
+                                    <?= /* @noEscape */ $block->filterOutputHtml((string)__($faq->getContent())) ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>

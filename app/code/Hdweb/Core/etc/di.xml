@@ -1,0 +1,8 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- <preference for="Hyva\Checkout\Controller\Index\Index" type="Hdweb\Core\Controller\Hyva\Checkout\Index\Index" /> -->
+    <!-- <preference for="Magento\Catalog\Block\Category\View" type="Hdweb\Core\Block\Category\View" /> -->
+    <type name="Magento\Contact\Controller\Index\Post">
+        <plugin name="hdweb_core_contact" type="Hdweb\Core\Plugin\ContactPostPlugin" sortOrder="10" disabled="false"/>
+    </type>
+    <!-- <preference for="Hyva\Theme\ViewModel\Sales\PaymentInfo" type="Hdweb\Core\ViewModel\Sales\PaymentInfo" /> -->
+</config>

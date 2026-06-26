@@ -1,0 +1,15 @@
+{
+    "name": "klever/module-order-actions",
+    "description": "Custom order action buttons, invoice PDF customization, and notify invoice email",
+    "type": "magento2-module",
+    "version": "1.1.0",
+    "license": "proprietary",
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Klever\\OrderActions\\": ""
+        }
+    }
+}

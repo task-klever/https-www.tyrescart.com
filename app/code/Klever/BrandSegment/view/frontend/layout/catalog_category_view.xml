@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- Top Picks block is rendered from list.phtml via getChildHtml -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="category.products.list">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="klever.brandsegment.toppicks"
+                   template="Klever_BrandSegment::top-picks.phtml"/>
+        </referenceBlock>
+    </body>
+</page>

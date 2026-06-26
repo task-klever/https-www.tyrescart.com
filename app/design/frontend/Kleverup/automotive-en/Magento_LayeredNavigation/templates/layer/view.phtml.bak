@@ -1,0 +1,506 @@
+<?php
+/**
+ * Copyright © 2016 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+// @codingStandardsIgnoreFile
+?>
+<?php
+/**
+ * Category layered navigation
+ *
+ * @var $block \Magento\LayeredNavigation\Block\Navigation
+ */
+?>
+<?php $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); ?>
+<?php $moduleManager = $objectManager->get('\Magento\Framework\Module\Manager'); 
+$productList = $objectManager->get('Hdweb\Tyrefinder\Block\Product\ListProduct');
+$bundleProduct = $productList->isBundle();
+$customerSession = $objectManager->get(\Magento\Customer\Model\Session::class);
+$showItemCodeOnly = false;
+// Check login + customer group = 4
+if ($customerSession->isLoggedIn()) {
+    $customer = $customerSession->getCustomer();
+    if ($customer->getGroupId() == 4) {
+        $showItemCodeOnly = true;
+    }
+}
+?>
+<?php if ($block->canShowBlock()): ?>
+<!-- filter-sidebar start (outside filter-box-custom-hide so display:none doesn't block it) -->
+<div class="sliebar"
+     x-data="{ activeFilter: null }">
+   <div id="view-all" class="fixed top-0 right-0 h-full overflow-y-auto w-[350px] max-w-full bg-white shadow-lg z-60 transform translate-x-full transition-transform ease-in-out duration-500 sm:duration-700">
+      <div class="flex items-center justify-between p-4 border-b border-border-color relative">
+         <h3 class="text-[1.2rem] md:text-[1.35rem] lg:text-[1.45rem] text-theme-dark font-bold relative uppercase">
+            <?php echo __('Filter'); ?> <span class="text-theme-blue"><?php echo __('By'); ?></span>
+         </h3>
+         <button type="button" onclick="CLoseAllFilter()" aria-label="Close minicart" class="absolute top-0 right-1 [html[lang='ar']_&]:right-auto [html[lang='ar']_&]:left-1 p-4 mt-2 text-black transition-colors hover:text-theme-blue">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="24" height="24" aria-hidden="true">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+         </button>
+      </div>
+      <div class="tyre-popup-content bg-white rounded-lg">
+          <!-- Right Sidebar (More Filters) -->
+          <div class="block filter mgs-filter">
+              <div class="block-filter-content">
+                  <?php $wrapOptions = false; $filters = $block->getFilters(); 
+                  ?>
+                  <div class="filter-options scrollbar-inner" id="narrow-by-list">
+                    <?php if($bundleProduct == 1)  {
+                        $productRepository = $objectManager->get(\Magento\Catalog\Api\ProductRepositoryInterface::class);
+                $collections = $productList->getBundleCollection();
+                $brandLabel = $countryLabel = $patternLabel = $yearLabel = $warrantyPeriodLabel = [];
+                foreach ($collections as $collection) {
+                    $front = $productRepository->getById($collection['front']);
+                    $frontBrandLabel = $front->getAttributeText('brand');
+                    $frontCountryLabel = $front->getAttributeText('origin');
+                    $frontPatternLabel = $front->getAttributeText('pattern');
+                    $frontYearLabel = $front->getAttributeText('year');
+                    $frontWarrantyPeriodLabel = $front->getAttributeText('warranty_period');
+                    $rear = $productRepository->getById($collection['rear']);
+                    $rearBrandValue = $rear->getAttributeText('brand');
+                    $rearCountryLabel = $rear->getAttributeText('origin');
+                    $rearPatternLabel = $rear->getAttributeText('pattern');
+                    $rearYearLabel = $rear->getAttributeText('year');
+                    $rearWarrantyPeriodLabel = $rear->getAttributeText('warranty_period');
+                    array_push($brandLabel, $frontBrandLabel);
+                    if (!empty($countryLabel)) {
+                        array_push($countryLabel, $frontCountryLabel);
+                    }
+                    array_push($patternLabel, $frontPatternLabel);
+                    array_push($yearLabel, $frontYearLabel);
+                    array_push($warrantyPeriodLabel, $frontWarrantyPeriodLabel);
+                }
+                $brandWithCount = array_count_values($brandLabel); 
+                $countryWithCount = array_count_values($countryLabel);
+                $patternWithCount = array_count_values($patternLabel);
+                $yearWithCount = array_count_values($yearLabel);
+                $warrantyPeriodWithCount = array_count_values($warrantyPeriodLabel); ?>
+                <!-- Brand Filter -->
+               <div class="filter-options-item rounded relative border-b border-border-color px-4 py-2.5">
+                    <select name="brand" id="brandSideBar" class="text-base filter-options-title font-semibold border-0 flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container w-full px-0 py-0">
+                        <option value="">Brand</option>
+                        <?php foreach ($brandWithCount as $key => $value) { ?>
+                            <option value="<?php echo $key; ?>"><?php echo $key; ?></option>
+                        <?php } ?>
+                    </select>
+                </div>
+                <?php if(isset($countryWithCount) && !empty($countryWithCount)) { ?>
+                <div class="filter-options-item rounded relative border-b border-border-color px-4 py-2.5">
+                    <select name="country" id="countrySideBar" class="text-base filter-options-title font-semibold border-0 flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container w-full px-0 py-0">
+                        <option value="">Origin</option>
+                        <?php foreach ($countryWithCount as $key => $value) { ?>
+                            <option value="<?php echo $key; ?>"><?php echo $key; ?></option>
+                        <?php } ?>
+                    </select>
+                </div>
+                <?php } ?>
+                <div class="filter-options-item rounded relative border-b border-border-color px-4 py-2.5">
+                    <select name="pattern" id="patternSideBar" class="text-base filter-options-title font-semibold border-0 flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container w-full px-0 py-0">
+                        <option value="">Pattern</option>
+                        <?php foreach ($patternWithCount as $key => $value) { ?>
+                            <option value="<?php echo $key; ?>"><?php echo $key; ?></option>
+                        <?php } ?>
+                    </select>
+                </div>
+                <div class="filter-options-item rounded relative border-b border-border-color px-4 py-2.5">
+                    <select name="year" id="yearSideBar" class="text-base filter-options-title font-semibold border-0 flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container w-full px-0 py-0">
+                        <option value="">Year</option>
+                        <?php foreach ($yearWithCount as $key => $value) { ?>
+                            <option value="<?php echo $key; ?>"><?php echo $key; ?></option>
+                        <?php } ?>
+                    </select>
+                </div>
+                <div class="filter-options-item rounded relative border-b border-border-color px-4 py-2.5">
+                    <select name="warranty_period" id="warranty_periodSideBar" class="text-base filter-options-title font-semibold border-0 flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container w-full px-0 py-0">
+                        <option value="">Warranty Period</option>
+                        <?php foreach ($warrantyPeriodWithCount as $key => $value) { ?>
+                            <option value="<?php echo $key; ?>"><?php echo $key; ?></option>
+                        <?php } ?>
+                    </select>
+                </div>
+                    <?php } else { ?>
+                      <?php foreach ($filters as $index => $filter): ?>
+                            <?php
+                            // Hide "Item Code" filter if user is NOT allowed
+                            if (strtolower($filter->getName()) === 'item code' && !$showItemCodeOnly) {
+                                continue;
+                            }
+                            ?>
+                          <?php if ($filter->getName() != __('Category') && $filter->getItemsCount()): 
+                              $hidenClass = '';
+                              if ($filter->getName() == __('Width') || $filter->getName() == __('Height') || $filter->getName() == __('Rim')) {
+                                  $hidenClass = ' hidden';
+                              }
+                          ?>
+                          <div 
+                              class="filter-options-item px-4 py-2 border-b border-border-color<?php echo $hidenClass; ?>"
+                          >
+                              <button 
+                                  @click="activeFilter === <?= $index ?> ? activeFilter = null : activeFilter = <?= $index ?>" 
+                                  class="filter-options-title font-semibold flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container w-full text-base"
+                                  :aria-expanded="activeFilter === <?= $index ?>"
+                              >
+                                  <?= __($filter->getName()); ?>
+                                   <span class="py-1 px-1 rounded">
+                                      <svg
+                                          width="20"
+                                          height="20"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          class="transition-transform transform duration-300 ease-in-out"
+                                          :class="activeFilter === <?= $index ?> ? 'rotate-180' : ''"
+                                          aria-hidden="true"
+                                      >
+                                          <path
+                                              d="M19 9L12 16L5 9"
+                                              stroke="#4A5568"
+                                              stroke-width="2"
+                                              stroke-linecap="round"
+                                              stroke-linejoin="round"
+                                          />
+                                      </svg>
+                                  </span>
+                              </button>
+                            <div 
+                                x-show="activeFilter === <?= $index ?>"  
+                                x-ref="content<?= $index ?>"
+                                x-transition:enter="transition-all duration-300 ease-in-out"
+                                x-transition:enter-start="max-h-0"
+                                x-transition:enter-end="max-h-[1000px]"
+                                x-transition:leave="transition-all duration-300 ease-in-out"
+                                x-transition:leave-start="max-h-[1000px]"
+                                x-transition:leave-end="max-h-0"
+                                class="filter-options-content overflow-hidden text-base border-container relative w-full bg-white pt-3">
+                                <?= $block->getChildBlock('renderer')->render($filter); ?>
+                            </div>
+                          </div>
+                          <?php endif; ?>
+                      <?php endforeach; ?>
+                  <?php } ?>
+                  </div>
+              </div>
+          </div>
+      </div>
+   </div>
+   <div id="view-all-overlay" onclick="CLoseAllFilter()" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-all ease-in-out duration-500 sm:duration-700"></div>
+</div>
+<!-- filter-sidebar end -->
+
+<div
+    x-data="{ showAll: false }"
+    class="relative filter-box-custom-hide"
+>
+<!-- filter-sidebar -->
+<?php
+    $filterCount = 0;
+    foreach ($filters as $index => $filter):
+        if ($filter->getName() != __('Category') && $filter->getName() != __('Width') && $filter->getName() != __('Height') && $filter->getName() != __('Rim') && $filter->getItemsCount()):
+            $filterCount++;
+        endif;
+    endforeach;
+    if ($filterCount > 0) {
+?>
+ <!-- Initial collapsed sidebar start (hidden - filters moved to toolbar More Filters button) -->
+<div class="hidden filter mgs-filter initial-filter"
+     x-data="{ activeFilter: null }">
+    <!-- <div class="sidebar-title px-3 py-1 rounded-tl-[10px] rounded-tr-[10px] bg-black flex items-center justify-between">
+       <span class="filter-title font-semibold uppercase text-[1rem] text-white"><?php echo __('Filter By'); ?></span>
+    </div> -->
+    <div class="block-filter-content hidden">
+        <!--  Active Filters Section (state.phtml content) -->
+        <?php if ($block->getChildHtml('state')): ?>
+            <div class="filter-current mb-4 p-3 border border-gray-200 rounded bg-gray-50">
+                <?= $block->getChildHtml('state') ?>
+            </div>
+        <?php endif; ?>
+        <?php $wrapOptions = false; ?>
+        <div class="filter-options scrollbar-inner w-full gap-4 inline-grid p-3" id="narrow-by-list">
+            <?php
+            if ($bundleProduct == 1) {
+                $productRepository = $objectManager->get(\Magento\Catalog\Api\ProductRepositoryInterface::class);
+                $collections = $productList->getBundleCollection();
+                $brandLabel = $countryLabel = $patternLabel = $yearLabel = $warrantyPeriodLabel = [];
+                foreach ($collections as $collection) {
+                    $front = $productRepository->getById($collection['front']);
+                    $frontBrandLabel = $front->getAttributeText('brand');
+                    $frontCountryLabel = $front->getAttributeText('origin');
+                    $frontPatternLabel = $front->getAttributeText('pattern');
+                    $frontYearLabel = $front->getAttributeText('year');
+                    $frontWarrantyPeriodLabel = $front->getAttributeText('warranty_period');
+                    $rear = $productRepository->getById($collection['rear']);
+                    $rearBrandValue = $rear->getAttributeText('brand');
+                    $rearCountryLabel = $rear->getAttributeText('origin');
+                    $rearPatternLabel = $rear->getAttributeText('pattern');
+                    $rearYearLabel = $rear->getAttributeText('year');
+                    $rearWarrantyPeriodLabel = $rear->getAttributeText('warranty_period');
+                    array_push($brandLabel, $frontBrandLabel);
+                    if (!empty($countryLabel)) {
+                        array_push($countryLabel, $frontCountryLabel);
+                    }
+                    array_push($patternLabel, $frontPatternLabel);
+                    array_push($yearLabel, $frontYearLabel);
+                    array_push($warrantyPeriodLabel, $frontWarrantyPeriodLabel);
+                }
+                $brandWithCount = array_count_values($brandLabel); 
+                $countryWithCount = array_count_values($countryLabel);
+                $patternWithCount = array_count_values($patternLabel);
+                $yearWithCount = array_count_values($yearLabel);
+                $warrantyPeriodWithCount = array_count_values($warrantyPeriodLabel); ?>
+                <!-- Brand Filter -->
+                <div class="filter-options-item rounded relative">
+                    <select name="brand" id="brand" class="text-base filter-options-title min-h-[46px] form-select font-semibold flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container w-full">
+                        <option value="">Brand</option>
+                        <?php foreach ($brandWithCount as $key => $value) { ?>
+                            <option value="<?php echo $key; ?>"><?php echo $key; ?></option>
+                        <?php } ?>
+                    </select>
+                </div>
+                <?php if(isset($countryWithCount) && !empty($countryWithCount)) { ?>
+                <div class="filter-options-item rounded relative">
+                    <select name="country" id="country" class="text-base filter-options-title min-h-[46px] form-select font-semibold flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container w-full">
+                        <option value="">Origin</option>
+                        <?php foreach ($countryWithCount as $key => $value) { ?>
+                            <option value="<?php echo $key; ?>"><?php echo $key; ?></option>
+                        <?php } ?>
+                    </select>
+                </div>
+                <?php } ?>
+                <div class="filter-options-item rounded relative">
+                    <select name="pattern" id="pattern" class="text-base filter-options-title min-h-[46px] form-select font-semibold flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container w-full">
+                        <option value="">Pattern</option>
+                        <?php foreach ($patternWithCount as $key => $value) { ?>
+                            <option value="<?php echo $key; ?>"><?php echo $key; ?></option>
+                        <?php } ?>
+                    </select>
+                </div>
+                <div class="filter-options-item rounded relative">
+                    <select name="year" id="year" class="text-base filter-options-title min-h-[46px] form-select font-semibold flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container w-full">
+                        <option value="">Year</option>
+                        <?php foreach ($yearWithCount as $key => $value) { ?>
+                            <option value="<?php echo $key; ?>"><?php echo $key; ?></option>
+                        <?php } ?>
+                    </select>
+                </div>
+                <div class="filter-options-item rounded relative">
+                    <select name="warranty_period" id="warranty_period" class="text-base filter-options-title min-h-[46px] form-select font-semibold flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container w-full">
+                        <option value="">Warranty Period</option>
+                        <?php foreach ($warrantyPeriodWithCount as $key => $value) { ?>
+                            <option value="<?php echo $key; ?>"><?php echo $key; ?></option>
+                        <?php } ?>
+                    </select>
+                </div>
+            <?php } else { ?>
+                <?php
+                // Get customer session
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $customerSession = $objectManager->get(\Magento\Customer\Model\Session::class);
+            $showItemCodeOnly = false;
+            // Check login + customer group = 5
+            if ($customerSession->isLoggedIn()) {
+                $customer = $customerSession->getCustomer();
+                if ($customer->getGroupId() == 4) {
+                    $showItemCodeOnly = true;
+                }
+            }
+            $visibleCount = 0;
+            $maxVisible = 5;
+            ?>
+            <?php foreach ($filters as $index => $filter): ?>
+            <?php
+            // Hide Item Code filter if customer is NOT allowed
+            if (strtolower($filter->getName()) === 'item code' && !$showItemCodeOnly) {
+                continue;
+            }
+            ?>
+                <?php if ($filter->getName() != __('Category') && $filter->getName() != __('Width') && $filter->getName() != __('Height') && $filter->getName() != __('Rim') && $filter->getItemsCount()): ?>    
+                    <?php if ($visibleCount < $maxVisible): ?>
+                        <?php $visibleCount++; ?>
+                        <div class="filter-options-item border border-container px-3 py-2 rounded relative"
+                        @click.outside="if (activeFilter === <?= $index ?>) activeFilter = null" >
+                            <button 
+                                @click="activeFilter === <?= $index ?> ? activeFilter = null : activeFilter = <?= $index ?>" 
+                                class="text-base filter-options-title font-semibold flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container w-full"
+                                :aria-expanded="activeFilter === <?= $index ?>">
+                                <?= __($filter->getName()); ?>
+                                <span class="py-1 px-1 rounded">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="transition-transform transform duration-300 ease-in-out" :class="activeFilter === <?= $index ?> ? 'rotate-180' : ''" aria-hidden="true"> <path d="M19 9L12 16L5 9" stroke="#4A5568" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+                           <div 
+    x-show="activeFilter === <?= $index ?>" 
+    x-collapse
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0" style="z-index:9;"
+    class="filter-options-content overflow-hidden pl-2 mt-1 text-sm 2xl:text-base rounded border border-container absolute w-full shadow-[rgba(0,0,0,0.35)_0px_5px_15px] bg-white left-0 top-full p-3"
+>
+    <?= $block->getChildBlock('renderer')->render($filter); ?>
+</div>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
+            <?php endforeach; ?>
+            <?php /* if ($visibleCount >= $maxVisible): ?>
+            <div onclick="FilterItems()" class="text-base cursor-pointer filter-options-item filter-options-more sidebar-toggle border border-container px-3 py-2 rounded hover:bg-theme-blue text-white bg-black transition-all duration-300 ease-in-out leading-[1.7]">
+                <button class="mare-filter w-full text-center font-semibold">
+                    <?php echo __('More Filters'); ?>
+                </button>
+            </div>
+            <?php endif; */ ?>
+        </div>
+    </div>
+</div>
+<?php } ?>
+<!-- Initial collapsed sidebar end -->
+    <?php } ?>
+</div>
+<?php endif; ?>
+<script>
+  function FilterItems() {
+    document.getElementById("view-all").classList.remove("translate-x-full");
+    document.getElementById("view-all-overlay").classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+  }
+  function CLoseAllFilter() {
+    document.getElementById("view-all").classList.add("translate-x-full");
+    document.getElementById("view-all-overlay").classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+  }
+<?php if ($bundleProduct == 1) { ?>
+    const brand = document.getElementById("brand");
+    if (brand) {
+    brand.addEventListener("change", function () {
+        const selectedValue = this.value;
+        if (selectedValue) {
+        const url = new URL(window.location.href);
+        // Set or replace the "brand" parameter
+        url.searchParams.set("brand", selectedValue);
+        // Redirect to the new URL
+        window.location.href = url.toString();
+        }
+    });
+    }
+    const brandSidebar = document.getElementById("brandSideBar");
+    if (brandSidebar) {
+    brandSidebar.addEventListener("change", function () {
+        const selectedValue = this.value;
+        if (selectedValue) {
+        const url = new URL(window.location.href);
+        // Set or replace the "brand" parameter
+        url.searchParams.set("brand", selectedValue);
+        // Redirect to the new URL
+        window.location.href = url.toString();
+        }
+    });
+    }
+    const country = document.getElementById("country");
+    if (country) {
+    country.addEventListener("change", function () {
+        const selectedValue = this.value;
+        if (selectedValue) {
+        const url = new URL(window.location.href);
+        // Set or replace the "origin" parameter
+        url.searchParams.set("origin", selectedValue);
+        // Redirect to the new URL
+        window.location.href = url.toString();
+        }
+    });
+    }
+    const countrySidebar = document.getElementById("countrySideBar");
+    if (countrySidebar) {
+    countrySidebar.addEventListener("change", function () {
+        const selectedValue = this.value;
+        if (selectedValue) {
+        const url = new URL(window.location.href);
+        // Set or replace the "origin" parameter
+        url.searchParams.set("origin", selectedValue);
+        // Redirect to the new URL
+        window.location.href = url.toString();
+        }
+    });
+    }
+    const pattern = document.getElementById("pattern");
+if (pattern) {
+  pattern.addEventListener("change", function () {
+    const selectedValue = this.value;
+    if (selectedValue) {
+      const url = new URL(window.location.href);
+      // Set or replace the "pattern" parameter
+      url.searchParams.set("pattern", selectedValue);
+      // Redirect to the updated URL
+      window.location.href = url.toString();
+    }
+  });
+}
+    const patternSidebar = document.getElementById("patternSideBar");
+if (patternSidebar) {
+  patternSidebar.addEventListener("change", function () {
+    const selectedValue = this.value;
+    if (selectedValue) {
+      const url = new URL(window.location.href);
+      // Set or replace the "pattern" parameter
+      url.searchParams.set("pattern", selectedValue);
+      // Redirect to the updated URL
+      window.location.href = url.toString();
+    }
+  });
+}
+    const year = document.getElementById("year");
+if (year) {
+  year.addEventListener("change", function () {
+    const selectedValue = this.value;
+    if (selectedValue) {
+      const url = new URL(window.location.href);
+      // Set or replace the "year" parameter
+      url.searchParams.set("year", selectedValue);
+      // Redirect to the updated URL
+      window.location.href = url.toString();
+    }
+  });
+}
+    const yearSidebar = document.getElementById("yearSideBar");
+if (yearSidebar) {
+  yearSidebar.addEventListener("change", function () {
+    const selectedValue = this.value;
+    if (selectedValue) {
+      const url = new URL(window.location.href);
+      // Set or replace the "year" parameter
+      url.searchParams.set("year", selectedValue);
+      // Redirect to the updated URL
+      window.location.href = url.toString();
+    }
+  });
+}
+const warranty = document.getElementById("warranty_period");
+if (warranty) {
+  warranty.addEventListener("change", function () {
+    const selectedValue = this.value;
+    if (selectedValue) {
+      const url = new URL(window.location.href);
+      // Set or replace the "warranty_period" parameter
+      url.searchParams.set("warranty_period", selectedValue);
+      // Redirect to the updated URL
+      window.location.href = url.toString();
+    }
+  });
+}
+const warrantySidebar = document.getElementById("warranty_periodSideBar");
+if (warrantySidebar) {
+  warrantySidebar.addEventListener("change", function () {
+    const selectedValue = this.value;
+    if (selectedValue) {
+      const url = new URL(window.location.href);
+      // Set or replace the "warranty_period" parameter
+      url.searchParams.set("warranty_period", selectedValue);
+      // Redirect to the updated URL
+      window.location.href = url.toString();
+    }
+  });
+}
+<?php } ?>
+</script>

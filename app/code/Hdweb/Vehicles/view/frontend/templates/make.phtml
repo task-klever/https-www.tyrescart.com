@@ -1,0 +1,128 @@
+<?php
+   $route = $this->getRequest()->getParam('route');
+   $make = $this->getRequest()->getParam('make');
+   $vehicleModels = $block->getVehicleModels();
+   $baseUrl = $this->getBaseUrl();
+   $mediaURL = $block->getMediaUrl();
+   $vehicleData = $block->getVehicleData();
+   if (!$vehicleData) {
+       $vehicleData['make_paragraph1'] = '';
+       //$vehicleData['make_paragraph2'] = '';
+   }
+   $strMake = str_replace('-', ' ', $make);
+   $makeString = ucwords($strMake);
+   ?>
+
+
+
+
+<div class="section finde-tyre-section py-5">
+    <div class="container-theme">
+        <div class="section-title text-center">
+               <h3><?php echo $makeString; ?> <span class="text-theme-blue"><?php echo __('TYRES SHOP'); ?></span></h3>
+           </div>
+        <div class="flex flex-col sm:flex-row items-center gap-5 md:gap-7">
+            <div class="flex-shrink-0 w-[10rem] h-[6rem] md:w-[14rem] md:h-[7rem] border border-gray-200 rounded-xl flex items-center justify-center bg-white p-1 md:p-3">
+                <img class="w-full h-full object-contain"
+                     loading="lazy"
+                     src="<?php echo $this->getViewFileUrl('Hdweb_Vehicles::images/logo/' . $make . '.png'); ?>"
+                     alt="<?php echo $makeString; ?> logo" />
+            </div>
+            <div class="flex-1 min-w-0">
+                <h4 class="text-base lg:text-lg font-bold text-gray-900 mb-2 leading-snug">
+                    <?php echo __('Find Tyres for Your'); ?> <?php echo $makeString; ?> <?php echo __('in the UAE'); ?>
+                </h4>
+                <p class="text-base text-gray-600 leading-relaxed">
+                    <?php echo __('Looking for tyres for your'); ?> <?php echo strtolower($makeString); ?> <?php echo __('? At TyresCart, we offer a wide selection of premium tyres online designed to match your vehicle perfectly, delivering safety, comfort, and performance on every journey.'); ?>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="section section-padding car-make-about bg-cover bg-center bg-bottom" style="background-image: url('<?php echo $mediaURL.'images/make-banner-bg.webp'; ?>');">
+   <div class="container-theme w-full mx-auto block">
+      <div class="flex gap-0 md:gap-4 flex-wrap md:flex-nowrap justify-center items-center">
+         <div class="w-full md:3/5 lg:1/2 xl:w-1/2">
+            <div class="section-title text-white text-center md:[text-align:inherit]">
+               <h3><span class="text-theme-blue"><?php echo $makeString; ?></span> <?php echo __('tyre shop in Dubai, UAE'); ?></h3>
+               <p><?php echo __('Enjoy great value, trusted quality, and seamless tyre services every time.'); ?></p>
+           </div>
+            <div class="text-wrap">
+               <ul class="list-none space-y-2 lg:space-y-4">
+                  <li class="flex items-start gap-2">
+                    <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                     <span class="text-white"> <?php echo __('Premium'); ?> <?php echo $makeString; ?> <?php echo __('Tyres & Installation'); ?></span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                     <span class="text-white"> <?php echo __('Expert'); ?> <?php echo $makeString; ?> <?php echo __('Repairs & Service'); ?></span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                     <span class="text-white"> <?php echo __('Genuine'); ?> <?php echo $makeString; ?> <?php echo __('Parts for Performance'); ?></span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                     <span class="text-white"> <?php echo __('Quick'); ?> <?php echo $makeString; ?> <?php echo __('Battery Replacement'); ?></span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                     <span class="text-white"> <?php echo __('On-Demand'); ?> <?php echo $makeString; ?> <?php echo __('Mobile Van Service'); ?></span>
+                  </li>
+               </ul>
+            </div>
+         </div>
+         <div class="w-full md:2/5 lg:1/2 xl:w-1/2">
+            <div class="w-full relative mt-2 md:mt-0">
+            <div class="img_wrp w-full pb-full h-0 z-0 pb-[43%]">
+               <div class="absolute inset-0 overflow-hidden">
+                  <picture>
+                     <source srcset="<?php echo $mediaURL.'images/tyres-make-model.webp'; ?>" loading="lazy" alt="tyres" title="tyres" type="image/jpg">
+                     <img class="w-auto h-full object-cover object-top mx-auto" src="<?php echo $mediaURL.'images/tyres-make-model.webp'; ?>" alt="tyres" loading="lazy">
+                  </picture>
+               </div>
+            </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+<div class="section section-padding car-make">
+   <div class="container-theme make-list">
+      <div class="section-title text-center">
+        <h3><?php echo __('Find tyres for'); ?> <span class="text-theme-blue"><?php echo $makeString; ?></span> <?php echo __('models'); ?></h3>
+        <p><?php echo __('Choose from trusted brands, exact fitment, and great deals for your'); ?> <?php echo $makeString; ?>.</p>
+      </div>
+      <div class="gap-2 flex flex-wrap justify-center">
+            <?php foreach ($vehicleModels->data as $modelOption) : ?>
+                  <a href="<?php echo $baseUrl . $route . '/' . $make . '/'; ?><?php echo $modelOption->slug; ?>" class="group relative rounded-[10px] border transition-all duration-200 min-w-[107px] md:min-w-[116px] border-gray-200 bg-white text-gray-800 hover:border-theme-blue hover:shadow-sm text-center px-4 py-3">
+                  <span class="block text-sm font-medium" title="<?php echo __($modelOption->name); ?>">
+                  <span><?php echo __($modelOption->name); ?></span>
+                  </span>
+                  </a>
+            <?php endforeach; ?>
+         </div>
+   </div>
+   </div>
+</div>
+<?php if ($vehicleData['make_paragraph1']) : ?>
+<div class="section section-padding content-block pb-6 md:pb-12 lg:pb-14">
+   <div class="container-theme-custom">
+      <div class="content-wrap">
+         <?php echo __($vehicleData['make_paragraph1']); ?>
+      </div>
+   </div>
+</div>
+<?php endif; ?>

@@ -1,0 +1,97 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Hyva\Checkout\Magewire\Checkout\CouponCode as Magewire;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Magewire $magewire */
+/** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+$classCouponAvailability = $magewire->couponCode ? 'available' : 'not-available';
+$saveAction = $magewire->couponCode ? 'revokeCouponCode' : 'applyCouponCode';
+?>
+
+<div
+    x-data="hyvaCheckoutCouponCode"
+    class="pb-3 pt-1"
+>
+    <button
+        type="button"
+        class="cursor-pointer flex gap-1.5 items-center text-slate-700 w-full text-sm"
+        aria-controls="checkout-coupon-code-details"
+        x-on:click="toggleVisible"
+        x-bind:aria-expanded="visible"
+    >
+        <?= $heroicons->sparklesHtml('w-5 h-5 text-blue-900', 18, 18, ["aria-hidden" => "true"]) ?>
+        <span class="flex relative font-bold"><?= $escaper->escapeHtml(__('Apply Discount Code')) ?></span>
+        <span class="mr-auto"
+              x-bind:class="rotateClass">
+            <?= $heroicons->chevronDownHtml('', 16, 16, ['aria-hidden' => 'true']) ?>
+        </span>
+    </button>
+
+    <div
+        id="checkout-coupon-code-details"
+        class="coupon-code overflow-hidden <?= $escaper->escapeHtmlAttr($classCouponAvailability) ?> flex flex-col gap-2 mt-4 xl:flex-row"
+        aria-label="<?= $escaper->escapeHtml(__('Apply Discount Code')) ?>"
+        x-show="visible"
+        x-cloak
+    x-ref="cartContent"
+    x-transition:enter="transition-all duration-300 ease-in-out"
+    x-transition:enter-start="max-h-0 opacity-0"
+    x-transition:enter-end="max-h-[1000px] opacity-100"
+    x-transition:leave="transition-all duration-300 ease-in-out"
+    x-transition:leave-start="max-h-[1000px] opacity-100"
+    x-transition:leave-end="max-h-0 opacity-0"
+
+    >
+        <label class="flex-1 xl:focus-within:relative">
+            <span class="sr-only"><?= $escaper->escapeHtml(__('Discount code')) ?></span>
+            <input
+                type="text"
+                class="form-input w-full"
+                placeholder="<?= $escaper->escapeHtmlAttr(__('Enter discount code')) ?>"
+                wire:model.defer="couponCode"
+                wire:loading.attr="disabled"
+                wire:keydown.enter="<?= /* @noEscape */ $saveAction ?>"
+                x-bind:class="inputHasCouponCodeClass"
+                x-bind:disabled="couponCode"
+            >
+        </label>
+        <button
+            type="button"
+            class="btn btn-primary justify-center"
+            x-bind:class="inputHasCouponCodeClass"
+            wire:click="<?= /* @noEscape */ $saveAction ?>"
+            wire:loading.attr="disabled"
+        >
+            <span wire:loading.block class="hidden">
+                <?= $escaper->escapeHtml(__('Processing ...')) ?>
+            </span>
+            <?php if ($magewire->couponCode): ?>
+                <span aria-label="<?= $escaper->escapeHtml(__('Cancel Coupon')) ?>" wire:loading.remove>
+                    <?= $escaper->escapeHtml(__('Cancel')) ?>
+                </span>
+            <?php else: ?>
+                <span aria-label="<?= $escaper->escapeHtml(__('Apply Coupon')) ?>" wire:loading.remove>
+                    <?= $escaper->escapeHtml(__('Apply')) ?>
+                </span>
+            <?php endif ?>
+        </button>
+    </div>
+</div>

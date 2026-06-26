@@ -1,0 +1,270 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="hdweb" translate="label" sortOrder="100">
+            <label>Hdweb</label>
+        </tab>
+        <section id="generateurl" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1"
+                 showInStore="1">
+            <label>LLMs.txt File Generator</label>
+            <tab>hdweb</tab>
+            <resource>Hdweb_GenerateUrl::config</resource>
+
+            <!-- General Settings -->
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>General</label>
+                <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="company_name" translate="label comment" type="textarea" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Company Name</label>
+                    <comment>Enter your company name</comment>
+                </field>
+                <field id="company_description" translate="label comment" type="textarea" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Company Description</label>
+                    <comment>Enter your company description</comment>
+                </field>
+                <field id="additional_information" translate="label comment" type="textarea" sortOrder="40"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Information Block</label>
+                    <comment>e.g., 'This file is generated to assist LLMs...'</comment>
+                </field>
+                <field id="file_path" translate="label comment" type="text" sortOrder="50" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>LLMs.txt File Path</label>
+                    <comment>Relative to pub/ directory (e.g., "llms" will create /llms.txt)</comment>
+                    <validate>validate-alphanum</validate>
+                </field>
+            </group>
+
+            <!-- Product Pages Settings -->
+            <group id="products" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Product Pages</label>
+                <field id="enable_products" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable Product Pages</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="product_content_fields" translate="label comment" type="multiselect" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Product Content Fields</label>
+                    <source_model>Hdweb\GenerateUrl\Model\Config\Source\ProductFields</source_model>
+                    <comment>Name, URL and Meta Description are always included by default. You can also select price options (Price, Special Price, Regular Price, etc.)</comment>
+                </field>
+                <field id="exclude_product_ids" translate="label comment" type="textarea" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude Product IDs</label>
+                    <comment>Comma-separated, e.g., 12,48,63</comment>
+                </field>
+                <field id="exclude_product_skus" translate="label comment" type="textarea" sortOrder="32"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude Product SKUs</label>
+                    <comment>Comma-separated, e.g., SKU001,SKU002,SKU003</comment>
+                </field>
+                <field id="product_sort_order" translate="label" type="text" sortOrder="40" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Product Sort Order</label>
+                    <validate>validate-number</validate>
+                </field>
+            </group>
+
+            <!-- Category Pages Settings -->
+            <group id="categories" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Category Pages</label>
+                <field id="enable_categories" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable Category Pages</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="category_content_fields" translate="label comment" type="multiselect" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Category Content Fields</label>
+                    <source_model>Hdweb\GenerateUrl\Model\Config\Source\CategoryFields</source_model>
+                    <comment>Name, URL, and Meta Description are always included by default</comment>
+                </field>
+                <field id="exclude_category_ids" translate="label comment" type="textarea" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude Category IDs</label>
+                    <comment>Comma-separated, e.g., 4,9,17</comment>
+                </field>
+                <field id="category_sort_order" translate="label" type="text" sortOrder="40" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Category Sort Order</label>
+                    <validate>validate-number</validate>
+                </field>
+            </group>
+
+            <!-- CMS Pages Settings -->
+            <group id="cms" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>CMS Pages</label>
+                <field id="enable_cms" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable CMS Pages</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="cms_content_fields" translate="label comment" type="multiselect" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional CMS Content Fields</label>
+                    <source_model>Hdweb\GenerateUrl\Model\Config\Source\CmsFields</source_model>
+                    <comment>Title and URL are always included by default</comment>
+                </field>
+                <field id="exclude_cms_pages" translate="label comment" type="multiselect" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude CMS Pages</label>
+                    <source_model>Hdweb\GenerateUrl\Model\Config\Source\CmsPages</source_model>
+                </field>
+                <field id="cms_sort_order" translate="label" type="text" sortOrder="40" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>CMS Sort Order</label>
+                    <validate>validate-number</validate>
+                </field>
+                <field id="restricted_pages" translate="label comment" type="textarea" sortOrder="50"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Restricted Pages</label>
+                    <comment>One per line (e.g., /customer/*)</comment>
+                </field>
+                <field id="additional_pages" translate="label comment" type="textarea" sortOrder="60"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Pages</label>
+                    <comment>Markdown-style format: - [Title](URL): Content</comment>
+                </field>
+            </group>
+
+            <!-- Blog Posts Settings -->
+            <group id="blog" translate="label" type="text" sortOrder="45" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Blog Posts</label>
+                <field id="enable_blog" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable Blog Posts</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="blog_content_fields" translate="label comment" type="multiselect" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Blog Content Fields</label>
+                    <source_model>Hdweb\GenerateUrl\Model\Config\Source\BlogFields</source_model>
+                    <comment>Title and URL are always included by default</comment>
+                </field>
+                <field id="exclude_blog_ids" translate="label comment" type="textarea" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude Blog Post IDs</label>
+                    <comment>Comma-separated, e.g., 1,2,3</comment>
+                </field>
+                <field id="blog_sort_order" translate="label" type="text" sortOrder="40" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Blog Sort Order</label>
+                    <validate>validate-number</validate>
+                </field>
+            </group>
+
+            <!-- Brand Pages Settings -->
+            <group id="brand" translate="label" type="text" sortOrder="47" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Brand Pages</label>
+                <field id="enable_brand" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable Brand Pages</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="brand_content_fields" translate="label comment" type="multiselect" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Brand Content Fields</label>
+                    <source_model>Hdweb\GenerateUrl\Model\Config\Source\BrandFields</source_model>
+                    <comment>Name and URL are always included by default</comment>
+                </field>
+                <field id="exclude_brand_ids" translate="label comment" type="textarea" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude Brand IDs</label>
+                    <comment>Comma-separated, e.g., 1,2,3</comment>
+                </field>
+                <field id="brand_sort_order" translate="label" type="text" sortOrder="40" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Brand Sort Order</label>
+                    <validate>validate-number</validate>
+                </field>
+            </group>
+
+            <!-- Vehicle Pages Settings -->
+            <group id="vehicle" translate="label" type="text" sortOrder="48" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Vehicle Pages</label>
+                <field id="enable_vehicle" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable Vehicle Pages</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Enable to include car brand and model pages (requires Hdweb_Vehicles module)</comment>
+                </field>
+                <field id="vehicle_content_fields" translate="label comment" type="multiselect" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional Vehicle Content Fields</label>
+                    <source_model>Hdweb\GenerateUrl\Model\Config\Source\BrandFields</source_model>
+                    <comment>Name and URL are always included by default</comment>
+                </field>
+                <field id="exclude_vehicle_ids" translate="label comment" type="textarea" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude Vehicle IDs</label>
+                    <comment>Comma-separated vehicle IDs to exclude, e.g., 1,2,3</comment>
+                </field>
+                <field id="exclude_vehicle_makes" translate="label comment" type="textarea" sortOrder="32"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude Vehicle Makes</label>
+                    <comment>Comma-separated make names to exclude (e.g., abarth,acura,audi)</comment>
+                </field>
+                <field id="vehicle_sort_order" translate="label" type="text" sortOrder="40" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Vehicle Sort Order</label>
+                    <validate>validate-number</validate>
+                </field>
+            </group>
+
+            <!-- File Management Settings -->
+            <group id="file_management" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>File Management</label>
+                <field id="file_structure_style" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>LLM File Structure Style</label>
+                    <source_model>Hdweb\GenerateUrl\Model\Config\Source\FileStructureStyle</source_model>
+                </field>
+                <field id="generation_frequency" translate="label" type="select" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Generation Frequency</label>
+                    <source_model>Hdweb\GenerateUrl\Model\Config\Source\GenerationFrequency</source_model>
+                </field>
+                <field id="scheduled_start_time" translate="label comment" type="text" sortOrder="30" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Scheduled Start Time</label>
+                    <comment>Format: HH:MM:SS (e.g., 10:20:00)</comment>
+                </field>
+                <field id="last_generated_at" translate="label" type="text" sortOrder="40" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="0">
+                    <label>Last Generated At</label>
+                    <frontend_model>Hdweb\GenerateUrl\Block\Adminhtml\System\Config\LastGenerated</frontend_model>
+                    <comment>Shows the timestamp of the last file generation</comment>
+                </field>
+                <field id="download_file" translate="label" type="text" sortOrder="50" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Download LLMs.txt File</label>
+                    <frontend_model>Hdweb\GenerateUrl\Block\Adminhtml\System\Config\DownloadButton</frontend_model>
+                    <comment>Download the generated LLMs.txt file</comment>
+                </field>
+                <field id="generate_now" translate="label" type="text" sortOrder="60" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Generate Now</label>
+                    <frontend_model>Hdweb\GenerateUrl\Block\Adminhtml\System\Config\GenerateButton</frontend_model>
+                    <comment>Manually trigger file generation</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
+

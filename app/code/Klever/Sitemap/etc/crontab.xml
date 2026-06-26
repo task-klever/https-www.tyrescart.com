@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="klever_sitemap_split" instance="Klever\Sitemap\Cron\SplitSitemap" method="execute">
+            <!-- Runs daily at 3:30 AM (after Magento's sitemap generation at 3:00 AM) -->
+            <schedule>30 3 * * *</schedule>
+        </job>
+    </group>
+</config>

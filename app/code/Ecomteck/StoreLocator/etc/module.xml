@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ecomteck_StoreLocator extension
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the MIT License
+ * that is bundled with this package in the file LICENSE
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/mit-license.php
+ *
+ * @category  Ecomteck
+ * @package   Ecomteck_StoreLocator
+ * @copyright 2016 Ecomteck
+ * @license   http://opensource.org/licenses/mit-license.php MIT License
+ * @author    Ecomteck
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Ecomteck_StoreLocator" setup_version="2.1.1">
+        <sequence>
+            <module name="Magento_Backend"/>
+            <module name="Magento_Ui" />
+            <module name="Magento_Store" />
+            <module name="Magento_Theme" />
+            <module name="Magento_Customer" />
+        </sequence>
+    </module>
+</config>

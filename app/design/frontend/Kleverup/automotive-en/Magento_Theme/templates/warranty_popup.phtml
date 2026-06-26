@@ -1,0 +1,75 @@
+<?php /*  <div x-data="warrantyModal()" x-show="open"
+     @open-warranty-popup.window="openPopup($event.detail.productId, $event.detail.itemId)"
+     style="display:none"
+     class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white p-6 rounded-xl shadow-lg w-[400px]">
+        <h2 class="text-xl font-semibold mb-4">Add Warranty</h2> 
+
+        <form @submit.prevent="submitWarranty()">
+            <div>
+                <label>
+                    <input type="radio" name="warranty" value="1"> Yes (+5%)
+                </label>
+                <label class="ml-4">
+                    <input type="radio" name="warranty" value=""> None
+                </label>
+            </div>
+
+            <div class="mt-4 flex justify-end gap-2">
+                <button type="button" @click="skipWarranty()" class="px-4 py-2 bg-gray-200 rounded">Skip</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Update</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    function warrantyModal() {
+        return {
+            open: false,
+            productId: null,
+            itemId: null,
+
+            openPopup(productId, itemId) {
+                this.productId = productId;
+                this.itemId = itemId;
+                this.open = true;
+            },
+
+            skipWarranty() {
+                this.open = false;
+                window.popupOpenedForProduct = null;
+                window.dispatchEvent(new CustomEvent('open-hyva-minicart'));
+            },
+
+            submitWarranty() {
+                const selected = this.$el.querySelector('input[name=warranty]:checked')?.value || '';
+                if (!selected) {
+                    this.skipWarranty();
+                    return;
+                }
+
+                const itemIdToUpdate = this.itemId || window.lastCartItemId;
+                if (!itemIdToUpdate) {
+                    console.error('No item_id found for warranty update');
+                    this.open = false;
+                    return;
+                }
+
+                const formBody = new URLSearchParams();
+                formBody.append('item_id', itemIdToUpdate);
+                formBody.append('options[1]', selected);
+
+                fetch('/checkout/cart/updatePost', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formBody
+                }).then(() => {
+                    this.open = false;
+                    window.popupOpenedForProduct = null;
+                    window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
+                });
+            }
+        }
+    }
+    </script>
+</div>  */ ?>

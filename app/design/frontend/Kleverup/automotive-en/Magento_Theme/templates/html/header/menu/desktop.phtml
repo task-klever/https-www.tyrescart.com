@@ -1,0 +1,295 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsSolid;
+use Hyva\Theme\ViewModel\Navigation;
+use Magento\Framework\View\Element\Template;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var Navigation $viewModelNavigation */
+$viewModelNavigation = $viewModels->require(Navigation::class, $block);
+
+/** @var HyvaCsp $hyvaCsp */
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+
+/** @var HeroiconsSolid $heroiconsSolid */
+$heroiconsSolid = $viewModels->require(HeroiconsSolid::class);
+
+$uniqueId = '_' . uniqid();
+
+// Order is important here: 1. build the menu data, 2. then set the cache tags from the view model identities
+$menuItems = $viewModelNavigation->getNavigation(4);
+$block->setData('cache_tags', $viewModelNavigation->getIdentities());
+
+$baseUrl = $this->getBaseUrl();
+
+$customMenuItems = [
+    [
+        'name' => __('Tyres'),
+        'url' => $baseUrl.'tyres',
+        'childData' => [
+            [
+                'name' => __('EV Tyres'),
+                 'url' => $baseUrl.'electric-vehicle-tyres-in-uae',
+                'childData' => []
+            ],
+             [
+                'name' => __('Tyres by Size'),
+                 'url' => $baseUrl.'tyres/size',
+                'childData' => []
+            ],
+            [
+                'name' => __('Tyres by Brand'),
+                 'url' => $baseUrl.'brand',
+                'childData' => []
+            ],
+            [
+                'name' => __('Tyres by Vehicle'),
+                'url' => $baseUrl.'tyres/cars',
+                'childData' => []
+            ]
+        ]
+    ],
+    [
+        'name' => __('Car Battery'),
+        'url' => $baseUrl.'car-battery-replacement',
+        'childData' => []
+    ],
+        [
+        'name' => __('Car Insurance'),
+        'url' => $baseUrl.'car-insurance',
+        'childData' => []
+    ],
+    [
+        'name' => __('Car Services'),
+        'url' => $baseUrl.'car-services',
+        'childData' => [
+            ['name' => __('Car Tyre Service'), 'url' => $baseUrl.'car-tyre-service'],
+            ['name' => __('Car Battery Service'), 'url' => $baseUrl.'car-battery-service'],
+            ['name' => __('Car AC Service'), 'url' => $baseUrl.'car-ac-service'],
+            ['name' => __('Car Brake Service'), 'url' => $baseUrl.'car-brake-service'],
+            ['name' => __('Car Oil Change Service'), 'url' => $baseUrl.'car-oil-change-service'],
+            ['name' => __('Car Mechanical Service'), 'url' => $baseUrl.'car-mechanical-service'],
+            ['name' => __('Car Wheel Alignment Service'), 'url' => $baseUrl.'car-wheel-alignment-service'],
+            ['name' => __('Car Wheel Balancing Service'), 'url' => $baseUrl.'car-wheel-balancing-service'],
+            ['name' => __('Car Rim Repair Service'), 'url' => $baseUrl.'car-rim-repair-service'],
+        ]
+    ],
+    [
+        'name' => __('Rims/Wheels'),
+        'url' => $baseUrl.'car-wheels',
+        'childData' => []
+    ],
+    [
+        'name' => __('Motorbike Tyres'),
+        'url' => $baseUrl.'motorcycle-tyres',
+        'childData' => []
+    ],
+    [
+        'name' => __('Offers'),
+        'url' => $baseUrl.'special-offers',
+        'childData' => []
+    ],
+    [
+        'name' => __('Installer Network'),
+        'url' => $baseUrl.'storelocator',
+        'childData' => []
+    ],
+    [
+        'name' => __('FAQs'),
+        'url' => $baseUrl.'faq',
+        'childData' => []
+    ],
+    [
+        'name' => __('Contact Us'),
+        'url' => $baseUrl.'contact',
+        'childData' => []
+    ]
+];
+?>
+
+<div x-data="initMenuDesktop<?= $escaper->escapeHtml($uniqueId) ?>()"
+     class="z-20 order-2 md:order-1 lg:order-2 navigation hidden lg:flex"
+>
+    <!-- desktop -->
+    <div x-ref="nav-desktop"
+         @load.window="setActiveMenu($root)"
+         class="hidden xl:block lg:pl-4">
+        <nav
+            class="relative"
+            aria-label="<?= $escaper->escapeHtmlAttr(__('Main menu')) ?>"
+        >
+            <ul class="menu-wrapper flex justify-start flex-wrap gap-x-4 xl:gap-x-5">
+                <?php //foreach ($menuItems as $index => $menuItem): ?>
+                <?php foreach ($customMenuItems as $index => $menuItem) : ?>
+                    <?php
+                    if (isset($menuItem['url'])) {
+                        $menuUrl = $menuItem['url'];
+                    } else {
+                        $menuUrl = 'javascript:void(0);';
+                    }
+                    ?>
+                    <li class="level-0 hover:text-theme-blue data-[active]:text-theme-blue"
+                        @mouseenter="hoverPanelActiveId = '<?= /* @noEscape */ (string) $index ?>'"
+                        @mouseleave="hoverPanelActiveId = 0"
+                        @keyup.escape="hoverPanelActiveId = 0"
+                    >
+                        <span class="flex items-center text-md">
+                            <a class="w-full text-white font-medium level-0 px-0.5 transition-colors capitalize hover:text-theme-blue py-[5px] md:py-6"
+                               href="<?php echo $menuUrl; ?>"
+                               title="<?= $escaper->escapeHtmlAttr($menuItem['name']) ?>"
+                               @focus="hoverPanelActiveId = 0"
+                            >   
+                              
+                                <?= $escaper->escapeHtml($menuItem['name']) ?>
+                                  <?php if (!empty($menuItem['childData'])): ?>
+                                    <span class=""><i class="icon icon-down text-[6px] ml-1 relative  min-w-[10px] -top-[3px]"></i></span>
+                                <?php endif; ?>
+                            </a>
+                            <?php if (!empty($menuItem['childData'])): ?>
+                                <button
+                                    type="button"
+                                    data-sr-button-id="<?= $escaper->escapeHtmlAttr($index) ?>"
+                                    :aria-expanded="hoverPanelActiveId === '<?= /* @noEscape */ (string) $index ?>' ? 'true' : 'false'"
+                                    @click="openMenuOnClick('<?= /* @noEscape */ (string) $index ?>')"
+                                    class="rounded p-1 text-theme-dark"
+                                >
+                                    <span class="sr-only">
+                                        <?= $escaper->escapeHtml(__('Show submenu for %1 category', $menuItem['name'])) ?>
+                                    </span>
+                                </button>
+                            <?php endif; ?>
+                        </span>
+                        <?php if (!empty($menuItem['childData'])): ?>
+                            <ul
+                                class="absolute top-full z-10 shadow-lg bg-white opacity-0 invisible transition-all duration-300 ease-in-out transform translate-y-2"
+                                :class="{
+                                    'opacity-0 invisible translate-y-2' : hoverPanelActiveId !== '<?= /* @noEscape */ (string) $index ?>',
+                                    'opacity-100 visible translate-y-0' : hoverPanelActiveId === '<?= /* @noEscape */ (string) $index ?>'
+                                }"
+                            >
+                                <?php foreach ($menuItem['childData'] as $subMenuItem): ?>
+                                    <?php
+                                    if (isset($subMenuItem['url'])) {
+                                        $menuUrl = $subMenuItem['url'];
+                                    } else {
+                                        $menuUrl = 'javascript:void(0);';
+                                    }
+                                    ?>
+                                    <li class="border-b border-gray-200 last:border-b-0">
+                                        <a href="<?php echo $menuUrl; ?>"
+                                           title="<?= $escaper->escapeHtmlAttr($subMenuItem['name']) ?>"
+                                           class="transition-all duration-300 block w-full px-4 py-1.5  capitalize font-medium text-theme-dark hover:text-theme-blue whitespace-nowrap first:mt-0  hover:bg-theme-blue hover:text-white aria-[current=page]:text-white aria-[current=page]:bg-theme-blue"
+                                           @keyup.escape="$nextTick(() => document.querySelector('[data-sr-button-id=<?= $escaper->escapeJs($index) ?>]').focus())"
+                                        >
+
+
+                                            <span class="text-[0.9rem] xl:text-[0.9rem]">
+                                                <?= $escaper->escapeHtml($subMenuItem['name']) ?>
+                                            </span>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </nav>
+    </div>
+</div>
+<script>
+    'use strict';
+
+    const initMenuDesktop<?= $escaper->escapeHtml($uniqueId) ?> = () => {
+        return {
+            hoverPanelActiveId: null,
+            setActiveMenu(menuNode) {
+                Array.from(menuNode.querySelectorAll('a')).filter(link => {
+                    return link.href === window.location.href.split('?')[0];
+                }).map(item => {
+                    item.setAttribute('aria-current', 'page');
+                    item.closest('li.level-0').setAttribute('data-active', 'true');
+                });
+            },
+            openMenuOnClick(menuNode) {
+                if (menuNode === this.hoverPanelActiveId) {
+                    this.hoverPanelActiveId = 0;
+                } else {
+                    this.hoverPanelActiveId = menuNode
+                }
+            }
+        }
+    }
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+
+
+<script>
+    function replaceCurrencySymbol() {
+        document.querySelectorAll('.price, [data-price-type]').forEach(function (el) {
+            // Skip if already replaced
+            if (el.innerHTML.includes('currency-dirham')) {
+                return;
+            }
+
+            // Replace only AED occurrences
+            el.innerHTML = el.innerHTML
+                .replace(/AED[\s\u00A0]?([\d,\.]+)/g, '<span class="currency-dirham">&#xe900;</span>$1')
+                .replace(/AED[\s\u00A0]?/g, '<span class="currency-dirham">&#xe900;</span>');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', replaceCurrencySymbol);
+
+    // Hyvä-specific reactivity
+    if (typeof window.hyva === 'object' && window.hyva.reactive) {
+        window.hyva.reactive.subscribe('prices-updated', replaceCurrencySymbol);
+    }
+
+    // Fallback observer
+    const priceobserver = new MutationObserver(function(mutations) {
+        priceobserver.disconnect(); // prevent infinite loop
+        replaceCurrencySymbol();
+        priceobserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    });
+
+    priceobserver.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
+    document.addEventListener('ajax:complete', replaceCurrencySymbol);
+    document.addEventListener('update-prices', replaceCurrencySymbol);
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

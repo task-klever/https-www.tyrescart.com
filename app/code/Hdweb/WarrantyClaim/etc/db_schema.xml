@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+	<table name="hdweb_warrantyclaim_claim" resource="default" engine="innodb" comment="hdweb_warrantyclaim_claim Table">
+		<column xsi:type="int" name="claim_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Entity Id"/>
+		<constraint xsi:type="primary" referenceId="PRIMARY">
+			<column name="claim_id"/>
+		</constraint>
+		<column name="warranty_reference" nullable="true" xsi:type="varchar" comment="warranty_reference" length="255"/>
+		<column name="invoice_number" nullable="true" xsi:type="varchar" comment="invoice_number" length="255"/>
+		<column name="invoice_date" nullable="true" xsi:type="date" comment="invoice_date"/>
+		<column name="product_type" nullable="true" xsi:type="varchar" comment="product_type" length="255"/>
+		<column name="invoice_image" nullable="true" xsi:type="varchar" comment="invoice_image" length="255"/>
+		<column name="vehicle_plate" nullable="true" xsi:type="varchar" comment="vehicle_plate" length="255"/>
+		<column name="customer_name" nullable="true" xsi:type="varchar" comment="customer_name" length="255"/>
+		<column name="phone" nullable="true" xsi:type="varchar" comment="phone" length="255"/>
+		<column name="email" nullable="true" xsi:type="varchar" comment="email" length="255"/>
+		<column name="product_image1" nullable="true" xsi:type="varchar" comment="product_image1" length="255"/>
+		<column name="product_image2" nullable="true" xsi:type="varchar" comment="product_image2" length="255"/>
+		<column name="product_image3" nullable="true" xsi:type="varchar" comment="product_image3" length="255"/>
+		<column name="comment" nullable="true" xsi:type="text" comment="comment"/>
+		<column name="current_millage" nullable="true" xsi:type="int" comment="current_millage" identity="false"/>
+		<column name="status" nullable="true" xsi:type="varchar" comment="status" length="255"/>
+	</table>
+
+	 <!-- Comments Table -->
+    <table name="hdweb_warranty_claim_comment" resource="default" engine="innodb" comment="HDWeb Warranty Claims Comments">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Comment ID"/>
+        <column xsi:type="int" name="warranty_id" padding="10" unsigned="true" nullable="false" comment="Warranty ID"/>
+        <column xsi:type="text" name="comment" nullable="false" comment="Comment"/>
+        <column xsi:type="varchar" name="created_by" nullable="false" length="255" comment="Created By"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="varchar" name="status" nullable="false" length="20" comment="Status"/>
+        <column xsi:type="smallint" name="is_notify_customer" nullable="false" default="0" comment="Notify Customer"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+       
+    </table>
+</schema>

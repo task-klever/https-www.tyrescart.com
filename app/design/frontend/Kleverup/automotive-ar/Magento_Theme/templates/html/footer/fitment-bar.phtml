@@ -1,0 +1,448 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+$baseUrl = $block->getBaseUrl();
+
+// Hide fitment bar on battery pages, detect motorbike pages
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$hideFitmentBar = false;
+$isMotorbikePage = false;
+$fullActionName = $block->getRequest()->getFullActionName();
+if ($fullActionName === 'catalog_category_view') {
+    $currentCategory = $objectManager->get(\Magento\Framework\Registry::class)->registry('current_category');
+    if ($currentCategory) {
+        if ($currentCategory->getUrlKey() === 'car-battery') {
+            $hideFitmentBar = true;
+        } elseif ($currentCategory->getUrlKey() === 'motorcycle-tyres') {
+            $isMotorbikePage = true;
+        }
+    }
+} elseif ($fullActionName === 'catalog_product_view') {
+    $currentProduct = $objectManager->get(\Magento\Framework\Registry::class)->registry('current_product');
+    if ($currentProduct && $currentProduct->getPartsCategory()) {
+        $partsCategory = $currentProduct->getAttributeText('parts_category');
+        if ($partsCategory === 'Battery') {
+            $hideFitmentBar = true;
+        } elseif ($partsCategory === 'Motorbike Tyres') {
+            $isMotorbikePage = true;
+        }
+    }
+}
+if ($hideFitmentBar) { return; }
+?>
+
+
+<div x-data="footerFitmentBar()" x-init="init()">
+    <div class="foote-tyre-finder w-full rounded-md hidden md:block">
+        <div class="container-theme">
+        <div class="mx-auto px-4 md:px-6 py-2 border-2 gap-3 rounded-tl-[10px] rounded-tr-[10px] bg-cover bg-left md:bg-center bg-no-repeat border-theme-blue" style="border-bottom:none; background-image: url('<?= $block->getViewFileUrl('images/finder-sticky-bg.webp') ?>')">
+
+
+            
+
+            <div class="flex items-start md:items-center justify-start md:justify-between flex-col md:flex-row gap-2">
+                <div class="flex-1 left-part">
+                    <!-- With last search -->
+                    <template x-if="lastSearch">
+                        <div>
+                             <p class="text-base md:text-md xl:text-lg text-white font-normal"><?= __('Search tyre fitments for:') ?> <span class="font-bold block md:inline-block" dir="ltr" x-show="lastFitmentSizeDisplay" x-text="lastFitmentSizeDisplay"></span></p>
+                            <p class="text-base md:text-md xl:text-lg text-white font-bold" dir="ltr" x-text="lastFitmentDisplay"></p>
+                            
+                        </div>
+                    </template>
+                    <template x-if="!lastSearch">
+                        <div>
+                            <p class="text-base md:text-md xl:text-lg text-white font-normal"><?= $isMotorbikePage ? __('Find the right tyres for your motorbike') : __('Find the right tyres for your vehicle') ?></p>
+                            <p class="text-base md:text-md xl:text-lg text-white font-normal"><?= $isMotorbikePage ? __('Search by size') : __('Search by size or vehicle') ?></p>
+                        </div>
+                    </template>
+                </div>
+
+                    <!-- Tab switcher (show if multiple relevant types have saved searches) -->
+                <div x-show="[_getContextSizeSearch(), !isMotorbike && _getContextVehicleSearch(), !isCarWheels && !isMotorbike && lastSearchByBrand, !isCarWheels && !isMotorbike && lastSearchByEv].filter(Boolean).length > 1" x-cloak class="flex justify-start lg:justify-center flex-1">
+                    <div class="flex bg-white/20 rounded-full p-0.5 flex-wrap justify-center gap-0.5">
+                        <button x-show="!isMotorbike && _getContextVehicleSearch()" type="button" @click="activeTab = 'byVehicle'; _switchTab()"
+                                :class="activeTab === 'byVehicle' ? 'bg-white text-black font-bold' : 'text-white/80 hover:text-white'"
+                                class="font-bold px-3 py-1 text-xs md:text-sm rounded-full transition-all duration-200 whitespace-nowrap">
+                            <i class="icon icon-vehicel text-sm ml-1"></i><?= __('Vehicle') ?>
+                        </button>
+                        <button x-show="_getContextSizeSearch()" type="button" @click="activeTab = 'bySize'; _switchTab()"
+                                :class="activeTab === 'bySize' ? 'bg-white text-black font-bold' : 'text-white/80 hover:text-white'"
+                                class="font-bold px-3 py-1 text-xs md:text-sm rounded-full transition-all duration-200 whitespace-nowrap">
+                            <i class="icon icon-tyre-size text-sm ml-1"></i><?= __('Size') ?>
+                        </button>
+                        <button x-show="!isCarWheels && !isMotorbike && lastSearchByBrand" type="button" @click="activeTab = 'byBrand'; _switchTab()"
+                                :class="activeTab === 'byBrand' ? 'bg-white text-black font-bold' : 'text-white/80 hover:text-white'"
+                                class="font-bold px-3 py-1 text-xs md:text-sm rounded-full transition-all duration-200 whitespace-nowrap">
+                            <i class="icon icon-tyre-brand text-sm ml-1"></i><?= __('Brand') ?>
+                        </button>
+                        <button x-show="!isCarWheels && !isMotorbike && lastSearchByEv" type="button" @click="activeTab = 'byEv'; _switchTab()"
+                                :class="activeTab === 'byEv' ? 'bg-white text-black font-bold' : 'text-white/80 hover:text-white'"
+                                class="font-bold px-3 py-1 text-xs md:text-sm rounded-full transition-all duration-200 whitespace-nowrap">
+                            <i class="icon icon-ev text-sm ml-1"></i><?= __('EV') ?>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="hidden lg:flex gap-3 w-full sm:w-auto justify-end">
+                <template x-if="lastSearch">
+                    <div class="flex gap-3 w-full sm:w-auto">
+                        <button type="button"
+                                @click="seeLastResults()"
+                                class="inline-flex items-center whitespace-nowrap justify-center bg-white gap-2 hover:text-white px-4 py-1.5 rounded-full font-medium text-sm hover:bg-theme-blue text-black transition-colors duration-300">
+                            <i class="icon icon-tyre-brand"></i>
+                            <?= __('See results') ?>
+                        </button>
+                        <button type="button"
+                                @click="newSearch()"
+                                class="inline-flex items-center whitespace-nowrap justify-center bg-white gap-2 hover:text-white px-4 py-1.5 rounded-full font-medium text-sm hover:bg-theme-blue text-black transition-colors duration-300">
+                         <i class="icon icon-tyre-size"></i>
+                            <?= __('New search') ?>
+                        </button>
+                    </div>
+                </template>
+                <template x-if="!lastSearch">
+                    <div class="flex gap-3 w-full sm:w-auto">
+                        <button type="button"
+                                @click="newSearch()"
+                                class="inline-flex items-center whitespace-nowrap justify-center bg-white gap-2 hover:text-white px-4 py-1.5 rounded-full font-medium text-sm hover:bg-theme-blue text-black transition-colors duration-300">
+                         <i class="icon icon-tyre-size"></i>
+                            <?= __('Search now') ?>
+                        </button>
+                    </div>
+                </template>
+            </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+
+
+
+<script>
+function footerFitmentBar() {
+    return {
+        lastSearchBySize: null,
+        lastSearchByWheelSize: null,
+        lastSearchByMotorbikeSize: null,
+        lastSearchByVehicle: null,
+        lastSearchByWheelVehicle: null,
+        lastSearchByBrand: null,
+        lastSearchByEv: null,
+        lastSearch: null,
+        lastFitmentDisplay: '',
+        lastFitmentSizeDisplay: '',
+        activeTab: 'bySize',
+        baseUrl: '<?= $baseUrl ?>',
+        isCarWheels: false,
+        isMotorbike: false,
+
+        init() {
+            // Sticky bar scroll visibility
+            const stickyBar = this.$root.querySelector('.foote-tyre-finder');
+            if (stickyBar) {
+                window.addEventListener('scroll', () => {
+                    const body = document.body;
+                    const atBottom = (window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 100);
+                    if (body.classList.contains('cms-home')) {
+                        stickyBar.classList.toggle('active', !atBottom && window.scrollY > 760);
+                    } else if (body.classList.contains('catalog-category-view') || body.classList.contains('catalog-product-view')) {
+                        stickyBar.classList.toggle('active', !atBottom);
+                    }
+                }, { passive: true });
+            }
+
+            // Load size search
+            const savedSize = localStorage.getItem('fitmentLastSearch_bySize');
+            if (savedSize) {
+                try { this.lastSearchBySize = JSON.parse(savedSize); }
+                catch(e) { localStorage.removeItem('fitmentLastSearch_bySize'); }
+            }
+            // Load wheel size search
+            const savedWheelSize = localStorage.getItem('fitmentLastSearch_byWheelSize');
+            if (savedWheelSize) {
+                try { this.lastSearchByWheelSize = JSON.parse(savedWheelSize); }
+                catch(e) { localStorage.removeItem('fitmentLastSearch_byWheelSize'); }
+            }
+            // Load motorbike size search
+            const savedMotorbikeSize = localStorage.getItem('fitmentLastSearch_byMotorbikeSize');
+            if (savedMotorbikeSize) {
+                try { this.lastSearchByMotorbikeSize = JSON.parse(savedMotorbikeSize); }
+                catch(e) { localStorage.removeItem('fitmentLastSearch_byMotorbikeSize'); }
+            }
+            // Load vehicle search
+            const savedVehicle = localStorage.getItem('fitmentLastSearch_byVehicle');
+            if (savedVehicle) {
+                try { this.lastSearchByVehicle = JSON.parse(savedVehicle); }
+                catch(e) { localStorage.removeItem('fitmentLastSearch_byVehicle'); }
+            }
+            // Load wheel vehicle search
+            const savedWheelVehicle = localStorage.getItem('fitmentLastSearch_byWheelVehicle');
+            if (savedWheelVehicle) {
+                try { this.lastSearchByWheelVehicle = JSON.parse(savedWheelVehicle); }
+                catch(e) { localStorage.removeItem('fitmentLastSearch_byWheelVehicle'); }
+            }
+            // Load brand search
+            const savedBrand = localStorage.getItem('fitmentLastSearch_byBrand');
+            if (savedBrand) {
+                try { this.lastSearchByBrand = JSON.parse(savedBrand); }
+                catch(e) { localStorage.removeItem('fitmentLastSearch_byBrand'); }
+            }
+            // Load EV search
+            const savedEv = localStorage.getItem('fitmentLastSearch_byEv');
+            if (savedEv) {
+                try { this.lastSearchByEv = JSON.parse(savedEv); }
+                catch(e) { localStorage.removeItem('fitmentLastSearch_byEv'); }
+            }
+            // Migrate old single key if exists
+            if (!savedSize && !savedVehicle) {
+                const legacy = localStorage.getItem('fitmentLastSearch');
+                if (legacy) {
+                    try {
+                        const parsed = JSON.parse(legacy);
+                        if (parsed.type === 'bySize') { this.lastSearchBySize = parsed; localStorage.setItem('fitmentLastSearch_bySize', legacy); }
+                        else { this.lastSearchByVehicle = parsed; localStorage.setItem('fitmentLastSearch_byVehicle', legacy); }
+                        localStorage.removeItem('fitmentLastSearch');
+                    } catch(e) { localStorage.removeItem('fitmentLastSearch'); }
+                }
+            }
+            // Detect page context
+            if (window.location.pathname.indexOf('car-wheels') !== -1) {
+                this.isCarWheels = true;
+            }
+            if (window.location.pathname.indexOf('motorcycle-tyres') !== -1) {
+                this.isMotorbike = true;
+            }
+            // Default activeTab to most recent search (filtered by page context)
+            const contextSize = this._getContextSizeSearch();
+            const contextVehicle = this._getContextVehicleSearch();
+            const allSearches = [
+                { key: 'bySize', data: contextSize },
+                !this.isMotorbike ? { key: 'byVehicle', data: contextVehicle } : null,
+                !this.isCarWheels && !this.isMotorbike ? { key: 'byBrand', data: this.lastSearchByBrand } : null,
+                !this.isCarWheels && !this.isMotorbike ? { key: 'byEv', data: this.lastSearchByEv } : null
+            ].filter(s => s && s.data);
+            if (allSearches.length > 0) {
+                allSearches.sort((a, b) => (b.data.timestamp || 0) - (a.data.timestamp || 0));
+                this.activeTab = allSearches[0].key;
+            }
+            this._switchTab();
+
+            window.addEventListener('storage', () => {
+                const updatedSize = localStorage.getItem('fitmentLastSearch_bySize');
+                const updatedWheelSize = localStorage.getItem('fitmentLastSearch_byWheelSize');
+                const updatedMotorbikeSize = localStorage.getItem('fitmentLastSearch_byMotorbikeSize');
+                const updatedVehicle = localStorage.getItem('fitmentLastSearch_byVehicle');
+                const updatedWheelVehicle = localStorage.getItem('fitmentLastSearch_byWheelVehicle');
+                const updatedBrand = localStorage.getItem('fitmentLastSearch_byBrand');
+                const updatedEv = localStorage.getItem('fitmentLastSearch_byEv');
+                this.lastSearchBySize = updatedSize ? JSON.parse(updatedSize) : null;
+                this.lastSearchByWheelSize = updatedWheelSize ? JSON.parse(updatedWheelSize) : null;
+                this.lastSearchByMotorbikeSize = updatedMotorbikeSize ? JSON.parse(updatedMotorbikeSize) : null;
+                this.lastSearchByVehicle = updatedVehicle ? JSON.parse(updatedVehicle) : null;
+                this.lastSearchByWheelVehicle = updatedWheelVehicle ? JSON.parse(updatedWheelVehicle) : null;
+                this.lastSearchByBrand = updatedBrand ? JSON.parse(updatedBrand) : null;
+                this.lastSearchByEv = updatedEv ? JSON.parse(updatedEv) : null;
+                this._switchTab();
+            });
+        },
+
+        _getContextSizeSearch() {
+            if (this.isMotorbike) return this.lastSearchByMotorbikeSize;
+            if (this.isCarWheels) return this.lastSearchByWheelSize;
+            return this.lastSearchBySize;
+        },
+        _getContextVehicleSearch() {
+            if (this.isCarWheels) return this.lastSearchByWheelVehicle;
+            return this.lastSearchByVehicle;
+        },
+
+        // Switch display based on activeTab
+        _switchTab() {
+            const contextSize = this._getContextSizeSearch();
+            const contextVehicle = this._getContextVehicleSearch();
+            if (this.activeTab === 'byVehicle' && !this.isMotorbike) this.lastSearch = contextVehicle;
+            else if (this.activeTab === 'byBrand' && !this.isCarWheels && !this.isMotorbike) this.lastSearch = this.lastSearchByBrand;
+            else if (this.activeTab === 'byEv' && !this.isCarWheels && !this.isMotorbike) this.lastSearch = this.lastSearchByEv;
+            else this.lastSearch = contextSize;
+            // Fallback: if selected tab has no data, try allowed types
+            if (!this.lastSearch) {
+                if (this.isMotorbike) {
+                    this.lastSearch = this.lastSearchByMotorbikeSize || null;
+                } else if (this.isCarWheels) {
+                    this.lastSearch = this.lastSearchByWheelSize || this.lastSearchByWheelVehicle || null;
+                } else {
+                    this.lastSearch = this.lastSearchBySize || this.lastSearchByVehicle || this.lastSearchByBrand || this.lastSearchByEv || null;
+                }
+            }
+            this._buildDisplay();
+        },
+
+        _buildSizeString(search) {
+            if (!search || !search.width || !search.rim) return '';
+            let front = '';
+            let rear = '';
+            const hasRear = !!(search.rearWidth && search.rearRim && (search.isWheelSearch || (search.rearHeight)));
+            if (search.isWheelSearch) {
+                front = search.width + 'Jx' + search.rim + (search.offset ? ' ET' + search.offset : '');
+                if (hasRear) {
+                    rear = search.rearWidth + 'Jx' + search.rearRim + (search.rearOffset ? ' ET' + search.rearOffset : '');
+                }
+            } else {
+                front = '\u200E' + search.width + '/' + (search.height || '') + ' R' + search.rim;
+                if (hasRear) {
+                    rear = '\u200E' + search.rearWidth + '/' + search.rearHeight + ' R' + search.rearRim;
+                }
+            }
+            if (hasRear) {
+                return '<?= __('Front') ?>: ' + front + '  |  <?= __('Rear') ?>: ' + rear;
+            }
+            return front;
+        },
+        _buildDisplay() {
+            this.lastFitmentSizeDisplay = '';
+            if (!this.lastSearch) { this.lastFitmentDisplay = ''; return; }
+            if (this.lastSearch.type === 'byBrand') {
+                this.lastFitmentDisplay = this.lastSearch.brandName || '';
+                this.lastFitmentSizeDisplay = this._buildSizeString(this.lastSearch);
+            } else if (this.lastSearch.type === 'byEv') {
+                this.lastFitmentDisplay = 'EV';
+                this.lastFitmentSizeDisplay = this._buildSizeString(this.lastSearch);
+            } else if (this.lastSearch.type === 'bySize' || this.lastSearch.type === 'byWheelSize' || this.lastSearch.type === 'byMotorbikeSize') {
+                this.lastFitmentDisplay = this._buildSizeString(this.lastSearch);
+            } else {
+                this.lastFitmentDisplay = (this.lastSearch.makeName || '') + ' ' + (this.lastSearch.modelName || '') + ' ' + (this.lastSearch.year || '') + (this.lastSearch.engineName ? ' ' + this.lastSearch.engineName : '');
+                this.lastFitmentSizeDisplay = this._buildSizeString(this.lastSearch);
+            }
+        },
+
+        seeLastResults() {
+            if (!this.lastSearch) return;
+            if (this.lastSearch.type === 'byBrand') {
+                const params = new URLSearchParams({
+                    width: this.lastSearch.width, height: this.lastSearch.height, rim: this.lastSearch.rim,
+                    brand: this.lastSearch.brandName
+                });
+                if (this.lastSearch.rearWidth && this.lastSearch.rearHeight && this.lastSearch.rearRim) {
+                    params.set('width_rear', this.lastSearch.rearWidth);
+                    params.set('height_rear', this.lastSearch.rearHeight);
+                    params.set('rim_rear', this.lastSearch.rearRim);
+                    params.set('product_list_limit', '500');
+                }
+                window.location.href = this.baseUrl + 'tyres?' + params.toString();
+            } else if (this.lastSearch.type === 'byEv') {
+                const params = new URLSearchParams({
+                    width: this.lastSearch.width, height: this.lastSearch.height, rim: this.lastSearch.rim,
+                    ev: 'EV'
+                });
+                if (this.lastSearch.rearWidth && this.lastSearch.rearHeight && this.lastSearch.rearRim) {
+                    params.set('width_rear', this.lastSearch.rearWidth);
+                    params.set('height_rear', this.lastSearch.rearHeight);
+                    params.set('rim_rear', this.lastSearch.rearRim);
+                    params.set('product_list_limit', '500');
+                }
+                window.location.href = this.baseUrl + 'tyres?' + params.toString();
+            } else if (this.lastSearch.type === 'bySize' || this.lastSearch.type === 'byWheelSize' || this.lastSearch.type === 'byMotorbikeSize') {
+                if (this.lastSearch.isWheelSearch) {
+                    const params = new URLSearchParams({
+                        width: this.lastSearch.width, rim: this.lastSearch.rim, offset: this.lastSearch.offset || '',
+                        product_list_order: 'recommended', product_list_limit: '5000'
+                    });
+                    window.location.href = this.baseUrl + 'car-wheels?' + params.toString();
+                } else if (this.lastSearch.type === 'byMotorbikeSize') {
+                    const params = new URLSearchParams({
+                        width: this.lastSearch.width, height: this.lastSearch.height, rim: this.lastSearch.rim,
+                        product_list_order: 'recommended'
+                    });
+                    if (this.lastSearch.rearWidth && this.lastSearch.rearHeight && this.lastSearch.rearRim) {
+                        params.set('width_rear', this.lastSearch.rearWidth);
+                        params.set('height_rear', this.lastSearch.rearHeight);
+                        params.set('rim_rear', this.lastSearch.rearRim);
+                        params.set('product_list_limit', '500');
+                    }
+                    window.location.href = this.baseUrl + 'motorcycle-tyres?' + params.toString();
+                } else {
+                    const params = new URLSearchParams({
+                        width: this.lastSearch.width,
+                        height: this.lastSearch.height,
+                        rim: this.lastSearch.rim
+                    });
+                    if (this.lastSearch.rearWidth && this.lastSearch.rearHeight && this.lastSearch.rearRim) {
+                        params.set('width_rear', this.lastSearch.rearWidth);
+                        params.set('height_rear', this.lastSearch.rearHeight);
+                        params.set('rim_rear', this.lastSearch.rearRim);
+                        params.set('product_list_limit', '500');
+                    }
+                    window.location.href = this.baseUrl + 'tyres?' + params.toString();
+                }
+            } else {
+                if (this.lastSearch.width && this.lastSearch.rim) {
+                    if (this.lastSearch.isWheelSearch) {
+                        const params = new URLSearchParams({
+                            width: this.lastSearch.width, rim: this.lastSearch.rim, offset: this.lastSearch.offset || '',
+                            product_list_order: 'recommended', product_list_limit: '5000'
+                        });
+                        if (this.lastSearch.rearWidth && this.lastSearch.rearRim) {
+                            params.set('width_rear', this.lastSearch.rearWidth);
+                            params.set('rim_rear', this.lastSearch.rearRim);
+                            params.set('offset_rear', this.lastSearch.rearOffset || '');
+                        }
+                        window.location.href = this.baseUrl + 'car-wheels?' + params.toString();
+                    } else {
+                        const params = new URLSearchParams({
+                            width: this.lastSearch.width, height: this.lastSearch.height || '', rim: this.lastSearch.rim
+                        });
+                        if (this.lastSearch.rearWidth && this.lastSearch.rearHeight && this.lastSearch.rearRim) {
+                            params.set('width_rear', this.lastSearch.rearWidth);
+                            params.set('height_rear', this.lastSearch.rearHeight);
+                            params.set('rim_rear', this.lastSearch.rearRim);
+                            params.set('product_list_limit', '5000');
+                        }
+                        params.set('product_list_order', 'recommended');
+                        window.location.href = this.baseUrl + 'tyres?' + params.toString();
+                    }
+                } else {
+                    const params = new URLSearchParams({
+                        make: this.lastSearch.make, model: this.lastSearch.model, year: this.lastSearch.year
+                    });
+                    window.location.href = this.baseUrl + 'tyrefinder/ajax/getsearchbymodel?' + params.toString();
+                }
+            }
+        },
+
+        newSearch() {
+            // Open the same drawer used by the header fitment bar.
+            if (!window.Alpine) return;
+
+            const barRoot = document.querySelector('div[x-data="fitmentBarDrawer()"]');
+            if (!barRoot) return;
+
+            const barComponent = Alpine.$data(barRoot);
+            if (!barComponent || typeof barComponent.openDrawer !== 'function') return;
+
+            if (this.isMotorbike) {
+                // Motorcycle-tyres: open Size directly (1 tab)
+                barComponent.isCarWheelsSearch = false;
+                barComponent.isVehicleOnlyTabs = true;
+                barComponent.isSizeOnlyTab = true;
+                barComponent.activeTab = 'bySize';
+                barComponent.openDrawer('size');
+            } else if (this.isCarWheels) {
+                // Car-wheels: show only Vehicle + Size (2 tabs)
+                barComponent.isCarWheelsSearch = true;
+                barComponent.isVehicleOnlyTabs = true;
+                barComponent.isSizeOnlyTab = false;
+                barComponent.openDrawer('mode');
+            } else {
+                // Tyres / other: show all 4 tabs
+                barComponent.isCarWheelsSearch = false;
+                barComponent.isVehicleOnlyTabs = false;
+                barComponent.isSizeOnlyTab = false;
+                barComponent.openDrawer('mode');
+            }
+        }
+    }
+}
+</script>
+

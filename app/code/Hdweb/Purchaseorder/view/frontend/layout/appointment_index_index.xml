@@ -1,0 +1,14 @@
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
+ <!-- 
+    <head>
+        <title>BOOK APPOINTMENT</title>
+    </head> 
+ 
+    <body>
+ 
+        <referenceContainer name="content">
+            <block class="Hdweb\Appointment\Block\Index\Index" name="appointment_index_index" template="Hdweb_Appointment::appointment_index_index.phtml"/>
+        </referenceContainer>
+ 
+    </body> -->
+</page>

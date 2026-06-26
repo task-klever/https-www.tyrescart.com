@@ -1,0 +1,215 @@
+<?php
+    use Magento\Catalog\Model\Product\Attribute\Source\Status as ProductStatus;
+    use Magento\Catalog\Model\Product\Visibility as ProductVisibility;
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    $productStatusEnabled = ProductStatus::STATUS_ENABLED;
+    $visibilityNotVisible = ProductVisibility::VISIBILITY_NOT_VISIBLE;
+   $tyreSizeCatId = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface')->getValue('hdwebconfig/general/tyre_size_cat_id');
+   if ($tyreSizeCatId) {
+       $baseUrl = $this->getBaseUrl();
+       $categoryCollection = $objectManager->get('Magento\Catalog\Model\ResourceModel\Category\CollectionFactory');
+       $tyreSizeChildCatCollection = $categoryCollection
+           ->create()
+           ->addAttributeToSelect(['parent_id', 'name', 'is_active', 'url_path'])
+           ->addAttributeToFilter('parent_id', $tyreSizeCatId)
+           ->addAttributeToFilter('is_active', 1) // only active categories
+           ->setOrder('name', 'ASC')
+           ->load();
+   }
+?>
+<div class="section section-padding alltyre-size-section">
+   <div class="container-theme alltyresize">
+      <?php if($tyreSizeCatId): ?>
+      <?php if(count($tyreSizeChildCatCollection->getData()) > 0): ?>
+        <div class="section-title text-center">
+            <h3><?php echo __('All') ?> <span class="text-theme-blue"><?php echo __('Size') ?></span></h3>
+        </div>
+         <div class="car-brands">
+                  <div class="relative max-w-2xl mx-auto">
+                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 md:h-5 md:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                     </div>
+                     <input type="text" class="w-full pl-10 pr-10 py-3 text-base md:text-lg border-1 border-border-color rounded-[10px] bg-white shadow-sm focus:shadow-none  transition-all duration-300 placeholder-gray-400 focus:border-theme-blue" id="all-tyre-size-search" autocomplete="off" placeholder="<?php echo __('Search here...') ?>" title="Search here">
+                  </div>
+                  <?php
+                     $rSizes = [];
+                     foreach ($tyreSizeChildCatCollection as $subcat) {
+                        $child = $objectManager->create('Magento\Catalog\Model\Category')->load($subcat->getId());
+                        if (!$child->getId()) continue;
+                        // quick product check: only count products that are enabled and visible
+                        $prodCollection = $child->getProductCollection()
+                            ->addAttributeToFilter('status', $productStatusEnabled)
+                            ->addAttributeToFilter('visibility', ['neq' => $visibilityNotVisible])
+                            ->setPageSize(1) // we only need to know if at least one product exists
+                            ->setCurPage(1);
+                        if ($prodCollection->getSize() == 0) {
+                            // no product in this category -> skip it
+                            continue;
+                        }
+                        if (preg_match('/R\d+/', $subcat->getName(), $matches)) {
+                            $rSizes[] = $matches[0];
+                        }
+                     }
+                     $rSizes = array_unique($rSizes);
+                     sort($rSizes);
+                     ?>
+                     <div class="alphabet-filter mt-3.5 md:mt-6 mb-0 md:mb-3">
+                        <div class="alphabet-buttons flex gap-1 md:gap-2 overflow-x-auto scrollbar-hide pb-2 md:flex-wrap md:justify-center md:overflow-visible md:pb-0" style="scrollbar-width: none; -ms-overflow-style: none;">
+                           <button class="alphabet-btn active alphabet-btn bg-white text-black shadow-md border-2 border-border-theme flex-shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-[10px] font-medium text-sm lg:text-base transition-all duration-300 whitespace-nowrap" data-letter="all">ALL</button>
+                           <?php foreach ($rSizes as $r): ?>
+                           <button class="alphabet-btn alphabet-btn bg-white text-black shadow-md border-2 border-border-theme flex-shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-[10px] font-medium text-sm lg:text-base transition-all duration-300 whitespace-nowrap" data-letter="<?= strtolower($r); ?>"><?= $r; ?></button>
+                           <?php endforeach; ?>
+                        </div>
+                     </div>
+         </div>
+         <ul class="list-none select-year all-tyre-size-searchUL flex flex-wrap items-center justify-center mb-4">
+            <?php
+                foreach ($tyreSizeChildCatCollection as $subcategories):
+                    $child = $objectManager->create('Magento\Catalog\Model\Category')->load($subcategories->getId());
+                    if (!$child->getId()) continue;
+                    // quick product check: only count products that are enabled and visible
+                    $prodCollection = $child->getProductCollection()
+                        ->addAttributeToFilter('status', $productStatusEnabled)
+                        ->addAttributeToFilter('visibility', ['neq' => $visibilityNotVisible])
+                        ->setPageSize(1) // we only need to know if at least one product exists
+                        ->setCurPage(1);
+                    if ($prodCollection->getSize() == 0) {
+                        // no product in this category -> skip it
+                        continue;
+                    }
+                    if($child->getId()):
+               $categoryUrl = $baseUrl.$child->getUrlPath();
+               $optionText = $child->getName();
+               $optionTextNoSpace = str_replace(' ','',$optionText); 
+               $optionText1 = str_replace('R','',$optionTextNoSpace); 
+               $optionText2 = str_replace('/','',$optionText1); 
+               $optionText3 = str_replace('/','',$optionTextNoSpace);
+               $optionText4 = str_replace('R','/',$optionTextNoSpace);
+               $optionText5 = str_replace('/',' ',$optionText);
+               $optionText5 = str_replace('R','',$optionText5);
+               $optionTextString = $optionTextNoSpace.' '.$optionText2.' '.$optionText3.' '.$optionText4.' '.$optionText5.' '.$optionText;
+               ?>
+            <li class="li-search select-year-name w-1/2 md:w-1/4 lg:w-1/5 xl:w-1/6 p-1.5 md:p-2.5" data-lookup="<?php echo $optionTextString;?>">
+               <a href="<?php echo $categoryUrl;?>" class="group other-transition shadow-lg hover:shadow-xl flex flex-wrap justify-center text-center border border-border-theme rounded-[10px] px-5 py-3 md:py-4 transition duration-300 ease-out hover:border-theme-blue" title="<?php echo __($child->getName());?>">
+               <span class="block w-full text-sm md:text-base font-semibold text-gray-800 transition-colors duration-300 [direction:ltr]">
+               <?php echo __($child->getName());?> 
+               </span>
+               </a>
+            </li>
+            <?php endif; ?>
+            <?php endforeach; ?>
+         </ul>
+      <script>
+         function applyCombinedFilter() {
+             const searchValue = document.getElementById('all-tyre-size-search').value.toLowerCase();
+             const selectedR = document.querySelector('.alphabet-btn.active')?.getAttribute('data-letter').toLowerCase() || 'all';
+             const liElements = document.querySelectorAll('.all-tyre-size-searchUL .li-search');
+             const container = document.querySelector('.all-tyre-size-searchUL');
+             // Add fade out effect to container
+             container.style.opacity = '0.3';
+             container.style.transform = 'translateY(10px)';
+             setTimeout(() => {
+                 let visibleCount = 0;
+                 liElements.forEach(function (liElement, index) {
+                     const dataLookup = liElement.getAttribute('data-lookup').toLowerCase();
+                     const matchesSearch = dataLookup.includes(searchValue);
+                     const matchesR = (selectedR === 'all') || dataLookup.includes(selectedR);
+                     const shouldShow = matchesSearch && matchesR;
+                     if (shouldShow) {
+                         liElement.style.display = 'block';
+                         // Add staggered animation
+                         liElement.style.animationDelay = `${visibleCount * 0.05}s`;
+                         liElement.classList.add('fade-in-item');
+                         visibleCount++;
+                     } else {
+                         liElement.style.display = 'none';
+                         liElement.classList.remove('fade-in-item');
+                     }
+                 });
+                 // Show no results message if needed
+                 const noResultsMsg = document.getElementById('no-results-message');
+                 if (visibleCount === 0) {
+                     if (!noResultsMsg) {
+                         const msg = document.createElement('div');
+                         msg.id = 'no-results-message';
+                         msg.className = 'text-center py-8 col-span-full';
+                         msg.innerHTML = `
+                             <div class="max-w-sm mx-auto">
+                                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                     <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                     </svg>
+                                 </div>
+                                 <h3 class="text-lg font-semibold text-gray-700 mb-2"><?php echo __('No Results Found') ?></h3>
+                                 <p class="text-gray-500"><?php echo __('Try adjusting your search or filter options.') ?></p>
+                             </div>
+                         `;
+                         container.appendChild(msg);
+                     }
+                     noResultsMsg?.style.setProperty('display', 'block');
+                 } else {
+                     noResultsMsg?.style.setProperty('display', 'none');
+                 }
+                 // Fade in container
+                 container.style.opacity = '1';
+                 container.style.transform = 'translateY(0)';
+             }, 150); // Small delay for smooth transition
+         }
+         // Smooth search with debounce
+         let searchTimeout;
+         document.getElementById('all-tyre-size-search').addEventListener('keyup', function() {
+             clearTimeout(searchTimeout);
+             searchTimeout = setTimeout(applyCombinedFilter, 200);
+         });
+         document.querySelectorAll('.alphabet-btn').forEach(function (btn) {
+             btn.addEventListener('click', function () {
+                 // Add button transition effect
+                 document.querySelectorAll('.alphabet-btn').forEach(b => {
+                     b.classList.remove('active');
+                     b.style.transform = 'scale(1)';
+                 });
+                 btn.classList.add('active');
+                 btn.style.transform = 'scale(0.95)';
+                 // Center the active button
+                 const buttonContainer = document.querySelector('.alphabet-buttons');
+                 const buttonRect = btn.getBoundingClientRect();
+                 const containerRect = buttonContainer.getBoundingClientRect();
+                 const scrollLeft = buttonContainer.scrollLeft;
+                 // Calculate the position to center the button
+                 const buttonCenter = buttonRect.left - containerRect.left + (buttonRect.width / 2) + scrollLeft;
+                 const containerCenter = containerRect.width / 2;
+                 const scrollTo = buttonCenter - containerCenter;
+                 // Smooth scroll to center the button
+                 buttonContainer.scrollTo({
+                     left: scrollTo,
+                     behavior: 'smooth'
+                 });
+                 setTimeout(() => {
+                     btn.style.transform = 'scale(1)';
+                 }, 100);
+                 applyCombinedFilter();
+             });
+         });
+         // Initialize fade-in animation on page load
+         document.addEventListener('DOMContentLoaded', function() {
+             const liElements = document.querySelectorAll('.all-tyre-size-searchUL .li-search');
+             liElements.forEach((item, index) => {
+                 item.style.animationDelay = `${index * 0.05}s`;
+                 item.classList.add('fade-in-item');
+             });
+         });
+      </script>
+      <?php else: ?>
+      <div class="">
+         <span><?= $escaper->escapeHtml(__('Can not find any child categories of category id: '.$tyreSizeCatId)) ?></span>
+      </div>
+      <?php endif; ?>
+      <?php else: ?>
+      <div class="">
+         <span><?= $escaper->escapeHtml(__('Please enter Tyre Size Category Id in system configuration at admin site')) ?></span>
+      </div>
+      <?php endif; ?>
+   </div>
+</div>

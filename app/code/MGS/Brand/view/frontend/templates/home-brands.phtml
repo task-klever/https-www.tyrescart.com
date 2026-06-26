@@ -1,0 +1,42 @@
+<?php
+   $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+   $mediaURL = $objectManager->get('Magento\Store\Model\StoreManagerInterface')->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+   $baseURL = $this->getBaseUrl();
+   $brandModel = $objectManager->get('MGS\Brand\Model\Brand');
+   $storeManager = $objectManager->get(\Magento\Store\Model\StoreManagerInterface::class);
+   $brandCollection = $brandModel->getCollection()
+      ->addFieldToFilter('status', 1)
+      ->addFieldToFilter('brand_category','Tyres')
+      ->addStoreFilter($storeManager->getStore()->getId())
+      ->setOrder('sort_order', 'ASC')
+      ->setOrder('brand_id', 'ASC')
+      ->setPageSize(14)
+      ->setCurPage(1);
+?>
+
+<section class="section section-padding shop-by-brands">
+   <div class="container-theme mx-auto">
+      <div class="section-title text-center">
+         <h3><?php echo __('Shop By') ?> <span class="text-theme-blue"><?php echo __('Tyre Brands') ?></span></h3>
+         <p><?php echo __('Browse a wide selection of car tyre brands and purchase tyres online at the best prices. Our customer friendly fitment partners across the UAE are ready to provide you with exceptional service.') ?></p>
+      </div>
+      <?php if ($brandCollection && $brandCollection->getSize() > 0) : ?>
+      <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2 md:gap-4  mx-auto">
+         <?php foreach ($brandCollection as $brand) : ?>
+         <a href="<?php echo $baseURL . 'tyres/brand/' . $brand->getUrlKey(); ?>" class="group block">
+            <div class="border border-black/20 flex items-center justify-center bg-white rounded-[10px] h-[54px] md:h-[85px] lg:h-[76px] px-4 md:px-6 group-hover:border-theme-blue group-hover:shadow-[0_4px_20px_rgba(0,132,61,0.12)] transition-all duration-300">
+               <img
+                  src="<?php echo $mediaURL . $brand->getImage(); ?>"
+                  loading="lazy"
+                  alt="<?php echo $brand->getName() . ' car tyres online UAE'; ?>"
+                  class="max-w-[85px] md:max-w-[100px] md:max-w-[140px] lg:max-w-[140px] max-h-[40px] md:max-h-[50px] lg:max-h-[55px] object-contain transition-transform duration-300 group-hover:scale-105"
+               />
+            </div>
+         </a>
+         <?php endforeach; ?>
+      </div>
+      <?php else : ?>
+      <div class="text-center text-gray-500"><?php echo __('We can not find any brands'); ?></div>
+      <?php endif; ?>
+   </div>
+</section>

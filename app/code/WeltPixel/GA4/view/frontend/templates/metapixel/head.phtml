@@ -1,0 +1,23 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \WeltPixel\GA4\Block\MetaPixel\Common */
+
+/** @var \WeltPixel\GA4\Helper\MetaPixelTracking $metaPixelHelper */
+$metaPixelHelper = $this->helper('WeltPixel\GA4\Helper\MetaPixelTracking');
+$cspNonceProvider = $metaPixelHelper->getCspNonceProvider();
+$metaPixelTrackingCode = $block->getMetaPixelTrackingCode();
+?>
+<?php if ($block->isMetaPixelTrackingEnabled()) : ?>
+    <?php
+    $pattern = '/<script(.*)>/';
+    $replacement = '<script ${1}> if (window.ga4AllowServices) {';
+
+    $metaPixelTrackingCode =  str_replace('</script>', '} </script>', preg_replace($pattern, $replacement, $metaPixelTrackingCode));
+
+    if ($cspNonceProvider) {
+        $metaPixelTrackingCode = str_replace('<script', '<script nonce="' . $cspNonceProvider->generateNonce() . '" ', $metaPixelTrackingCode);
+    }
+
+    /* @noEscape */ echo $metaPixelTrackingCode;
+    ?>
+<?php endif; ?>

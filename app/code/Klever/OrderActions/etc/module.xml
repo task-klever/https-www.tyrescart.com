@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Klever_OrderActions" setup_version="1.0.0">
+        <sequence>
+            <module name="Magento_Sales"/>
+            <module name="Magento_Backend"/>
+            <module name="Hdweb_Installer"/>
+            <module name="Hdweb_Purchaseorder"/>
+            <module name="Klever_AbandonedMail"/>
+            <module name="Hdweb_Rfc"/>
+            <module name="Meetanshi_OrderUpload"/>
+            <module name="Klever_UtmTracker"/>
+        </sequence>
+    </module>
+</config>

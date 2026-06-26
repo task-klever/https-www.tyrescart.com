@@ -1,0 +1,81 @@
+// /**
+//  * Copyright © Magento, Inc. All rights reserved.
+//  * See COPYING.txt for license details.
+//  */
+
+
+//
+//  Common
+//  _____________________________________________
+
+& when (@media-common = true) {
+    .modal-popup {
+        &.totalpay-lightbox {
+            .modal-header {
+                padding: 20px 0 0;
+            }
+            .modal-content {
+                padding: 0;
+                &::-webkit-scrollbar {
+                    width: 6px;
+                }
+
+                &::-webkit-scrollbar-track {
+                    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.4);
+                    border-radius: 4px;
+                    -webkit-border-radius: 4px;
+                }
+
+                &::-webkit-scrollbar-thumb {
+                    -webkit-border-radius: 10px;
+                    border-radius: 10px;
+                    background: rgba(100,100,100,0.8);
+                    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+                }
+            }
+            #totalpay-iframe-container {
+                #totalpay_checkout-iframe {
+                    min-height: 650px;
+                }
+            }
+        }
+    }
+}
+//
+//  Desktop
+//  _____________________________________________
+
+.media-width(@extremum, @break) when (@extremum = 'min') and (@break = @screen__l) {
+    .checkout-index-index {
+        .modal-popup {
+            &.totalpay-lightbox {
+                .modal-inner-wrap {
+                    margin-left: -300px;
+                    width: 600px;
+                }
+                #totalpay-iframe-container {
+                    #totalpay_checkout-iframe {
+                        min-height: 850px;
+                    }
+                }
+            }
+        }
+    }
+}
+//
+//  Mobile
+//  _____________________________________________
+
+.media-width(@extremum, @break) when (@extremum = 'max') and (@break = @screen__m) {
+    .modal-popup.totalpay-lightbox.modal-slide {
+        left: 5%;
+        width: 90%;
+        .modal-inner-wrap {
+            margin: 10vh auto;
+            background: #fff;
+        }
+    }
+    .modal-popup.totalpay-lightbox.modal-slide._inner-scroll .modal-inner-wrap {
+        min-height: auto;
+    }
+}

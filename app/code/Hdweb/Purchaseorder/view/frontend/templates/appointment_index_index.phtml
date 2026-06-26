@@ -1,0 +1,89 @@
+<form action="<?php echo $block->getBaseUrl().'appointment/index/post/';?>" name="customemaildata" method="post" id="contactForm-1" data-hasrequired="<?php echo __('* Required Fields') ?>" data-mage-init='{"validation":{}}'>
+    <fieldset class="fieldset">
+        <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+            <div class="field email required">
+                <label class="label" for="email"><span><?php  echo __('First Name') ?></span></label>
+                <div class="control">
+                    <input name="name" id="name" title="<?php echo __('First Name') ?>" class="input-text" type="text" data-validate="{required:true}" required="true"/>
+                </div>
+            </div>
+            <div class="field email required">
+                <label class="label" for="email"><span><?php  echo __('Last Name') ?></span></label>
+                <div class="control">
+                    <input name="lname" id="lname" title="<?php echo __('Last Name') ?>" class="input-text" type="text" data-validate="{required:true}" required="true"/>
+                </div>
+            </div>
+            <div class="field email required">
+                <label class="label" for="email"><span><?php  echo __('Service Request Type') ?></span></label>
+                <div class="control">
+                 <select name="serviceRequestType" id="serviceRequestType" class="required-entry" required="true">
+                        <option value=""><?php  echo __('Select Service Request Type')?></option>
+                        <option value="Auto Electrical Service"><?php  echo __('Auto Electrical Service')?></option>
+                        <option value="Brake Service"><?php  echo __('Brake Service')?></option>
+                        <option value="Battery Service"><?php  echo __('Battery Service')?></option>
+                        <option value="Car Wash"><?php  echo __('Car Wash')?></option>
+                        <option value="Oil Change Service"><?php  echo __('Oil Change Service')?></option>
+                        <option value="Mechanical Service"><?php  echo __('Mechanical Service')?></option>
+                        <option value="Mobile Tire Fitting Service"><?php  echo __('Mobile Tire Fitting Service')?></option>
+                        <option value="Vehicle A/C Service"><?php  echo __('Vehicle A/C Service')?></option>
+                        <option value="Tyre Service"><?php  echo __('Tyre Service</option')?></option>
+                        <option value="New Battery"><?php  echo __('New Battery')?></option>
+                        <option value="New Tyre"><?php  echo __('New Tyre')?></option>
+                </select>
+                </div>
+            </div>
+            <div class="field email required">
+                <label class="label" for="email"><span><?php  echo __('Email') ?></span></label>
+                <div class="control">
+                    <input name="email" id="email" title="<?php echo __('Email') ?>" class="input-text" type="email" data-validate="{required:true, 'validate-email':true}" required="true"/>
+                </div>
+            </div>                        
+            <div class="field email mobile required">
+                <label class="label" for="email"><span><?php  echo __('Mobile') ?></span></label>
+                <div class="control">
+                    <select name="mobileCode">
+                        <option value="+971"><?php  echo __('+971 (UNITED ARAB EMIRATES)')?></option>
+                        <option value="+966"><?php  echo __('+966 (SAUDI ARABIA)')?></option>
+                        <option value="+968"><?php  echo __('+968 (OMAN)')?></option>
+                    </select>
+                    <input name="mobile" id="mobile" title="<?php echo __('') ?>" class="input-text" type="text" data-validate="{required:true}" required="true"/>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+            <div class="field email required">
+                <label class="label" for="email"><span><?php  echo __('Appointment Date/Time') ?></span></label>
+                <div class="control">
+                    <input type='text' class="form-control" name="datetimepicker" id='datetimepicker' required="true" />
+                </div>
+            </div>
+            <div class="field email required">
+                <label class="label" for="email"><span><?php  echo __('Comments') ?></span></label>
+                <div class="control">
+                    <textarea name="comments" id="comments" class="input-text required-entry"></textarea>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+    <div class="col-sm-12">
+    <div class="actions-toolbar">
+        <div class="primary">
+            <button type="submit" name="submit" title="Book Appointment" class="button"><span><?php  echo __('Book Appointment')?></span></button>
+        </div>
+    </div>
+    </div>
+</form>
+
+
+<script>
+     require([
+          "jquery",
+          "mage/calendar"
+     ], function($){
+         $("#datetimepicker").calendar({
+              buttonText:"<?php echo __('Select Date') ?>",
+              showsTime: true,
+            timeFormat: "HH:mm",
+         });
+       });
+</script>

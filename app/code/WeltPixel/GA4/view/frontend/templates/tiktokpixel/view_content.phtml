@@ -1,0 +1,51 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \Magento\Catalog\Block\Product\View */
+
+/** @var \WeltPixel\GA4\Helper\TiktokPixelTracking $tiktokPixelHelper */
+$tiktokPixelHelper = $this->helper('WeltPixel\GA4\Helper\TiktokPixelTracking');
+$cspNonceProvider = $tiktokPixelHelper->getCspNonceProvider();
+$eventId = $tiktokPixelHelper->getEventUID();
+$product = $block->getProduct();
+?>
+<?php if ($product && $tiktokPixelHelper->isTiktokPixelTrackingEnabled() && $tiktokPixelHelper->shouldTiktokPixelEventBeTracked(\WeltPixel\GA4\Model\Config\Source\TiktokPixel\TrackingEvents::EVENT_VIEW_CONTENT)) : ?>
+<script <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+    if (window.ga4AllowServices) {
+        ttq.track('ViewContent', {
+            "contents": [
+                {
+                    "content_id": "<?= /* @noEscape */ $tiktokPixelHelper->getTiktokProductId($product) ?>",
+                    "content_type": "product",
+                    "content_name": "<?= /* @noEscape */ addslashes(str_replace('"','&quot;', html_entity_decode($product->getName() ?? ''))) ?>"
+                }
+            ],
+            "value": "<?= /* @noEscape */ floatval(number_format($product->getPriceInfo()->getPrice('final_price')->getValue() ?? 0, 2, '.', '')); ?>",
+            "currency": "<?= /* @noEscape */ $tiktokPixelHelper->getCurrencyCode() ?>"
+        },{
+            "event_id": '<?= /* @noEscape */ $eventId ?>'
+        });
+    }
+</script>
+<?php endif; ?>
+
+<?php if ($product && $tiktokPixelHelper->isServerSideTrackingEnabled() && $tiktokPixelHelper->shouldTikTokServerSideEventBeTracked(\WeltPixel\GA4\Model\Config\Source\TiktokPixel\TrackingEvents::EVENT_VIEW_CONTENT)) : ?>
+    <script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        requirejs(['jquery'],
+            function  ($) {
+                $(document).ready(function() {
+                    var requestUrl = '<?php echo $block->escapeUrl($tiktokPixelHelper->getTikTokSSTrackUrl()); ?>';
+                    $.post({
+                        url: requestUrl,
+                        global: false,
+                        data: {
+                            'eventId': '<?= /* @noEscape */ $eventId ?>',
+                            'eventName': '<?= /* @noEscape */ \WeltPixel\GA4\Model\Config\Source\TiktokPixel\TrackingEvents::EVENT_VIEW_CONTENT  ?>',
+                            'pageUrl': '<?= $block->escapeUrl($tiktokPixelHelper->getStoreCurrenUrl()) ?>',
+                            'productId': '<?= /* @noEscape */ $product->getId() ?>'
+                        }
+                    });
+                });
+            });
+    </script>
+<?php endif; ?>
+

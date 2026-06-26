@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Indexer/etc/indexer.xsd">
+
+    <indexer id="klever_brand_fulltext"
+             view_id="klever_brand_fulltext"
+             class="Klever\ElasticTyreSearch\Model\Indexer\Brand">
+        <title translate="true">Klever Brand Search Index</title>
+        <description translate="true">Reindex tyre brands into OpenSearch.</description>
+    </indexer>
+
+    <indexer id="klever_blog_fulltext"
+             view_id="klever_blog_fulltext"
+             class="Klever\ElasticTyreSearch\Model\Indexer\Blog">
+        <title translate="true">Klever Blog Search Index</title>
+        <description translate="true">Reindex blog posts into OpenSearch.</description>
+    </indexer>
+
+    <indexer id="klever_vehicle_fulltext"
+             view_id="klever_vehicle_fulltext"
+             class="Klever\ElasticTyreSearch\Model\Indexer\Vehicle">
+        <title translate="true">Klever Vehicle Search Index</title>
+        <description translate="true">Reindex vehicles into OpenSearch.</description>
+    </indexer>
+
+    <indexer id="klever_cms_fulltext"
+             view_id="klever_cms_fulltext"
+             class="Klever\ElasticTyreSearch\Model\Indexer\Cms">
+        <title translate="true">Klever CMS Search Index</title>
+        <description translate="true">Reindex CMS pages into OpenSearch.</description>
+    </indexer>
+
+</config>

@@ -1,0 +1,427 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Hyva\Theme\ViewModel\SvgIcons;
+use Hyva\Theme\ViewModel\StoreConfig;
+use Magento\Checkout\Block\Cart\Sidebar as SidebarCart;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var HyvaCsp $hyvaCsp */
+
+/** @var SvgIcons $hyvaicons */
+$hyvaicons = $viewModels->require(SvgIcons::class);
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+/** @var StoreConfig $storeConfig */
+$storeConfig = $viewModels->require(StoreConfig::class);
+$ajaxCartOptionDelay = $block->getDelay() ?: 500;
+$ajaxCartOptionShowSku = (bool) $block->getShowSku() === true ? 'true' : 'false';
+$ajaxCartOptionFormSelectors = (string) $block->getFormSelectors() ?: '#product_addtocart_form, .product_addtocart_form';
+
+$showMiniCart = true;
+$showAjaxCartModal = false;
+
+// Check if the current page is the product list page (catalog_category_view)
+$isCategoryView = in_array('catalog_category_view', $block->getLayout()->getUpdate()->getHandles());
+
+?>
+
+<script>
+    function createAjaxLoader() {
+        const loader = document.createElement('div');
+        loader.className = 'absolute inset-0 flex justify-center items-center loader';
+        loader.innerHTML = `<?= $hyvaicons->loaderHtml(
+            'w-full h-full p-2',
+            24, 24,
+            ['title' => $escaper->escapeHtml(__('Loading...'))]
+        ); ?>`;
+        return loader;
+    }
+
+    function createCustomCartLoader() {
+        const loaderHtml = `
+            <div class="z-50 fixed inset-0 grid place-items-center bg-white/70 text-primary">
+                <div class="flex gap-10 items-center p-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57 57" width="57" height="57" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="5" cy="50" r="5" style="animation: spinner-ball-triangle1 2.2s linear infinite"></circle>
+                        <circle cx="27" cy="5" r="5" style="animation: spinner-ball-triangle2 2.2s linear infinite"></circle>
+                        <circle cx="49" cy="50" r="5" style="animation: spinner-ball-triangle3 2.2s linear infinite"></circle>
+                    </svg>
+                    <span class="text-xl select-none">
+                        <?= $escaper->escapeHtml(__('Loading...')) ?>
+                    </span>
+                </div>
+            </div>
+        `;
+        return loaderHtml;
+    }
+
+    function addAjaxLoader(button, loader) {
+        button.setAttribute('data-label', button.getAttribute('aria-label'));
+        button.removeAttribute('aria-label');
+        button.prepend(loader);
+        button.classList.add('relative', '[&>:not(.loader)]:invisible');
+        button.disabled = true;
+    }
+
+    function removeAjaxLoader(button, loader) {
+        button.setAttribute('aria-label', button.getAttribute('data-label'));
+        button.removeAttribute('data-label');
+        loader.remove();
+        button.classList.remove('[&>:not(.loader)]:invisible');
+        button.disabled = false;
+    }
+
+    async function addAjaxCartForm(form, extraDelay = 500) {
+        if (!form) return;
+        event.preventDefault();
+
+        if (!form.reportValidity()) {
+            return form.submit();
+        }
+
+        // Show custom cart loader immediately only on catalog_category_view
+        <?php if ($isCategoryView): ?>
+            const loaderContainer = document.createElement('div');
+            loaderContainer.id = 'ajax-cart-loader';
+            loaderContainer.innerHTML = createCustomCartLoader();
+            document.body.appendChild(loaderContainer);
+        <?php endif; ?>
+
+        const formData = new FormData(form);
+        const button = form.querySelector('button')
+            ? form.querySelector('button')
+            : document.getElementById('product-addtocart-button');
+        const loader = createAjaxLoader(button);
+        const formUenc = hyva.getUenc();
+        const postUrl = event.target.action.replace('%25uenc%25', formUenc);
+
+        let bodyUrl = new URLSearchParams(formData);
+        bodyUrl.append("uenc", formUenc);
+        addAjaxLoader(button, loader);
+
+        try {
+            const response = await fetch(postUrl, {
+                method: 'POST',
+                body: bodyUrl.toString(),
+                mode: "cors",
+                credentials: "include",
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const responseData = await response.text();
+
+            if (!response.ok) {
+                return form.submit();
+            }
+
+            if (response.redirected) {
+                return window.location.href = response.url;
+            }
+
+            window.dispatchEvent(new CustomEvent("reload-customer-section-data"));
+
+            <?php if ($showAjaxCartModal || $showMiniCart): ?>
+                const productFormData = {
+                    productId: formData.get("product"),
+                    options: {}
+                }
+
+                for (const formEntry of formData.entries()) {
+                    if (!formEntry[0].startsWith('super_attribute')) continue;
+                    const formEntryOption = { [formEntry[0].match(/\[(\d+)\]/)[1]]: formEntry[1] };
+                    productFormData.options = { ...productFormData.options, ...formEntryOption };
+                }
+
+                window.dispatchEvent(new CustomEvent('open-ajax-cart', { detail: productFormData }));
+            <?php endif; ?>
+        } catch (err) {
+            console.warn(err);
+            window.dispatchEvent(new CustomEvent('product-addtocart-error'));
+
+            if (typeof window.dispatchMessages === "undefined") return;
+            window.dispatchMessages([{
+                text:'<?= $escaper->escapeJs(__('There was a problem adding your item to the cart.')) ?>',
+                type: 'error'
+            }], 5000);
+        } finally {
+            setTimeout(() => removeAjaxLoader(button, loader), extraDelay);
+        }
+    }
+
+    function removeAjaxCartForm(form) {
+        removeEventListener('submit', form);
+    }
+
+    document.addEventListener('submit', function(event) {
+        if (!event.target.matches('<?= /* @noEscape */ $ajaxCartOptionFormSelectors ?>')) return;
+        addAjaxCartForm(event.target, <?= (int) $escaper->escapeJs($ajaxCartOptionDelay) ?>);
+    });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+<?php if ($showMiniCart): ?>
+    <div
+        x-data="initAjaxCartModal()"
+        @open-ajax-cart.window="setNewCartData(event)"
+    ></div>
+<?php endif ?>
+
+<?php if ($showAjaxCartModal): ?>
+    <!-- Ajax Cart Sidebar Modal -->
+    <div
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 transition-all ease-in-out duration-500 sm:duration-700"
+        x-data="initAjaxCartModal"
+        x-show="open"
+        x-transition:enter="transition ease-in-out duration-300"
+        @keydown.window.escape="closeDialog()"
+        @click="closeDialog()"
+        @open-ajax-cart.window="setNewCartData(event)"
+        style="display: none;"
+    >
+        <!-- Sidebar Panel -->
+        <div
+            class="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl overflow-y-auto"
+            x-show="open && !loading"
+            x-transition:enter="transform transition ease-in-out duration-500"
+            x-transition:enter-start="translate-x-full"
+            x-transition:enter-end="translate-x-0"
+            x-transition:leave="transform transition ease-in-out duration-500"
+            x-transition:leave-start="translate-x-0"
+            x-transition:leave-end="translate-x-full"
+            @click.stop
+        >
+            <template x-if="open && cartItem">
+                <div class="h-full flex flex-col">
+                    <!-- Header -->
+                    <div class="flex gap-2 md:gap-6 justify-between items-center px-4 py-4 bg-gray-100 border-b flex-shrink-0">
+                        <span class="text-lg font-bold">
+                            <?= $escaper->escapeHtml(__('The product was added to your cart.')) ?>
+                        </span>
+                        <button
+                            title="<?= $escaper->escapeHtml(__('Close')) ?>"
+                            aria-label="<?= $escaper->escapeHtml(__('Close')) ?>"
+                            @click="closeDialog()"
+                            class="text-black transition-colors hover:text-theme-blue p-2"
+                        >
+                            <?= $heroicons->xHtml('', 24, 24, ['aria-hidden' => 'true']); ?>
+                        </button>
+                    </div>
+                    
+                    <!-- Content Area -->
+                    <div class="flex-1 overflow-y-auto p-4">
+                        <!-- Product Info -->
+                        <div class="flex gap-4 items-start mb-6">
+                            <div class="shrink-0 w-20 h-20 border border-border-color">
+                                <img
+                                    loading="lazy"
+                                    :src="cartItem.product_image.src"
+                                    :width="cartItem.product_image.width"
+                                    :height="cartItem.product_image.height"
+                                    :alt="hyva.str('<?= $escaper->escapeJs(__('Product "%1"')) ?>', cartItem.product_name)"
+                                    class="w-full h-full object-cover"
+                                >
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-lg font-semibold text-theme-blue">
+                                    <span x-html="cartItem.product_name"></span>
+                                </p>
+                                <template x-if="(cartItem.options && cartItem.options.length > 0) || showSku">
+                                    <dl class="text-sm space-y-1 hidden">
+                                        <template x-if="cartItem.product_sku && showSku">
+                                            <div class="flex">
+                                                <dt class="font-medium text-gray-600 mr-2 uppercase">
+                                                    <?= $escaper->escapeHtml(__('SKU:')) ?>
+                                                </dt>
+                                                <dd class="font-bold" x-html="cartItem.product_sku"></dd>
+                                            </div>
+                                        </template>
+                                        <template x-for="option in cartItem.options">
+                                            <div class="flex">
+                                                <dt class="font-medium text-gray-600 mr-2" x-text="option.label + ':'"></dt>
+                                                <dd class="font-bold" x-html="option.value"></dd>
+                                            </div>
+                                        </template>
+                                    </dl>
+                                </template>
+                                <div class="mt-2 text-lg font-bold" x-html="cartItem.product_price"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cart Summary -->
+                        <div class="bg-gray-100 p-4 rounded-lg">
+                            <div class="flex justify-between items-center text-lg font-semibold">
+                                <span>
+                                    <span><?= $escaper->escapeHtml(__('Cart subtotal')) ?></span>
+                                    <span x-text="getItemCountText()" class="text-sm font-normal text-gray-600"></span>
+                                </span>
+                                <span x-html="cart.subtotal"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer Actions -->
+                    <div class="flex flex-col gap-3 p-4 bg-gray-100 border-t flex-shrink-0">
+                        <button
+                            @click="closeDialog()"
+                            class="btn bg-theme-yellow text-black hover:bg-theme-blue transition-all duration-300 ease-in-out disabled:opacity-70 w-full"
+                        ><?= $escaper->escapeHtml(__('Continue shopping')) ?></button>
+                        <a
+                            href="<?= $escaper->escapeUrl($block->getUrl('checkout')) ?>"
+                            @click.prevent.stop="closeDialog(); $dispatch('toggle-authentication', {
+                                url: '<?= $escaper->escapeUrl($block->getUrl('checkout')) ?>'
+                            });"
+                            class="btn bg-theme-blue text-white hover:bg-theme-yellow hover:text-black transition-all duration-300 ease-in-out active:bg-blue-700 w-full text-center"
+                        ><?= $escaper->escapeHtml(__('Checkout')) ?></a>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+<?php endif; ?>
+
+<?php if ($showAjaxCartModal || $showMiniCart): ?>
+    <script>
+        function initAjaxCartModal() {
+            return {
+                open: false,
+                loading: false,
+                cart: {},
+                initialTotalCartAmount: 0,
+                totalCartAmount: 0,
+                cartItem: null,
+                loaderElement: null,
+                showSku: <?= $escaper->escapeHtmlAttr($ajaxCartOptionShowSku) ?>,
+                init() {
+                    window.addEventListener('private-content-loaded', (event) => {
+                        const cartData = event.detail.data && event.detail.data.cart;
+                        if (!cartData) return;
+
+                        this.cart = cartData;
+                        this.totalCartAmount = this.cart.summary_count;
+                        this.initialTotalCartAmount = this.cart.summary_count;
+                    }, { once: true });
+
+                    this.$watch('totalCartAmount', (value, oldValue) => {
+                        if (this.initialTotalCartAmount === this.totalCartAmount) return;
+                        <?php if ($showMiniCart): ?>
+                            window.dispatchEvent(new CustomEvent('toggle-cart'));
+                            // Remove loader when minicart opens
+                            if (document.getElementById('ajax-cart-loader')) {
+                                document.getElementById('ajax-cart-loader').remove();
+                            }
+                        <?php endif; ?>
+                        <?php if ($showAjaxCartModal): ?>
+                            this.openDialog();
+                        <?php endif; ?>
+                        this.initialTotalCartAmount = this.totalCartAmount;
+                    })
+                },
+                sortObjectByNumberKey(obj) {
+                    let keys = Object.keys(obj).map(Number).sort((a, b) => a - b);
+                    let sortedObj = {};
+                    keys.forEach(key => sortedObj[key] = obj[key]);
+                    return sortedObj;
+                },
+                setNewCartData(event) {
+                    const productData = event.detail;
+                    window.addEventListener('private-content-loaded', (event) => {
+                        const cartData = event.detail.data && event.detail.data.cart;
+                        if (!cartData) return;
+                        this.cart = cartData;
+                        this.totalCartAmount = this.cart.summary_count;
+
+                        if (!productData) return;
+                        this.getCurrentProductFromCart(productData);
+                    }, { once: true });
+                },
+                getCurrentProductFromCart(productData) {
+                    if (!this.cart.items) return;
+                    this.cartItem = this.cart.items.filter((item) => {
+                        if (item.product_id !== productData.productId) return;
+                        if (item.product_type !== "configurable") {
+                            return item;
+                        }
+
+                        let cartItemOptions = {};
+                        for (const option of item.options) {
+                            const filterOptions = { [option.option_id]: option.option_value };
+                            cartItemOptions = { ...cartItemOptions, ...filterOptions }
+                        }
+
+                        const cartItemOptionsCompare = JSON.stringify(this.sortObjectByNumberKey(cartItemOptions));
+                        const productDataOptionsCompare = JSON.stringify(this.sortObjectByNumberKey(productData.options));
+                        if (cartItemOptionsCompare === productDataOptionsCompare) {
+                            return item;
+                        }
+                    });
+
+                    if (this.cartItem > 1) {
+                        this.cartItem = this.cartItem.slice(0, 1);
+                    }
+
+                    this.cartItem = this.cartItem[0];
+                },
+                getItemCountText() {
+                    if (this.totalCartAmount > 1) {
+                        return hyva.str('(<?= $escaper->escapeJs(__('%1 items')) ?>)', this.totalCartAmount);
+                    }
+
+                    return hyva.str('(<?= $escaper->escapeJs(__('%1 item')) ?>)', this.totalCartAmount);
+                },
+                openDialog() {
+                    if (!this.cartItem) return;
+                    this.loading = true;
+                    this.scrollLock(true);
+                    
+                    // Create and show the custom cart loader
+                    const loaderContainer = document.createElement('div');
+                    loaderContainer.id = 'ajax-cart-loader';
+                    loaderContainer.innerHTML = createCustomCartLoader();
+                    document.body.appendChild(loaderContainer);
+                    
+                    // Show loading for a brief moment before opening sidebar
+                    setTimeout(() => {
+                        // Remove the loader
+                        if (document.getElementById('ajax-cart-loader')) {
+                            document.getElementById('ajax-cart-loader').remove();
+                        }
+                        this.loading = false;
+                        this.open = true;
+                    }, 1200); // 1200ms loading delay for better effect
+                },
+                closeDialog() {
+                    this.open = false;
+                    this.loading = false;
+                    // Clean up loader if it exists
+                    if (document.getElementById('ajax-cart-loader')) {
+                        document.getElementById('ajax-cart-loader').remove();
+                    }
+                    this.scrollLock(false);
+                },
+                scrollLock(use = true) {
+                    document.body.style.overflow = use ? "hidden" : "";
+                }
+            }
+        }
+    </script>
+    <?php $hyvaCsp->registerInlineScript() ?>
+<?php endif; ?>

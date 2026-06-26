@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
+    <body>
+
+         
+        
+         <!-- Ensure breadcrumbs block exists -->
+        <!-- <referenceBlock name="breadcrumbs"/> -->
+        
+        <referenceContainer name="content">
+            <block class="MGS\Brand\Block\Brand\View" name="brand.products" template="MGS_Brand::brand/view.phtml">
+                <block class="MGS\Brand\Block\Brand\View" name="brand.image" template="MGS_Brand::brand/image.phtml"/>
+                <block class="MGS\Brand\Block\Brand\View" name="brand.description" template="MGS_Brand::brand/description.phtml"/>
+            </block>
+            <block class="Magento\Cookie\Block\RequireCookie" name="require-cookie" template="Magento_Cookie::require_cookie.phtml">
+                <arguments>
+                    <argument name="triggers" xsi:type="array">
+                        <item name="compareProductLink" xsi:type="string">.action.tocompare</item>
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+        <referenceContainer name="sidebar.additional">
+            <block class="MGS\Brand\Block\Brand\Sidebar" name="brand.sidebar" template="MGS_Brand::brand/sidebar.phtml" before="-" />
+        </referenceContainer>
+    </body>
+</page>

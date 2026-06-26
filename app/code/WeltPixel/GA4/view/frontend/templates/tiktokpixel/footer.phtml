@@ -1,0 +1,29 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \WeltPixel\GA4\Block\TiktokPixel\Common */
+
+/** @var \WeltPixel\GA4\Helper\TiktokPixelTracking $tiktokPixelHelper */
+$tiktokPixelHelper = $this->helper('WeltPixel\GA4\Helper\TiktokPixelTracking');
+$cspNonceProvider = $tiktokPixelHelper->getCspNonceProvider();
+?>
+<?php if ($tiktokPixelHelper->isTiktokPixelTrackingEnabled()) : ?>
+    <script <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        require(['jquery', 'Magento_Customer/js/customer-data'],
+            function ($, customerData) {
+                if (window.ga4AllowServices) {
+                    $(document).ajaxComplete(function (event, xhr, settings) {
+                        if (settings.url.search('/customer\/section\/load/') > 0) {
+                            var response = xhr.responseJSON;
+                            if (response.wp_ga4) {
+                                var tiktokPixel = $.parseJSON(response.wp_ga4.tiktokpixel);
+                                for (index in tiktokPixel) {
+                                    var additionalParams = tiktokPixel[index].additionalParams || {};
+                                    ttq.track(tiktokPixel[index].eventName, tiktokPixel[index].eventData, additionalParams);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+    </script>
+<?php endif; ?>

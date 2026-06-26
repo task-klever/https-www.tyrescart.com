@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+	<menu>
+		<add id="Hdweb::top_level" title="Hdweb" module="Hdweb_WarrantyClaim" sortOrder="9999" resource="Magento_Backend::content"/>
+		<add id="Hdweb_WarrantyClaim::hdweb_warrantyclaim_claim" title="Warranty Claim" module="Hdweb_WarrantyClaim" sortOrder="9999" resource="Magento_Backend::content" parent="Hdweb::top_level" action="hdweb_warrantyclaim/claim/index"/>
+	</menu>
+</config>

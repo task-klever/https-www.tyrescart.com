@@ -1,0 +1,510 @@
+<?php
+use Hyva\Theme\ViewModel\HyvaCsp;
+
+/** @var HyvaCsp $hyvaCsp */
+/** @var \Magento\Catalog\Model\Category $category */
+$category = null;
+
+try {
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    $layerResolver = $objectManager->get(\Magento\Catalog\Model\Layer\Resolver::class);
+    $category = $layerResolver->get()->getCurrentCategory();
+} catch (\Exception $e) {
+    // fail silently
+}
+
+// Only show the search if category display mode is NOT static block only (PAGE)
+if ($category && $category->getDisplayMode() === 'PAGE') {
+    //return; // Skip rendering this file entirely
+}
+?>
+
+<div class="finder-box bg-[#d8e9f3] w-full rounded-[10px]  border border-[#D9D9D9]  px-2 py-2 ml-[0rem] xl:ml-[4rem] mt-3 xl:mt-0">
+<div class="w-full text-center" x-data="{...hyva.modal(), initialized: false, init() {
+    if (this.initialized) return;
+    this.initialized = true;
+    //console.log('init called');
+    const origShow = this.show;
+    this.show = (value,event,data) => {
+        if(value == 'tyre-finder-size-modal'){
+            var allWidthOptionsLength = document.querySelectorAll('#allWidthOptions li').length;
+            var allRearWidthOptionsLength = document.querySelectorAll('#allRearWidthOptions li').length;
+            if (allWidthOptionsLength <= 0 || allRearWidthOptionsLength <= 0) {
+                document.getElementById('klever-loader').classList.remove('hidden');
+                fetch('<?php echo $this->getBaseUrl() . 'tyrefinder/ajax/getwidth'; ?>', {
+                headers: {
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                },
+                body: new URLSearchParams({
+                    form_key: hyva.getFormKey(),
+                    uenc: btoa(window.location.href)
+                }),
+                method: 'POST',
+                mode: 'cors',
+                credentials: 'include',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('allWidthOptions').innerHTML = data.fronthtml;
+                    document.getElementById('allRearWidthOptions').innerHTML = data.rearhtml;
+                    document.getElementById('klever-loader').classList.add('hidden');
+                })
+                .catch(error => {
+                    // Handle error here
+                    document.getElementById('klever-loader').classList.add('hidden');
+                });
+            }
+
+            
+            if (!document.getElementById('search-full-tyre-by-sizeUL').innerHTML.trim()) {
+                document.getElementById('klever-loader').classList.remove('hidden');
+                fetch('<?php echo $this->getBaseUrl() . 'tyrefinder/ajax/gettyresize'; ?>', {
+                headers: {
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                },
+                body: new URLSearchParams({
+                    form_key: hyva.getFormKey(),
+                    uenc: btoa(window.location.href)
+                }),
+                method: 'POST',
+                mode: 'cors',
+                credentials: 'include',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('search-full-tyre-by-sizeUL').innerHTML = data.response;
+                    // Event listener for selecting items in the list
+                    var dropdownList = document.getElementById('search-full-tyre-by-sizeUL');
+                    const listItems = dropdownList.getElementsByTagName('li');
+                    for (let i = 0; i < listItems.length; i++) {
+                        const listItem = listItems[i];
+                        listItem.addEventListener('click', () => toggleSelection(listItem));
+                    }
+                    document.getElementById('klever-loader').classList.add('hidden');
+                })
+                .catch(error => {
+                    // Handle error here
+                    document.getElementById('klever-loader').classList.add('hidden');
+                });
+            }
+        }
+        if(value == 'tyre-finder-vehicle-modal'){
+            var allBrandOptionsLength = document.querySelectorAll('#allBrands li').length;
+            if (allBrandOptionsLength <= 0) {
+                document.getElementById('klever-loader2').classList.remove('hidden');
+                fetch('<?php echo $this->getBaseUrl() . 'tyrefinder/ajax/getallbrands'; ?>', {
+                        headers: {
+                            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                        },
+                        body: new URLSearchParams({
+                            form_key: hyva.getFormKey(),
+                            uenc: btoa(window.location.href)
+                        }),
+                        method: 'POST',
+                        mode: 'cors',
+                        credentials: 'include',
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('allBrands').innerHTML = data.response;
+                        document.getElementById('klever-loader2').classList.add('hidden');
+                    })
+                    .catch(error => {
+                        // Handle error here
+                        document.getElementById('klever-loader2').classList.add('hidden');
+                    });
+            }
+        }
+        return origShow.call(this, value);
+    }
+}}" x-init="init">
+    <div x-data="{ activeTab: 'tab1' }">
+     <div class="flex gap-2 items-center lg:gap-4 flex-col lg:flex-row">
+        <div class="w-full max-w-[400px] bg-white rounded-full h-[47px] md:h-[50px] inline-block gap-2 overflow-x-auto overflow-y-hidden px-8 md:px-12">
+            <button 
+                @click="activeTab = 'tab1'" 
+                :class="activeTab === 'tab1' ? 'font-bold text-theme-blue border-b-[6px] border-theme-yellow' 
+                : 'text-theme-dark font-medium  hover:border-b-theme-blue'"
+                class="h-[45px] md:h-[47px] px-4 text-xl focus:ring-0 outline-none">
+                <i class="icon icon-tyre-size text-lg md:text-2xl"></i> <span class="text-base md:text-lg inline-block"><?php echo __('Tire Size'); ?></span>
+            </button>
+            
+            <button 
+                @click="activeTab = 'tab2'" 
+                :class="activeTab === 'tab2' ? 'font-bold text-theme-blue border-b-[6px] border-theme-yellow ' 
+                : 'text-theme-dark font-medium hover:border-b-theme-blue '"
+                class="h-[45px] md:h-[47px] px-4 text-xl focus:ring-0 outline-none">
+                <i class="icon icon-vehicel text-lg md:text-2xl"></i> <span class="text-base md:text-lg inline-block"><?php echo __('Vehicle'); ?></span>
+            </button>
+        </div>
+        <div class="block w-full">
+            <div x-show="activeTab === 'tab1'">
+                <div class="tab-info block">
+                    <div class="finder-form bg-white flex flex-wrap md:flex-nowrap flex-wrap items-center justify-between border border-[#D9D9D9] h-auto md:h-[50px] rounded-[20px]">
+                        <div class="relative w-full flex  h-[40px] md:h-[50px]">
+                            <button onclick="TyreFinderModel('')" class="w-full md:w-[33.33%] h-[40px] md:h-[50px] border-b md:border-b-[0px] border-r border-[#B8B8B8] px-5 lg:px-[38px] flex items-center justify-between cursor-pointer text-base xl:text-lg bg-transparent outline:none" id="tyre-width-btn" @click="show('tyre-finder-size-modal', $event); event.stopPropagation();"><span class="text-[#8D8D8D]"><?php echo __('Width'); ?></span><i class="icon icon-down -rotate-90 text-[6px] ml-2 text-theme-blue hidden md:block"></i><i class="md:hidden block icon icon-down text-[6px] text-theme-blue -rotate-90"></i></button>
+                            <button onclick="TyreFinderModel('')" class="w-full md:w-[33.33%] h-[40px] md:h-[50px] border-b md:border-b-[0px] border-r border-[#B8B8B8] px-5 lg:px-[38px] flex items-center justify-between cursor-pointer text-base xl:text-lg bg-transparent outline:none" @click="show('tyre-finder-size-modal', $event)"><span class="text-[#8D8D8D]"><?php echo __('Height'); ?></span><i class="icon icon-down -rotate-90 text-[6px] ml-2 text-theme-blue hidden md:block"></i><i class="md:hidden block icon icon-down text-[6px] text-theme-blue -rotate-90"></i></button>
+                            <button onclick="TyreFinderModel('')" class="w-full md:w-[33.33%] h-[40px] md:h-[50px] border-b md:border-b-[0px] border-[#B8B8B8] px-5 lg:px-[38px] flex items-center justify-between cursor-pointer text-base xl:text-lg bg-transparent outline:none" @click="show('tyre-finder-size-modal', $event)"><span class="text-[#8D8D8D]"><?php echo __('Rim'); ?></span><i class="icon icon-down -rotate-90 text-[6px] ml-2 text-theme-blue hidden md:block"></i><i class="md:hidden block icon icon-down text-[6px] text-theme-blue -rotate-90"></i></button>
+                        </div>
+                     <button onclick="TyreFinderModel('')" class="btn-blue-yellow text-base xl:text-lg min-h-[40px] md:min-h-[50px] rounded-none rounded-tr-none md:rounded-tr-[20px] rounded-br-[20px] rounded-bl-[20px] md:rounded-bl-none w-full md:w-[23%] h-full group" id="tyre-width-btn" @click="show('tyre-finder-size-modal', $event); event.stopPropagation();">SEARCH <i class="icon icon-three-arrow text-f9 ml-2 text-white group-hover:text-theme-blue"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div x-cloak x-show="activeTab === 'tab2'">
+                <div class="tab-info block">
+                    <div class="finder-form bg-white flex flex-wrap md:flex-nowrap flex-wrap items-center justify-between border border-[#D9D9D9] h-auto md:h-[50px] rounded-[20px]">
+                        <div class="relative w-full flex  h-[40px] md:h-[50px]">
+                            <button onclick="VehicleFinderModel('')" class="w-full md:w-[33.33%] h-[40px] md:h-[50px] border-b md:border-b-[0px] border-r border-[#B8B8B8] px-5 lg:px-[38px] flex items-center justify-between cursor-pointer text-base xl:text-lg bg-transparent outline:none" id="tyre-make-btn" @click="show('tyre-finder-vehicle-modal', $event); event.stopPropagation();"><span class="text-[#8D8D8D]"><?php echo __('Make'); ?></span><i class="icon icon-down -rotate-90 text-[6px] ml-2 text-theme-blue hidden md:block"></i><i class="md:hidden block icon icon-down text-[6px] text-theme-blue -rotate-90"></i></button>
+                            <button onclick="VehicleFinderModel('')" class="w-full md:w-[33.33%] h-[40px] md:h-[50px] border-b md:border-b-[0px] border-r border-[#B8B8B8] px-5 lg:px-[38px] flex items-center justify-between cursor-pointer text-base xl:text-lg bg-transparent outline:none" @click="show('tyre-finder-vehicle-modal', $event)"><span class="text-[#8D8D8D]"><?php echo __('Model'); ?></span><i class="icon icon-down -rotate-90 text-[6px] ml-2 text-theme-blue hidden md:block"></i><i class="md:hidden block icon icon-down text-[6px] text-theme-blue -rotate-90"></i></button>
+                            <button onclick="VehicleFinderModel('')" class="w-full md:w-[33.33%] h-[40px] md:h-[50px] border-b md:border-b-[0px] px-5 lg:px-[38px] border-[#B8B8B8] flex items-center justify-between cursor-pointer text-base xl:text-lg bg-transparent outline:none" @click="show('tyre-finder-vehicle-modal', $event)"><span class="text-[#8D8D8D]"><?php echo __('Year'); ?></span><i class="icon icon-down -rotate-90 text-[6px] ml-2 text-theme-blue hidden md:block"></i><i class="md:hidden block icon icon-down text-[6px] text-theme-blue -rotate-90"></i></button>
+                        </div>
+                        <button onclick="VehicleFinderModel('')" class="btn-blue-yellow text-base xl:text-lg min-h-[40px] md:min-h-[50px] rounded-none rounded-tr-none md:rounded-tr-[20px] rounded-br-[20px] rounded-bl-[20px] md:rounded-bl-none w-full md:w-[23%] h-full group" id="tyre-make-btn" @click="show('tyre-finder-vehicle-modal', $event); event.stopPropagation();">SEARCH <i class="icon icon-three-arrow text-f9 ml-2 text-white group-hover:text-theme-blue"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div x-cloak x-show="activeTab === 'tab3'">
+                <div class="tab-info block px-8 pb-5">
+                     Tire Brands here
+                   
+                </div>
+            </div>
+
+            <div x-cloak x-show="activeTab === 'tab4'">
+                <div class="tab-info block px-8 pb-5">
+                     EV Tires here
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+   <div class="sliebar tyre-finder-size-modal-sidebar">
+    <div id="tyre-finder-model"
+        class="fixed top-0 right-0 h-full w-full md:w-[670px] max-w-full bg-white z-60 transform translate-x-full transition-transform ease-in-out duration-500 sm:duration-700">
+        <div class="tyre-sidebar-content">
+            
+             <div class="z-50 fixed inset-0 grid place-items-center bg-white/70 text-primary hidden" id="klever-loader">
+                    <div class="flex gap-10 items-center p-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57 57" width="57" height="57" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+
+                            <circle cx="5" cy="50" r="5" style="animation: spinner-ball-triangle1 2.2s linear infinite"></circle>
+                            <circle cx="27" cy="5" r="5" style="animation: spinner-ball-triangle2 2.2s linear infinite"></circle>
+                            <circle cx="49" cy="50" r="5" style="animation: spinner-ball-triangle3 2.2s linear infinite"></circle>
+                        </svg>
+                        <span class="text-xl select-none">
+                            Loading...                        </span>
+                    </div>
+                </div>
+           
+            <div class="">
+
+               <div x-cloak x-bind="overlay('tyre-finder-size-modal')" x-spread="overlay('tyre-finder-size-modal')" class="tyre-finder-size-modal flex w-full items-center justify-end bg-black/20 backdrop-blur-md z-50" x-on:click.self="modalIsOpen = false" role="dialog">
+        <div x-ref="tyre-finder-size-modal" role="dialog" aria-labelledby="tyre-finder-size-modal-label" class="inline-block h-screen overflow-auto bg-white text-gray-700 w-full relative" >
+             <div class="flex items-center justify-between p-4 border-b border-border-color relative">
+                <h3 class="h4 uppercase text-left w-full"><?php echo __('Current'); ?> <span class="text-theme-blue"><?php echo __('Size'); ?></span> <?php echo __('Selection'); ?></h3>
+                <button type="button" onclick="TyreFinderModelClose()" aria-label="Close minicart"
+                    class="absolute top-0 right-2 p-4 mt-1 text-black transition-colors hover:text-theme-blue">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" width="24" height="24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        <div class="modal-body bg-white rounded-lg px-4 sm:px-4 pb-4 sm:pb-5">
+                <div class="front-selected">
+                    <div class="flex flex-wrap pt-2 font-medium">
+                        <span class="front-tyre-selection-plus-rear-label hidden"><?php echo __('Front Size Selection'); ?>:</span>
+                        <span class="width"></span>
+                        <span class="height"></span>
+                        <span class="rim"></span>
+                        <a href="javascript:void(0);" class="edit hidden text-theme-blue ml-2" onclick="reselectFront()"><span><?php echo __('Edit'); ?></span></a>
+                    </div>
+                </div>
+                <div class="rear-selected hidden flex flex-wrap pt-2 font-medium">
+                    <span class="selected-label"><?php echo __('Rear Size Selection'); ?>:</span>
+                    <span class="width"></span>
+                    <span class="height"></span>
+                    <span class="rim"></span>
+                    <a href="javascript:void(0);" class="edit hidden text-theme-blue ml-2" onclick="reselectRear()"><span><?php echo __('Edit'); ?></span></a>
+                    <a href="javascript:void(0);" class="delete text-theme-blue ml-2" onclick="removeRear()"><span><?php echo __('Delete'); ?></span></a>
+                </div>
+                <div class="">
+                    <?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Hdweb_Tyrefinder::tyre-size-search.phtml")->toHtml(); ?>
+                </div>
+                <div class="front-tyre-selection">
+                    <div class="tyrefinder-front-width">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto mb-3">
+                            <ul id="allWidthOptions" class="front-searchUL finderlist grid grid-cols-4 md:grid-cols-6 gap-4 md:gap-4"></ul>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-front-height hidden">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allHeightOptions" class="front-searchUL finderlist grid grid-cols-4 md:grid-cols-6 gap-4 md:gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('frontwidth')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetTyreSizePopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-front-rim hidden">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allRimOptions" class="front-searchUL finderlist grid grid-cols-4 md:grid-cols-6 gap-4 md:gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('frontheight')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetTyreSizePopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="rear-tyre-selection hidden">
+                    <div class="tyrefinder-rear-width">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allRearWidthOptions" class="rear-searchUL finderlist grid grid-cols-3 md:grid-cols-5 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('finalstep_fromrear')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetTyreSizePopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-rear-height hidden">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allRearHeightOptions" class="rear-searchUL finderlist grid grid-cols-3 md:grid-cols-5 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('rearwidth')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetTyreSizePopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-rear-rim hidden">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allRearRimOptions" class="rear-searchUL finderlist grid grid-cols-3 md:grid-cols-5 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('rearheight')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetTyreSizePopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="search-final-step hidden">
+                    <div class="search-button">
+                        <button onclick="submitTyreSelection()" class="btn-yellow"><span><?php echo __('Search Tyres'); ?></span></button>
+                    </div>
+                     <div class="diff-rear-size mt-3">
+                        <a href="javascript:void(0);" class="text-theme-blue font-medium" onclick="diffRearSize()"><span><?php echo __('Click Here for different rear size'); ?></span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+            </div>
+        </div>
+    </div>
+    <div id="tyre-finder-model-overlay" onclick="TyreFinderModelClose()"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-all ease-in-out duration-500 sm:duration-700">
+    </div>
+</div>
+
+
+
+    
+   
+
+<div class="sliebar vehicle-finder-size-modal-sidebar">
+    <div id="vehicle-finder-model"
+        class="fixed top-0 right-0 h-full w-full md:w-[670px] max-w-full bg-white z-60 transform translate-x-full transition-transform ease-in-out duration-500 sm:duration-700">
+        <div class="tyre-sidebar-content">
+
+ <div class="z-50 fixed inset-0 grid place-items-center bg-white/70 text-primary hidden" id="klever-loader2">
+                    <div class="flex gap-10 items-center p-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57 57" width="57" height="57" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="5" cy="50" r="5" style="animation: spinner-ball-triangle1 2.2s linear infinite"></circle>
+                            <circle cx="27" cy="5" r="5" style="animation: spinner-ball-triangle2 2.2s linear infinite"></circle>
+                            <circle cx="49" cy="50" r="5" style="animation: spinner-ball-triangle3 2.2s linear infinite"></circle>
+                        </svg>
+                        <span class="text-xl select-none">
+                            Loading...                        </span>
+                    </div>
+                </div>
+                
+            
+            <div class="">
+    <div x-cloak x-bind="overlay('tyre-finder-vehicle-modal')" x-spread="overlay('tyre-finder-vehicle-modal')" class="tyre-finder-vehicle-modal flex w-full items-center justify-end bg-black/20 backdrop-blur-md z-50">
+        <div x-ref="tyre-finder-vehicle-modal" role="dialog" aria-labelledby="tyre-finder-vehicle-modal-label" class="inline-block h-screen overflow-auto bg-white text-gray-700 w-full relative">
+           <div class="flex items-center justify-between p-4 border-b border-border-color relative">
+                <h3 class="h4 uppercase text-left w-full"><?php echo __('Current'); ?> <span class="text-theme-blue"><?php echo __('Vehicle'); ?></span> <?php echo __('Selection'); ?></h3>
+                <button type="button" onclick="VehicleFinderModelClose()" aria-label="Close minicart"
+                    class="absolute top-0 right-2 p-4 mt-1 text-black transition-colors hover:text-theme-blue">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" width="24" height="24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        <div class="modal-body bg-white rounded-lg px-4 sm:px-4 pb-4 sm:pb-5">
+                <div class="tyrefinder-vehicle-selected flex flex-wrap py-2 font-medium">
+                    <span class="make"></span>
+                    <span class="model"></span>
+                    <span class="year"></span>
+                    <span class="modification"></span>
+                </div>
+                <div class="w-full flex flex-wrap mb-5 relative">
+                    <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-o outline-none focus:outline-none focus:ring-0 before-selected focus:border-theme-blue shadow-md" id="vehicle-search" placeholder="Search" title="Search here">
+                    <button type="submit" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+                </div>
+                <div class="vehicle-selction">
+                    <div class="tyrefinder-brand searchable-list active">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allBrands" class="border-style grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 group"></ul>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-model searchable-list hidden">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allModels" class="finderlist grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('allbrands')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetVehiclesPopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-year searchable-list hidden">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allYears" class="allYears finderlist custom-scroll-y grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('allmodels')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetVehiclesPopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-modifications searchable-list hidden">
+                         <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allModifications" class="allModifications finderlist grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('allyears')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetVehiclesPopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-tyre-size searchable-list hidden">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allTyreSizes" class="allTyreSizes finderlist grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('allmodifications')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetVehiclesPopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="search-final-step hidden">
+                        <div class="search-button">
+                            <button onclick="submitVehicleSelection()" class=""><span><?php echo __('Search Tyres'); ?></span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+            </div>
+        </div>
+    </div>
+    <div id="vehicle-finder-model-overlay" onclick="VehicleFinderModelClose()"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-all ease-in-out duration-500 sm:duration-700">
+    </div>
+</div>
+
+
+<?php
+ /*
+    <div x-show="finder" id="finder-open" x-data="initCartDrawer()" @private-content-loaded.window="getData($event.detail.data)" @toggle-cart.window="toggleCartDrawer($event)" @keydown.escape="closeCartDrawer">
+        <div role="dialog"></div>
+    </div>
+ */
+?>
+    
+</div>
+</div>
+
+<form id="finder-size-form" method="get" action="<?php echo $this->getBaseUrl().'tyres?'; ?>" name="finder-size-form">
+    <input type="hidden" id="frontWidthLabel-hidden" name="width" required value="">
+    <input type="hidden" id="frontWidthValue-hidden" value="">
+    <input type="hidden" id="frontHeightLabel-hidden" name="height" required value="">
+    <input type="hidden" id="frontHeightValue-hidden" value="">
+    <input type="hidden" id="frontRimLabel-hidden" name="rim" required value="">
+    <input type="hidden" id="frontRimValue-hidden" value="">
+    <input type="hidden" id="rearWidthLabel-hidden" name="width_rear" value="">
+    <input type="hidden" id="rearWidthValue-hidden" value="">
+    <input type="hidden" id="rearHeightLabel-hidden" name="height_rear" value="">
+    <input type="hidden" id="rearHeightValue-hidden" value="">
+    <input type="hidden" id="rearRimLabel-hidden" name="rim_rear" value="">
+    <input type="hidden" id="rearRimValue-hidden" value="">
+</form>
+<form id="finder-vehicle-form" action="" method="post">
+    <input type="hidden" id="vehicle_make_hidden" name="vehicle_make" value="">
+    <input type="hidden" id="vehicle_model_hidden" name="vehicle_model" value="">
+    <input type="hidden" id="vehicle_year_hidden" name="vehicle_year" value="">
+    <input type="hidden" id="vehicle_engine_hidden" name="vehicle_engine" value="">
+</form>
+
+<script>
+function TyreFinderModel() {
+    document.getElementById("tyre-finder-model").classList.remove("translate-x-full");
+    document.getElementById("tyre-finder-model-overlay").classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+    // Add Escape key listener
+    document.addEventListener('keydown', tyreFinderEscHandler);
+}
+function TyreFinderModelClose() {
+    document.getElementById("tyre-finder-model").classList.add("translate-x-full");
+    document.getElementById("tyre-finder-model-overlay").classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+    // Remove Escape key listener
+    document.removeEventListener('keydown', tyreFinderEscHandler);
+}
+function VehicleFinderModel() {
+
+
+     // Run only if the functions don't hit missing elements
+    if (typeof removeRear === "function") {
+        try { removeRear(); } catch(e) { console.warn("removeRear skipped:", e); }
+    }
+
+    if (typeof reselectFront === "function") {
+        try { reselectFront(); } catch(e) { console.warn("reselectFront skipped:", e); }
+    }
+
+    //  Reset form values when closing
+    document.getElementById('finder-size-form').reset();
+
+    // Also clear hidden input values
+    document.querySelectorAll('#finder-size-form input[type="hidden"]').forEach(el => {
+        el.value = '';
+    });
+
+    document.getElementById("vehicle-finder-model").classList.remove("translate-x-full");
+    document.getElementById("vehicle-finder-model-overlay").classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+    // Add Escape key listener
+    document.addEventListener('keydown', vehicleFinderEscHandler);
+}
+function VehicleFinderModelClose() {
+    document.getElementById("vehicle-finder-model").classList.add("translate-x-full");
+    document.getElementById("vehicle-finder-model-overlay").classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+    // Remove Escape key listener
+    document.removeEventListener('keydown', vehicleFinderEscHandler);
+}
+function vehicleFinderEscHandler(e) {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+        VehicleFinderModelClose();
+    }
+}
+function tyreFinderEscHandler(e) {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+        TyreFinderModelClose();
+    }
+}
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+

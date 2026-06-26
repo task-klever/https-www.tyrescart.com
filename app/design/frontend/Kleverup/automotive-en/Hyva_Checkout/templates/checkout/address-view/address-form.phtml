@@ -1,0 +1,105 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Checkout\Model\Form\EntityFormInterface;
+use Hyva\Checkout\Magewire\Checkout\AddressView\MagewireAddressFormInterface;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var MagewireAddressFormInterface $magewire */
+/** @var Escaper $escaper */
+/** @var EntityFormInterface $form */
+
+/**
+ * @deprecated template has been replaced with a more generic version being more flexible with other form elements.
+ * @see Hyva_Checkout::magewire/component/form.phtml
+ */
+
+$form = $magewire->getPublicForm();
+$namespace = $form->getNamespace();
+?>
+<form <?= /* @noEscape */ $form->renderAttributes($escaper) ?>
+      class="space-y-2 address-form"
+      x-data="initAddressForm"
+      x-init="initialize"
+>
+    <div class="grid grid-cols-12 gap-x-3 shipping-address-form">
+        <?= /** @noEscape */ $block->getChildHtml('address-form.before') ?>
+
+        <?php if ($form->hasFields()): ?>
+            <?php
+            $companyFields = ['company', 'vat_id'];
+            $regularFields = [];
+            $companyFieldsArr = [];
+
+            foreach ($form->getFields() as $field) {
+                if (in_array($field->getAttributeCode(), $companyFields)) {
+                    $companyFieldsArr[] = $field;
+                } else {
+                    $regularFields[] = $field;
+                }
+            }
+            ?>
+
+            <?php foreach ($regularFields as $field): ?>
+                <?php if ($field->canRender()): ?>
+                    <?php /** @purge: md:col-span-3 md:col-span-6 md:col-span-9 md:col-span-12 */ ?>
+                    <div class="<?= $escaper->escapeHtmlAttr($field->renderWrapperClass([''])) ?>"
+                         <?= /* @noEscape */ $field->renderAttributes($escaper, 'wrapper') ?>
+                    >
+                        <?= /* @noEscape */ $field->render() ?>
+
+                        <?php if ($magewire->hasError($field->getId())): ?>
+                            <?= /** @noEscape */ $magewire->getError($field->getId()) ?>
+                        <?php endif ?>
+                    </div>
+                <?php endif ?>
+            <?php endforeach ?>
+
+            <?php if (!empty($companyFieldsArr)): ?>
+                <div class="col-span-12 mt-4 company-toggle-wrap">
+                    <div class="inline-flex items-center gap-x-2.5">
+                        <input type="checkbox"
+                               id="company-toggle-checkbox"
+                               class="form-checkbox cursor-pointer"
+                        />
+                        <span class="text-sm font-semibold text-theme-dark">
+                            <?= $escaper->escapeHtml(__('Company Details (Optional)')) ?>
+                        </span>
+                    </div>
+                    <div id="company-fields-wrapper"
+                         class="grid grid-cols-12 gap-x-3 mt-2"
+                         style="display:none"
+                    >
+                        <?php foreach ($companyFieldsArr as $field): ?>
+                            <?php if ($field->canRender()): ?>
+                                <div class="<?= $escaper->escapeHtmlAttr($field->renderWrapperClass([''])) ?>"
+                                     <?= /* @noEscape */ $field->renderAttributes($escaper, 'wrapper') ?>
+                                >
+                                    <?= /* @noEscape */ $field->render() ?>
+
+                                    <?php if ($magewire->hasError($field->getId())): ?>
+                                        <?= /** @noEscape */ $magewire->getError($field->getId()) ?>
+                                    <?php endif ?>
+                                </div>
+                            <?php endif ?>
+                        <?php endforeach ?>
+                    </div>
+                </div>
+            <?php endif ?>
+        <?php endif ?>
+
+        <?= /** @noEscape */ $block->getChildHtml('address-form.after') ?>
+    </div>
+
+</form>

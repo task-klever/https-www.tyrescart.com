@@ -1,0 +1,64 @@
+{
+    "mst_sorting_criterion": {
+        "column": {
+            "criterion_id": true,
+            "name": true,
+            "code": true,
+            "is_active": true,
+            "is_default": true,
+            "is_search_default": true,
+            "position": true,
+            "conditions_serialized": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mst_sorting_ranking_factor": {
+        "column": {
+            "factor_id": true,
+            "name": true,
+            "type": true,
+            "is_active": true,
+            "is_global": true,
+            "weight": true,
+            "config_serialized": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mst_sorting_index": {
+        "column": {
+            "index_id": true,
+            "product_id": true,
+            "store_id": true,
+            "factor_1_score": true,
+            "factor_1_value": true,
+            "factor_2_score": true,
+            "factor_2_value": true,
+            "factor_3_score": true,
+            "factor_3_value": true,
+            "factor_4_score": true,
+            "factor_4_value": true,
+            "factor_5_score": true,
+            "factor_5_value": true,
+            "factor_6_score": true,
+            "factor_6_value": true,
+            "factor_7_score": true,
+            "factor_7_value": true,
+            "factor_8_score": true,
+            "factor_8_value": true,
+            "factor_9_score": true,
+            "factor_9_value": true
+        },
+        "index": {
+            "MST_SORTING_INDEX_PRODUCT_ID": true,
+            "MST_SORTING_INDEX_STORE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MST_SORTING_INDEX_PRODUCT_ID_STORE_ID": true
+        }
+    }
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        backupGlobals="false"
+        backupStaticAttributes="false"
+        colors="true"
+        convertErrorsToExceptions="true"
+        convertNoticesToExceptions="true"
+        convertWarningsToExceptions="true"
+        processIsolation="false"
+        stopOnFailure="true"
+        xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+  <coverage>
+    <include>
+      <directory suffix=".php">./</directory>
+    </include>
+
+    <exclude>
+      <directory>./vendor</directory>
+      <directory>./var</directory>
+      <directory>./build</directory>
+      <directory>./Model/ResourceModel/WhitelistEntry/Collection.php</directory>
+      <directory>./Setup</directory>
+      <directory>./Test</directory>
+      <directory>./logs</directory>
+      <file>./registration.php</file>
+      <file>./validate_m2_package.php</file>
+    </exclude>
+  </coverage>
+
+  <testsuites>
+    <testsuite name="unit">
+      <directory suffix="UnitTest.php">./Test</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>

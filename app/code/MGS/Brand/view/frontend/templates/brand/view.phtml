@@ -1,0 +1,124 @@
+<?php
+   $brandDataHelper = $this->helper('MGS\Brand\Helper\Data');
+   $params = $this->getRequest()->getParams(); // in case if we need
+   $brand = $block->getCurrentBrand();
+   $baseUrl = $block->getBaseUrl();
+   $mediaUrl = $brandDataHelper->getBaseMediaUrl();
+   $brandRoute = $brandDataHelper->getBrandRoute();
+   $brandName = $brand->getName();
+   $patternCollection = $brandDataHelper->getPatternsByBrand($brandName);
+   /** @var \Magento\Cms\Model\Template\FilterProvider $filterProvider */
+   $filterProvider = \Magento\Framework\App\ObjectManager::getInstance()
+      ->get(\Magento\Cms\Model\Template\FilterProvider::class);
+   ?>
+<div class="top-banner mt-4 md:mt-5 relative">
+   <div class="img_wrp w-full pb-full h-0 z-0 bg-gray-200 pb-[36.4%] ">
+      <figure class="absolute inset-0">
+         <picture>
+            <?php if($brand->getTopbannerImage()): ?>
+            <source srcset="<?php echo $mediaUrl.$brand->getTopbannerImage(); ?>" loading="lazy" alt="<?php echo $brandName; ?>" title="<?php echo $brandName; ?>" type="image/jpg">
+            <source srcset="<?php echo $mediaUrl.$brand->getTopbannerImage(); ?>" loading="lazy" alt="<?php echo $brandName; ?>" title="<?php echo $brandName; ?>" type="image/jpg">
+            <img class="w-full h-full object-cover object-top" src="<?php echo $mediaUrl.$brand->getTopbannerImage(); ?>" alt="<?php echo $brandName; ?>" title="<?php $brandName; ?>" loading="lazy">
+            <?php endif; ?>
+         </picture>
+      </figure>
+   </div>
+</div>
+<div class="brand-info-with-logo section section-padding border-b border-border-color bg-[#f5f5f5]">
+   <div class="container-theme mx-auto">
+      <?php if($brand->getBrandId()): ?>
+      <div class="flex flex-col md:flex-row items-center gap-4 md:gap-12 w-full">
+         <?php if($brand->getSmallImage()): ?>
+         <div class="flex-shrink-0 w-[16rem] h-[4rem] md:w-44 md:h-44 rounded-2xl bg-white shadow-md border border-gray-100 flex items-center justify-center p-4">
+            <img class="w-full h-full object-contain" src="<?php echo $mediaUrl.$brand->getSmallImage(); ?>" loading="lazy" alt="<?php echo $brandName; ?>" title="<?php echo $brandName; ?>" />
+         </div>
+         <?php endif; ?>
+         <div class="flex-1 text-center md:text-left">
+            <div class="section-title text-center md:text-left mb-4">
+               <h3><span class="text-theme-blue"><?php echo $brandName; ?></span></h3>
+            </div>
+            <div class="w-12 h-1 bg-theme-blue rounded-full mb-4 mx-auto md:mx-0"></div>
+            <?php if($brand->getDescription()): ?>
+            <div class="text-sm md:text-base lg:text-lg text-black font-normal leading-relaxed level-0 brand-description">
+               <?php echo $brand->getDescription(); ?>
+            </div>
+            <?php endif; ?>
+         </div>
+      </div>
+      <?php else: ?>
+      <div class="flex items-center justify-center py-10 text-gray-400 text-sm">
+         <div><?php echo __("We can't find any brands."); ?></div>
+      </div>
+      <?php endif; ?>
+   </div>
+</div>
+<section class="section section-padding brand-description">
+   <div class="container-theme">
+      <div class="text-content mb-3">
+         <div class="section-title text-center mb-3">
+            <h3><?php echo $brand->getData('tab1_title'); ?></h3>
+         </div>
+         <?php if($brand->getData('tab1_description')): ?>
+         <?php
+            echo $filterProvider->getPageFilter()->filter($brand->getData('tab1_description')); 
+            ?>
+         <?php endif; ?>
+      </div>
+      <?php if($patternCollection->count() > 0): ?>
+      <div class="product-list-lg items-end mx-auto pt-4 grid gap-4 2xl:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+         <?php foreach($patternCollection as $pattern): ?>
+         <div class="pattern-box flex flex-col h-full">
+            <div class=" grow flex flex-col w-full rounded-[10px] border border-[#D9D9D9] shadow-lg ">
+               <div class="flex flex-wrap bg-white rounded-[10px] overflow-hidden h-full">
+                  <div class="w-2/5 relative flex flex-col">
+                     <div class="brand pt-1 px-3 text-center">
+                        <?php if($brand->getSmallImage()): ?>
+                        <img loading="lazy" class="max-w-[85px] sm:max-w-[auto] max-h-[20px] sm:max-h-[24px] inline-block" src="<?php echo $mediaUrl.$brand->getImage(); ?>" alt="<?php echo $brandName; ?>" title="<?php echo $brandName; ?>">
+                        <?php endif; ?>
+                     </div>
+                     <div class="relative block overflow-hidden mx-auto h-auto tyres-image px-3 pb-2">
+                        <?php if($pattern->getImage()): ?>
+                        <img class="max-w-auto h-[146px] object-contain" src="<?php echo $mediaUrl.$pattern->getImage(); ?>" width="360" height="360" alt="<?php echo $pattern->getPattern(); ?>" title="<?php echo $pattern->getPattern(); ?>">
+                        <?php endif; ?>
+                     </div>
+                  </div>
+                  <div class="border-l border-border-color w-3/5 flex">
+                     <div class="relative flex flex-col grow ">
+                        <div class="item-info px-2 py-2 flex flex-col h-full justify-between">
+                           <div class="box-title text-center">
+                              <a class="text-base font-semibold hover:text-theme-blue text-black transition-all duration-300 ease-in-out" href="<?php echo $baseUrl.$brandRoute.'/'.$brand->getUrlKey().'/'.$pattern->getUrlKey(); ?>">
+                              <?php echo $pattern->getPattern(); ?>
+                              </a>
+                           </div>
+                           <?php if($pattern->getShortDescription()): ?>
+                           <div class="box-detail text-ellipsis line-clamp-4 text-[0.9rem] text-center">
+                              <?php echo $pattern->getShortDescription(); ?>
+                           </div>
+                           <?php endif; ?>
+                           <div class="action-btn mt-1">
+                              <a href="<?php echo $baseUrl.$brandRoute.'/'.$brand->getUrlKey().'/'.$pattern->getUrlKey(); ?>" class="w-max mx-auto btn btn-secondary justify-center text-xs sm:text-sm lg:text-xs 2xl:text-sm min-h-9 sm:min-h-10 py-1 addcart px-3 md:px-2 2xl:px-4">
+                              <span class="inline inline">
+                              more details
+                              </span>
+                              </a>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <?php endforeach; ?>
+      </div>
+      <?php else: ?>
+      <div class="message info empty">
+         <div><?php echo __("We can't find any brands."); ?></div>
+      </div>
+      <?php endif; ?>
+   </div>
+</section>
+<?php if($brand->getData('tab2_description')): ?>
+<?php
+   echo $filterProvider->getPageFilter()->filter($brand->getData('tab2_description')); 
+   ?>
+<?php endif; ?>

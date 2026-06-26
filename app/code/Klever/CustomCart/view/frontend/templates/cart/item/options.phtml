@@ -1,0 +1,51 @@
+<?php
+/** @var \Magento\Checkout\Block\Cart\Item\Renderer $block */
+$item = $block->getItem();
+$product = $item->getProduct();
+$options = [];
+
+// Try to get options from the quote item instead of product to ensure correct values
+$quoteOptions = $item->getOptionByCode('info_buyRequest');
+
+echo "<!-- Klever CustomCart Loaded -->";
+
+if ($quoteOptions) {
+    $buyRequest = new \Magento\Framework\DataObject(json_decode($quoteOptions->getValue(), true));
+    $optionsData = $buyRequest->getData('options') ?? [];
+} else {
+    $optionsData = [];
+}
+
+// Fallback: try product order options
+$orderOptions = $product->getTypeInstance(true)->getOrderOptions($product);
+if (isset($orderOptions['options']) && is_array($orderOptions['options'])) {
+    foreach ($orderOptions['options'] as $opt) {
+        $options[$opt['option_id']] = $opt;
+    }
+}
+
+if (!empty($optionsData) || !empty($options)):
+    foreach ($options as $optId => $option):
+        $checked = isset($optionsData[$optId]) && $optionsData[$optId] ? true : false;
+        ?>
+        <div class="cart-option-checkbox">
+            <label>
+                <input type="checkbox"
+                       class="cart-item-option"
+                       data-item-id="<?= $item->getId() ?>"
+                       data-option-id="<?= $option['option_id'] ?>"
+                       <?= $checked ? 'checked' : '' ?>>
+                <?= $block->escapeHtml($option['label']); ?>
+            </label>
+        </div>
+    <?php endforeach;
+endif;
+?>
+
+<script type="text/x-magento-init">
+{
+    "*": {
+        "Klever_CustomCart/js/cart-option": {}
+    }
+}
+</script>

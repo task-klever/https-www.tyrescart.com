@@ -1,0 +1,152 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\ViewModel\ReCaptcha;
+use Magento\Checkout\Block\Cart\Coupon;
+use Magento\Framework\Escaper;
+
+/** @var Coupon $block */
+/** @var Escaper $escaper */
+/** @var ReCaptcha $recaptcha */
+
+// We should use strlen function because coupon code could be "0", converted to bool will lead to false
+$hasCouponCode = (bool) strlen($block->getCouponCode() ?: "");
+$recaptcha = $block->getData('viewModelRecaptcha');
+?>
+<script>
+    function initCouponForm() {
+        return {
+            errors: 0,
+            hasCaptchaToken: 0,
+            showCouponForm: <?= $hasCouponCode ? 1 : 0 ?>,
+            formData: {
+                coupon_code: '<?= $escaper->escapeJs($block->getCouponCode()) ?>',
+                remove: '<?= (int) $hasCouponCode ?>'
+            },
+            init() {
+                this.showCouponForm = JSON.parse(hyva.getBrowserStorage().getItem('hyva.showCouponForm'))
+            },
+            toggleShowCoupon() {
+                this.showCouponForm = !this.showCouponForm;
+
+                hyva.getBrowserStorage().setItem('hyva.showCouponForm', this.showCouponForm);
+
+                this.$nextTick(() => this.$refs.couponInput.select());
+            },
+            submitForm() {
+                const $form = document.querySelector('#discount-coupon-form');
+                <?= $recaptcha ? $recaptcha->getValidationJsHtml(ReCaptcha::RECAPTCHA_FORM_ID_COUPON_CODE) : '' ?>
+
+                if (this.errors === 0) {
+                    hyva.postCart($form);
+                }
+            }
+        }
+    }
+</script>
+<div class="coupon-form px-4 md:px-7 py-2 border-y border-slate-300"
+     x-data="initCouponForm()"
+>
+    <div class="mx-auto md:mx-0">
+        <div class="text-left">
+            <button
+                @click="toggleShowCoupon()"
+                class="inline-block cursor-pointer text-primary-lighter select-none whitespace-nowrap text-theme-blue font-semibold"
+                id="discount-form-toggle"
+                :aria-expanded="showCouponForm"
+                type="button"
+            >
+                <span class="">
+                    <?= $escaper->escapeHtml(__('Apply Discount Code')) ?>
+                </span>
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    class="w-4 h-4 inline-block ml-2"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    role="presentation"
+                    focusable="false"
+                >
+                    <path x-show="!showCouponForm" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 9l-7 7-7-7"/>
+                    <path
+                        x-show="showCouponForm" x-cloak stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M5 15l7-7 7 7"/>
+                </svg>
+            </button>
+        </div>
+        <div>
+            <form id="discount-coupon-form"
+                  class="my-4 overflow-hidden"
+                  x-show="showCouponForm"
+                  x-cloak
+                  action="<?= $escaper->escapeUrl($block->getUrl('checkout/cart/couponPost')) ?>"
+                  method="post"
+                  @submit.prevent="submitForm()"
+                x-ref="cartContent"
+    x-transition:enter="transition-all duration-300 ease-in-out"
+    x-transition:enter-start="max-h-0 opacity-0"
+    x-transition:enter-end="max-h-[1000px] opacity-100"
+    x-transition:leave="transition-all duration-300 ease-in-out"
+    x-transition:leave-start="max-h-[1000px] opacity-100"
+    x-transition:leave-end="max-h-0 opacity-0"
+            >
+                <?= $block->getBlockHtml('formkey') ?>
+
+                <div class="fieldset coupon space-y-4">
+                    <div class="flex flex-wrap flex-col sm:flex-row gap-2 justify-center md:justify-start">
+                        <label for="coupon_code" class="label sr-only">
+                            <?= $escaper->escapeHtml(__('Enter discount code')) ?>
+                        </label>
+                        <div class="control w-full">
+                            <input type="text"
+                                   class="form-input disabled:opacity-75 disabled:bg-gray-100 disabled:pointer-events-none w-full"
+                                   id="coupon_code"
+                                   name="coupon_code"
+                                   value="<?= $escaper->escapeHtmlAttr($block->getCouponCode()) ?>"
+                                   x-model="formData.coupon_code"
+                                   x-ref="couponInput"
+                                   placeholder="<?= $escaper->escapeHtmlAttr(__('Enter discount code')) ?>"
+                                    <?php if ($hasCouponCode): ?>
+                                       disabled
+                                    <?php else: ?>
+                                        required
+                                    <?php endif; ?>
+                            />
+                        </div>
+
+                            <?php if (!$hasCouponCode): ?>
+                            <div class="primary w-full text-center">
+                                <button class="btn btn-primary  mx-auto btn-reverse" type="submit" value="<?= $escaper->escapeHtmlAttr(__('Apply Discount')) ?>">
+                                    <span><?= $escaper->escapeHtml(__('Apply Discount')) ?></span>
+                                </button>
+                            </div>
+                            <?php else: ?>
+                                <div class="primary">
+                                    <input type="hidden" name="remove" id="remove-coupon" value="1"/>
+                                    <button type="submit" class="btn btn-primary"
+                                            value="<?= $escaper->escapeHtmlAttr(__('Cancel Coupon')) ?>">
+                                        <?= $escaper->escapeHtml(__('Cancel Coupon')) ?>
+                                    </button>
+                                </div>
+                            <?php endif; ?>
+                        
+                    </div>
+                    <?= $recaptcha ? $recaptcha->getInputHtml(ReCaptcha::RECAPTCHA_FORM_ID_COUPON_CODE) : '' ?>
+                    <?php if ($recaptcha && $recaptcha->getLegalNoticeHtml(ReCaptcha::RECAPTCHA_FORM_ID_COUPON_CODE)): ?>
+                        <?= $recaptcha->getLegalNoticeHtml(ReCaptcha::RECAPTCHA_FORM_ID_COUPON_CODE) ?>
+                    <?php endif; ?>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+

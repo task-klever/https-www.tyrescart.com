@@ -1,0 +1,17 @@
+{
+    "name": "klever/module-bannerslider",
+    "description": "Extends Mageplaza BannerSlider with mobile images, SEO fields, URL slugs, date-based display, and offer detail pages",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "require": {
+        "mageplaza/module-banner-slider": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Klever\\BannerSlider\\": ""
+        }
+    }
+}

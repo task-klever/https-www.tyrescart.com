@@ -1,0 +1,224 @@
+/**
+ * Modern card-style popups for Notify Installer, Notify Customer, and Notify Invoice modals.
+ */
+
+/* ── Modal overlay ── */
+#notify-installer-popup-modal .modal-inner-wrap,
+#notify-customer-popup-modal .modal-inner-wrap,
+#notify-invoice-popup-modal .modal-inner-wrap {
+    max-width: 560px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    border: none;
+}
+
+/* ── Modal header ── */
+#notify-installer-popup-modal .modal-header,
+#notify-customer-popup-modal .modal-header,
+#notify-invoice-popup-modal .modal-header {
+    background: #1a1a2e;
+    padding: 20px 28px;
+    border-bottom: 3px solid #00843d;
+}
+
+#notify-installer-popup-modal .modal-header .modal-title,
+#notify-customer-popup-modal .modal-header .modal-title,
+#notify-invoice-popup-modal .modal-header .modal-title {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+#notify-installer-popup-modal .modal-header .action-close,
+#notify-customer-popup-modal .modal-header .action-close,
+#notify-invoice-popup-modal .modal-header .action-close {
+    filter: brightness(0) invert(1);
+}
+
+/* ── Modal content area ── */
+#notify-installer-popup-modal .modal-content,
+#notify-customer-popup-modal .modal-content,
+#notify-invoice-popup-modal .modal-content {
+    padding: 28px;
+    background: #f9fafb;
+}
+
+/* ── Form fieldset card ── */
+#notify-installer-popup-modal .fieldset,
+#notify-customer-popup-modal .fieldset,
+#notify-invoice-popup-modal .fieldset {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 24px;
+    margin: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Field labels ── */
+#notify-installer-popup-modal .fieldset label,
+#notify-customer-popup-modal .fieldset label,
+#notify-invoice-popup-modal .fieldset label,
+#notify-installer-popup-modal .fieldset .admin__field-label,
+#notify-customer-popup-modal .fieldset .admin__field-label,
+#notify-invoice-popup-modal .fieldset .admin__field-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* ── Text inputs ── */
+#notify-installer-popup-modal .fieldset .input-text,
+#notify-customer-popup-modal .fieldset .input-text,
+#notify-invoice-popup-modal .fieldset .input-text {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #1f2937;
+    background: #ffffff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+#notify-installer-popup-modal .fieldset .input-text:focus,
+#notify-customer-popup-modal .fieldset .input-text:focus,
+#notify-invoice-popup-modal .fieldset .input-text:focus {
+    border-color: #00843d;
+    box-shadow: 0 0 0 3px rgba(0, 132, 61, 0.12);
+    outline: none;
+}
+
+/* ── Textareas ── */
+#notify-installer-popup-modal .fieldset textarea,
+#notify-customer-popup-modal .fieldset textarea,
+#notify-invoice-popup-modal .fieldset textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #1f2937;
+    background: #ffffff;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+#notify-installer-popup-modal .fieldset textarea:focus,
+#notify-customer-popup-modal .fieldset textarea:focus,
+#notify-invoice-popup-modal .fieldset textarea:focus {
+    border-color: #00843d;
+    box-shadow: 0 0 0 3px rgba(0, 132, 61, 0.12);
+    outline: none;
+}
+
+/* ── Field spacing ── */
+#notify-installer-popup-modal .fieldset .field,
+#notify-customer-popup-modal .fieldset .field,
+#notify-invoice-popup-modal .fieldset .field {
+    margin-bottom: 20px;
+}
+
+#notify-installer-popup-modal .fieldset .field:last-child,
+#notify-customer-popup-modal .fieldset .field:last-child,
+#notify-invoice-popup-modal .fieldset .field:last-child {
+    margin-bottom: 0;
+}
+
+/* ── Remove ugly <br> spacing ── */
+#notify-installer-popup-modal br,
+#notify-customer-popup-modal br {
+    display: none;
+}
+
+/* ── Actions toolbar ── */
+#notify-installer-popup-modal .actions-toolbar,
+#notify-customer-popup-modal .actions-toolbar,
+#notify-invoice-popup-modal .actions-toolbar {
+    margin-top: 24px;
+    padding: 0;
+}
+
+#notify-installer-popup-modal .actions-toolbar .primary,
+#notify-customer-popup-modal .actions-toolbar .primary,
+#notify-invoice-popup-modal .actions-toolbar .primary {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+/* ── Base button style ── */
+#notify-installer-popup-modal .actions-toolbar .action,
+#notify-customer-popup-modal .actions-toolbar .action,
+#notify-invoice-popup-modal .actions-toolbar .action {
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #374151;
+}
+
+#notify-installer-popup-modal .actions-toolbar .action:hover,
+#notify-customer-popup-modal .actions-toolbar .action:hover,
+#notify-invoice-popup-modal .actions-toolbar .action:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+/* ── Primary button (Save & Send Mail) ── */
+#notify-installer-popup-modal .actions-toolbar .action.primary,
+#notify-customer-popup-modal .actions-toolbar .action.primary,
+#notify-invoice-popup-modal .actions-toolbar .action.primary {
+    background: #00843d;
+    color: #ffffff;
+    border-color: #00843d;
+}
+
+#notify-installer-popup-modal .actions-toolbar .action.primary:hover,
+#notify-customer-popup-modal .actions-toolbar .action.primary:hover,
+#notify-invoice-popup-modal .actions-toolbar .action.primary:hover {
+    background: #006b31;
+    border-color: #006b31;
+    box-shadow: 0 2px 8px rgba(0, 132, 61, 0.3);
+}
+
+/* ── Send Order Email button (in Notify Customer) ── */
+#notify-customer-popup-modal #ordermailsendform {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    float: none !important;
+}
+
+#notify-customer-popup-modal #ordermailsendform .action.primary {
+    background: #1a1a2e;
+    border-color: #1a1a2e;
+    color: #ffffff;
+}
+
+#notify-customer-popup-modal #ordermailsendform .action.primary:hover {
+    background: #2d2d44;
+    border-color: #2d2d44;
+}
+
+/* ── Modal footer (hide default if empty) ── */
+#notify-installer-popup-modal .modal-footer,
+#notify-customer-popup-modal .modal-footer,
+#notify-invoice-popup-modal .modal-footer {
+    display: none;
+}

@@ -1,0 +1,167 @@
+<?php
+use Hyva\Theme\ViewModel\HyvaCsp;
+/** @var HyvaCsp $hyvaCsp */
+$route = $this->getRequest()->getParam('route');
+$vehicleMakes = $block->getVehiclesMakes();
+$baseUrl = $this->getBaseUrl();
+$vehiclesData = [];
+$availableLetters = [];
+$urlKeys = [];
+foreach ($vehicleMakes['data'] as $vehicle) {
+    $name = trim($vehicle['name']);
+    if (!$name) {
+        continue; 
+    }
+    $urlKey = $vehicle['slug'] ?? '';
+    if (!$urlKey) {
+        $urlKey = strtolower(preg_replace('/[^a-z0-9]+/', '-', $name));
+        $urlKey = trim($urlKey, '-');
+    }
+    $originalUrlKey = $urlKey;
+    $i = 1;
+    while (in_array($urlKey, $urlKeys)) {
+        $urlKey = $originalUrlKey . '-' . $i;
+        $i++;
+    }
+    $urlKeys[] = $urlKey;
+    $firstLetter = strtoupper(substr($name, 0, 1));
+    if (!in_array($firstLetter, $availableLetters)) {
+        $availableLetters[] = $firstLetter;
+    }
+    $vehiclesData[] = [
+        'name' => $name,
+        'urlKey' => $urlKey,
+        'logo' => $vehicle['logo'] ?? '',
+        'firstLetter' => $firstLetter,
+    ];
+}
+sort($availableLetters);
+?>
+<div x-data="vehicleFilter()" class="section section-padding all-vehicles-section">
+   <?php if (!empty($vehiclesData)): ?>
+   <div class="section-title text-center">
+      <h3><?php echo __('Explore The') ?> <span class="text-theme-blue block md:inline-block"><?php echo __('Finest Car Brands') ?></span></h3>
+   </div>
+   <div class="relative max-w-2xl mx-auto">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+         <svg class="h-4 w-4 md:h-5 md:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+         </svg>
+      </div>
+      <input 
+         type="text"
+         x-model="searchTerm"
+         placeholder="<?php echo __('Search car brands...') ?>"
+         class="w-full pl-10 pr-10 py-3 text-base md:text-lg border-1 border-border-color rounded-[10px] bg-white shadow-sm focus:shadow-none  transition-all duration-300 placeholder-gray-400 focus:border-theme-blue"
+         />
+      <button 
+         x-show="searchTerm !== ''"
+         @click="searchTerm = ''"
+         class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+         >
+         <svg class="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+         </svg>
+      </button>
+   </div>
+   <div class="relative mt-3.5 md:mt-6 mb-0 md:mb-3">
+      <div class="flex gap-1 md:gap-2 overflow-x-auto scrollbar-hide pb-2 md:flex-wrap md:justify-center md:overflow-visible md:pb-0" style="scrollbar-width: none; -ms-overflow-style: none;">
+         <button 
+            @click="activeLetter = 'all'; centerActiveButton($event)"
+            :class="{ 
+            'bg-theme-blue text-white shadow-md border-2 border-border-theme': activeLetter === 'all',
+            'bg-white border-2 border-border-theme hover:border-theme-blue': activeLetter !== 'all'
+            }"
+            class="flex-shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-[10px] font-medium text-sm lg:text-base transition-all duration-300 whitespace-nowrap"
+            >
+            <span class="flex items-center gap-1 lg:gap-2">
+               <svg class="w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+               </svg>
+               <span class="hidden sm:inline"><?php echo __('All Brands') ?></span>
+               <span class="sm:hidden"><?php echo __('All') ?></span>
+            </span>
+         </button>
+         <template x-for="letter in availableLetters" :key="letter">
+            <button 
+               @click="activeLetter = letter; centerActiveButton($event)"
+               x-text="letter"
+               :class="{ 
+               'bg-theme-blue text-white shadow-md border-2 border-border-theme': activeLetter === letter,
+               'bg-white  border-2 border-border-theme hover:border-theme-blue': activeLetter !== letter
+               }"
+               class="flex-shrink-0 w-10 h-10 lg:w-12 lg:h-12 rounded-[10px] font-bold text-sm lg:text-lg transition-all duration-300 relative overflow-hidden"
+               >
+            <span class="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 transition-opacity duration-300" :class="{ 'opacity-20': activeLetter === letter }"></span>
+            </button>
+         </template>
+      </div>
+   </div>
+   <div class="flex flex-wrap items-center justify-center mb-4">
+      <template x-for="(vehicle, index) in filtered" :key="vehicle.urlKey">
+         <div class="w-1/2 md:w-1/4 lg:w-1/5 xl:w-1/6 p-1.5 md:p-2.5 vehicle-card animate-[slideInUp_0.6s_ease-out_forwards] opacity-0" :style="`animation-delay: ${index * 50}ms`">
+            <a :href="'<?= $baseUrl . $route ?>/' + vehicle.urlKey" class="group other-transition shadow-lg hover:shadow-xl flex flex-wrap justify-center text-center border border-border-theme rounded-[10px] px-5 py-3 md:py-4 transition duration-300 ease-out hover:border-theme-blue">
+               <template x-if="vehicle.logo">
+                  <div class="bg-transparent w-auto h-[65px] transform">
+                     <img class="w-auto h-[65px] m-auto"
+                        :src="vehicle.logo"
+                        loading="lazy"
+                        :alt="vehicle.name + ' Car Tyres Online'"
+                        :title="vehicle.name" />
+                  </div>
+               </template>
+               <p class="block mt-2 w-full text-sm md:text-base font-semibold text-gray-800 transition-colors duration-300" x-text="vehicle.name"></p>
+            </a>
+         </div>
+      </template>
+   </div>
+   <div x-show="filtered.length === 0"
+      class="text-center mt-6 text-gray-500 text-lg">
+      <?= __("No brands found matching your search.") ?>
+   </div>
+   <?php else: ?>
+   <div class="text-center mt-6 text-gray-500 text-lg">
+      <?= __("We can't find any brands.") ?>
+   </div>
+   <?php endif; ?>
+</div>
+<script>
+function vehicleFilter() {
+    return {
+        searchTerm: '',
+        activeLetter: 'all',
+        availableLetters: <?= json_encode($availableLetters ?: []) ?>,
+        vehicles: <?= json_encode($vehiclesData ?: []) ?>,
+        get filtered() {
+            if (!this.vehicles || !Array.isArray(this.vehicles)) {
+                return [];
+            }
+            return this.vehicles.filter(vehicle => {
+                const matchesSearch = this.searchTerm === '' ||
+                    vehicle.name.toLowerCase().includes(this.searchTerm.toLowerCase());
+                const matchesLetter = this.activeLetter === 'all' ||
+                    vehicle.firstLetter === this.activeLetter;
+                return matchesSearch && matchesLetter;
+            });
+        },
+        centerActiveButton(event) {
+            setTimeout(() => {
+                const button = event.target.closest('button');
+                const buttonContainer = button.closest('.overflow-x-auto');
+                if (!buttonContainer || !button) return;
+                const buttonRect = button.getBoundingClientRect();
+                const containerRect = buttonContainer.getBoundingClientRect();
+                const scrollLeft = buttonContainer.scrollLeft;
+                const buttonCenter = buttonRect.left - containerRect.left + (buttonRect.width / 2) + scrollLeft;
+                const containerCenter = containerRect.width / 2;
+                const scrollTo = buttonCenter - containerCenter;
+                buttonContainer.scrollTo({
+                    left: Math.max(0, scrollTo),
+                    behavior: 'smooth'
+                });
+            }, 50);
+        }
+    }
+}
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

@@ -1,0 +1,6 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Backend\Model\UrlInterface">
+        <plugin name="mstDashboard::disable_security_key" type="Mirasvit\Dashboard\Plugin\Magento\Backend\Model\Url\DisableSecurityKeyPlugin" sortOrder="1000"/>
+    </type>
+</config>

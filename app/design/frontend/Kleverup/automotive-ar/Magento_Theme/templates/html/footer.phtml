@@ -1,0 +1,571 @@
+<?php
+   /**
+    * Hyvä Themes - https://hyva.io
+    * Copyright © Hyvä Themes 2020-present. All rights reserved.
+    * This product is licensed per Magento install
+    * See https://hyva.io/license
+    */
+   
+   declare(strict_types=1);
+   
+   use Hyva\Theme\ViewModel\HyvaCsp;
+   use Magento\Framework\Escaper;
+   use Magento\Framework\View\Element\Template;
+   
+   /** @var HyvaCsp $hyvaCsp */
+   
+   
+   $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+   $requestOb = $objectManager->get('Magento\Framework\App\RequestInterface');
+   $currentActionName = $requestOb->getFullActionName();
+   
+   
+   /** @var Escaper $escaper */
+   /** @var Template $block */
+   
+   // Remove any child blocks that don't need to be part of the footer columns
+   $footerColumns = array_diff(
+       $block->getChildNames(),
+       array('footer-copyright', 'form.subscribe', 'footer-content-before', 'footer-content-after')
+   );
+   ?>
+<?php /*   
+   <?= $block->getChildHtml('footer-content-before') ?>
+<?= $block->getChildHtml('subscribe') ?>
+*/ ?>
+<div class="page-footer bg-[#0e0e0e]">
+   <div class="footer-middle pt-4 pb-0 md:pt-8 md:pb-2">
+      <div class="container-theme mx-auto">
+         <div class="grid grid-cols-1 lg:grid-cols-5 lg:gap-6 text-slate-600 w-full">
+            <?php foreach ($footerColumns as $childName): ?>
+            <?= $block->getBlockHtml($childName) ?>
+            <?php endforeach; ?>
+         </div>
+      </div>
+   </div>
+   <?php if ($footerContentAfter = $block->getChildHtml('footer-content-after')): ?>
+   <div class="space-y-10 bg-zinc-50 py-4">
+      <?= /** @noEscape */ $footerContentAfter ?>
+   </div>
+   <?php endif; ?>
+   <div class="footer-bottom py-2 md:py-4 border-t border-[#4c4c4c]">
+      <div class="container-theme mx-auto">
+         <div class="flex gap-2 md:gap-5 flex-col md:flex-row justify-center justify-center md:justify-between w-full flex-wrap items-center">
+            <div class="copyright-text">
+               <a href="/ar/about-us" class="w-auto text-center md:w-[166px] md:w-auto lg:w-auto lg:m-w-auto mb-[0.3rem] md:mb-0 lg:mb-0 inline-block text-[#dbdbdb] footer-links hover:text-theme-blue transition-all duration-300 ease-in-out"><?= $block->getChildHtml('copyright') ?></a>
+            </div>
+            <nav class="flex items-center flex-wrap justify-center" aria-label="<?= $escaper->escapeHtml(__('Legal Menu')) ?>">
+               <a href="/ar/tyres" 
+                  class="mb-[0.3rem] md:mb-0 lg:mb-0 inline-block text-[#dbdbdb] footer-links hover:text-theme-blue transition-all duration-300 ease-in-out">
+               <?= $escaper->escapeHtml(__('Car Tyres')) ?>
+               </a>
+               <span class="w-px h-4 bg-white mx-3 mb-1 md:mb-0"></span>
+               <a href="/ar/contact" 
+                  class="mb-[0.3rem] md:mb-0 lg:mb-0 inline-block text-[#dbdbdb] footer-links hover:text-theme-blue transition-all duration-300 ease-in-out">
+               <?= $escaper->escapeHtml(__('Contact')) ?>
+               </a>
+               <span class="w-px h-4 bg-white mx-3 mb-1 md:mb-0"></span>
+               <a href="/ar/faqs" 
+                  class="mb-[0.3rem] md:mb-0 lg:mb-0 inline-block text-[#dbdbdb] footer-links hover:text-theme-blue transition-all duration-300 ease-in-out">
+               <?= $escaper->escapeHtml(__('FAQs')) ?>
+               </a>
+               <span class="w-px h-4 bg-white mx-3 mb-1 md:mb-0"></span>
+               <a href="/ar/sitemap"
+                  class="mb-[0.3rem] md:mb-0 lg:mb-0 inline-block text-[#dbdbdb] footer-links hover:text-theme-blue transition-all duration-300 ease-in-out">
+               <?= $escaper->escapeHtml(__('Sitemap')) ?>
+               </a>
+            </nav>
+            <div class="visa-image">
+               <img class="ml-auto" src="<?php echo $this->getViewFileUrl('images/visa-image.png'); ?>" alt="Visa">
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+
+<div x-data="initSocialButtons" class="relative hidden md:block">
+   <a class="all-social-btn bg-theme-blue border border-[#D9D9D9] z-[30]" @click="showSocial = !showSocial">
+   <img class="img-1" x-show="!showSocial" src="<?php echo $this->getViewFileUrl('images/all-in-one-social.svg'); ?>" alt="Social Contact of TyresCart">
+   <img class="img-2" x-show="showSocial" x-cloak src="<?php echo $this->getViewFileUrl('images/close-icon.svg'); ?>" alt="Close Social Contact of TyresCart">
+   </a>
+   <div x-show="showSocial" x-cloak @click.away="showSocial = false" class="social-btn-box fixed right-[10px] md:right-[26px] bottom-[112px] md:bottom-[134px] z-[20]" x-transition>
+      <div class="flex gap-1.5 md:gap-2 flex-col">
+         <a href="tel:+971505069575" class="social-btn bg-gradient-to-r from-theme-blue to-[#5E7F65] border border-[#D9D9D9] z-[50]" @click="showSocial = true">
+         <i class="icon icon-call text-white text-[21px] mt-[1px] lg:mt-[2px]"></i>
+         </a>
+         <a class="social-btn bg-gradient-to-r from-theme-blue to-[#5E7F65] border border-[#D9D9D9] z-[50] enquiryform-modal" @click="showSocial = true; SendInquiryOpenModal()">
+         <img src="<?php echo $this->getViewFileUrl('images/send-inquiry-icon.png'); ?>" alt="Send enquiry icon – TyresCart">
+         </a>
+         <a class="social-btn requestcall-btn bg-gradient-to-r from-theme-blue to-[#5E7F65] border border-[#D9D9D9] z-[50]" @click="showSocial = true; RequestOpenModal()">
+         <img src="<?php echo $this->getViewFileUrl('images/call-back-icon.png'); ?>" alt="Request call back icon – TyresCart">
+         </a>
+      </div>
+   </div>
+</div>
+
+
+<div class="social-btn whats-app-btn z-[20] fixed right-[10px] md:right-[26px] p-[5px] rounded-[30px] h-[45px] md:h-[55px] w-[45px] md:w-[55px] bg-[rgb(22,165,3)] hidden md:block">
+   <a target="_blank" href="https://api.whatsapp.com/send/?phone=971505069575&text=Hi%20tyrescart.ae">
+      <div class="img-box">
+         <img alt="" src="data:image/svg+xml;charset=utf-8,%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2250%22%20height%3D%2250%22%20viewBox%3D%220%200%2050%2050%22%3E%0A%20%20%3Cg%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%2225%22%20style%3D%22fill%3A%20%2316a503%22%2F%3E%0A%20%20%20%20%3Cpath%20d%3D%22M39.8%2C23.4A14.64%2C14.64%2C0%2C0%2C1%2C25.1%2C38%2C15.25%2C15.25%2C0%2C0%2C1%2C18%2C36.2L9.8%2C38.8%2C12.5%2C31a14.84%2C14.84%2C0%2C0%2C1-2.1-7.5%2C14.7%2C14.7%2C0%2C0%2C1%2C29.4-.1ZM25.1%2C11.2A12.38%2C12.38%2C0%2C0%2C0%2C12.7%2C23.5a12%2C12%2C0%2C0%2C0%2C2.4%2C7.2l-1.5%2C4.6%2C4.8-1.5A12.44%2C12.44%2C0%2C0%2C0%2C37.6%2C23.5%2C12.53%2C12.53%2C0%2C0%2C0%2C25.1%2C11.2Zm7.4%2C15.6a3.22%2C3.22%2C0%2C0%2C0-.7-.4l-2.5-1.2c-.3-.1-.6-.2-.8.2a8.54%2C8.54%2C0%2C0%2C1-1.1%2C1.4.59.59%2C0%2C0%2C1-.8.1%2C11%2C11%2C0%2C0%2C1-2.9-1.8%2C9.88%2C9.88%2C0%2C0%2C1-2-2.5.46.46%2C0%2C0%2C1%2C.2-.7%2C2.65%2C2.65%2C0%2C0%2C0%2C.5-.6c.2-.2.2-.4.4-.6a.64.64%2C0%2C0%2C0%2C0-.6c-.1-.2-.8-1.9-1.1-2.7s-.6-.6-.8-.6h-.7a1.85%2C1.85%2C0%2C0%2C0-1%2C.4%2C4.16%2C4.16%2C0%2C0%2C0-1.3%2C3%2C6.45%2C6.45%2C0%2C0%2C0%2C1.5%2C3.7c.2.2%2C2.5%2C4%2C6.2%2C5.4s3.7%2C1%2C4.3.9a3.74%2C3.74%2C0%2C0%2C0%2C2.4-1.7A2.82%2C2.82%2C0%2C0%2C0%2C32.5%2C26.8Z%22%20style%3D%22fill%3A%20%23ffffff%22%2F%3E%0A%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A">
+      </div>
+      <div class="sm-blue-dot"></div>
+   </a>
+</div>
+
+<div x-data="{
+        barHidden: false,
+        onScroll() {
+            const atBottom = (window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 100);
+            this.barHidden = atBottom;
+        }
+     }"
+     @scroll.window.passive="onScroll()"
+     :class="barHidden ? 'translate-y-[140%]' : 'translate-y-0'"
+     class="mobile-bar fixed bottom-0 left-0 right-0 z-[40] md:hidden transition-transform duration-300 ease-in-out">
+   <div class="px-[0.75rem] pb-[max(0.65rem,env(safe-area-inset-bottom))]">
+      <nav class="bg-gradient-to-r from-theme-blue to-[#5E7F65] rounded-[2rem] shadow-[0_-4px_30px_rgba(0,0,0,0.12)] grid grid-cols-5 items-center justify-items-center px-3 py-2 relative overflow-visible">
+         <div x-data="{ showContactSocial: false }" class="relative flex flex-col items-center justify-items-center w-full">
+            <div x-show="showContactSocial" x-cloak
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-3"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 scale-95 translate-y-3"
+                 class="fixed bottom-[80px] right-[8px] z-[300] w-auto bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.18)] border border-gray-100 overflow-visible">
+               <div class="bg-gradient-to-r from-theme-blue to-[#5E7F65] px-3 py-2 rounded-t-2xl">
+                  <p class="text-white font-bold text-[13px] tracking-wide uppercase"><?php echo __('Contact Us') ?></p>
+               </div>
+               <div class="flex flex-col">
+                  <a href="tel:+971505069575"
+                     class="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors group cursor-pointer"
+                     @click="showContactSocial = false">
+                     <span class="w-9 h-9 rounded-full bg-gradient-to-br from-theme-blue to-[#5E7F65] flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                        <i class="icon icon-call text-white text-[16px]"></i>
+                     </span>
+                     <div>
+                        <p class="text-gray-800 text-[13px] font-semibold leading-tight"><?php echo __('Call') ?></p>
+                        <p class="text-gray-400 text-[11px] leading-tight [direction:ltr]">+971 50 506 9575</p>
+                     </div>
+                  </a>
+                  <a class="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors group cursor-pointer enquiryform-modal"
+                     @click="showContactSocial = false; SendInquiryOpenModal()">
+                     <span class="w-9 h-9 rounded-full bg-gradient-to-br from-theme-blue to-[#5E7F65] flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                        <img class="w-[18px] h-[18px] object-contain" src="<?php echo $this->getViewFileUrl('images/send-inquiry-icon.png'); ?>" alt="Send enquiry">
+                     </span>
+                     <div>
+                        <p class="text-gray-800 text-[13px] font-semibold leading-tight"><?php echo __('Send Enquiry') ?></p>
+                        <p class="text-gray-400 text-[11px] leading-tight"><?php echo __('Send us a message') ?></p>
+                     </div>
+                  </a>
+                  <a class="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors group cursor-pointer requestcall-btn"
+                     @click="showContactSocial = false; RequestOpenModal()">
+                     <span class="w-9 h-9 rounded-full bg-gradient-to-br from-theme-blue to-[#5E7F65] flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                        <img class="w-[18px] h-[18px] object-contain" src="<?php echo $this->getViewFileUrl('images/call-back-icon.png'); ?>" alt="Request call back">
+                     </span>
+                     <div>
+                        <p class="text-gray-800 text-[13px] font-semibold leading-tight"><?php echo __('Request a Call Back') ?></p>
+                        <p class="text-gray-400 text-[11px] leading-tight"><?php echo __('We\'ll call you shortly') ?></p>
+                     </div>
+                  </a>
+               </div>
+               <div class="absolute -bottom-[7px] right-[39px] w-3.5 h-3.5 bg-white rotate-45 border-r border-b border-gray-100"></div>
+            </div>
+            <a @click.prevent="showContactSocial = !showContactSocial" @click.away="showContactSocial = false"
+               class="mobile-nav-item contact-button-sm flex flex-col items-center gap-1.5 rounded-xl transition-all duration-200 group relative top-[2px]">
+               <span class="flex items-center justify-center rounded-xl transition-colors rounded-xl group-[.active]:bg-theme-blue/10 transition-colors">
+                  <img fetchpriority="high" class="w-4 h-auto" src="<?php echo $this->getViewFileUrl('images/contact-mobile.webp'); ?>" alt="Contact">
+               </span>
+               <span class="text-[10px] text-white tracking-wide"><?php echo __('Contact') ?></span>
+            </a>
+         </div>
+         <a href="https://api.whatsapp.com/send/?phone=971505069575&text=Hi%20tyrescart.ae" target="_blank" rel="noopener"
+            class="mobile-nav-item flex flex-col items-center gap-1.5 rounded-xl transition-all duration-200 group relative top-[2px]">
+            <span class="flex items-center justify-center rounded-xl transition-colors rounded-xl transition-colors">
+               <img fetchpriority="high" class="w-4 h-auto" src="<?php echo $this->getViewFileUrl('images/whats-up-icon.webp'); ?>" alt="WhatsApp">
+            </span>
+            <span class="text-[10px] text-white tracking-wide"><?php echo __('WhatsApp') ?></span>
+         </a>
+         <div class="flex flex-col items-center -mt-[2rem] relative z-10">
+            <a onclick="tyresizeModal('')" id="header-search-full-icon"
+               class="border-2 border-[#cccccca8] w-[50px] h-[50px] rounded-full bg-white flex items-center justify-center shadow-[0_6px_24px_rgba(0,132,61,0.45)] ring-4 ring-theme-blue/15 transition-transform duration-200 active:scale-95">
+               <img fetchpriority="high" class="w-[38px] h-auto drop-shadow-sm rotete-image" src="<?php echo $this->getViewFileUrl('images/single-tire-new.png'); ?>" alt="Search Tyres">
+            </a>
+            <span class="text-[10px] text-white tracking-wide mt-[6px]"><?php echo __('Search') ?></span>
+         </div>
+         <a href="/ar/car-battery"
+            class="mobile-nav-item flex flex-col items-center gap-1.5 rounded-xl transition-all duration-200 group relative top-[2px]">
+            <span class="flex items-center justify-center rounded-xl transition-colors rounded-xl transition-colors">
+               <img fetchpriority="high" class="w-4 h-auto" src="<?php echo $this->getViewFileUrl('images/battery-icon.webp'); ?>" alt="Battery">
+            </span>
+            <span class="text-[10px] text-white tracking-wide"><?php echo __('Battery') ?></span>
+         </a>
+         <a href="/ar/special-offers"
+            class="mobile-nav-item flex flex-col items-center gap-1.5 rounded-xl transition-all duration-200 group relative top-[2px]">
+            <span class="flex items-center justify-center rounded-xl transition-colors rounded-xl transition-colors">
+               <img fetchpriority="high" class="w-4 h-auto" src="<?php echo $this->getViewFileUrl('images/offer-icon.webp'); ?>" alt="Offers">
+            </span>
+            <span class="text-[10px] text-white tracking-wide"><?php echo __('Offers') ?></span>
+         </a>
+      </nav>
+   </div>
+</div>
+
+<div class="sliebar">
+   <div id="request-call-modal"
+      class="fixed top-0 left-0 h-full w-[447px] max-w-full bg-white z-60 transform -translate-x-full transition-transform ease-in-out duration-500 sm:duration-700">
+      <div class="tyre-sidebar-content">
+         <div class="flex items-center justify-between px-4 py-2 md:py-4 border-b border-border-color relative">
+            <h3
+               class="text-[1.2rem] md:text-[1.35rem] lg:text-[1.45rem] text-theme-dark font-bold relative uppercase mt-1">
+               <?php echo __('Request') ?> <span class="text-theme-blue"><?php echo __('Call Back') ?></span>
+            </h3>
+            <button onclick="RequestModalClose()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:text-gray-800 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+         </div>
+         <div class="bg-white rounded-lg px-4 sm:px-4 py-4 sm:py-5">
+            <form method="post" id="callbackForm" class="flex flex-col gap-2 md:gap-4" action="<?php echo $block->getUrl('enquiry/index/savecallback'); ?>" x-data="initCallBackFormWithValidation" @submit.prevent="submitCallBackForm()">
+               <?php echo $block->getBlockHtml('formkey') ?>
+               <div>
+                  <label class="label text-gray-700"><?php echo __('Name *') ?></label>
+                  <input type="text" placeholder="<?php echo __('Name') ?>" id="enquiryName" name="name" data-validate='{"required":true}' class="form-input w-full" />
+               </div>
+               <div>
+                  <label class="label text-gray-700"><?php echo __('Phone *') ?></label>
+                  <input type="text" placeholder="<?php echo __('Phone') ?>"  id="enquiryNumber" name="number" data-validate='{"required":true}' class="form-input w-full" />
+               </div>
+               <div class="col-span-2 mt-2 md:mt-0">
+                  <button type="submit" id="submitEnquiry" class="btn btn-primary"><span><?php echo __('Submit') ?></span></button>
+               </div>
+            </form>
+         </div>
+      </div>
+   </div>
+   <div id="request-call-modal-overlay" onclick="RequestModalClose()"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm bg-opacity-50 z-50 hidden transition-all ease-in-out duration-500 sm:duration-700">
+   </div>
+</div>
+<script>
+   document.addEventListener('alpine:init', () => {
+       Alpine.data('initSocialButtons', () => ({
+           showSocial: false
+       }));
+   });
+   
+   function RequestOpenModal() {
+       document.getElementById("request-call-modal").classList.remove("-translate-x-full");
+       document.getElementById("request-call-modal-overlay").classList.remove("hidden");
+       document.body.classList.add("overflow-hidden");
+   }
+   function RequestModalClose() {
+       document.getElementById("request-call-modal").classList.add("-translate-x-full");
+       document.getElementById("request-call-modal-overlay").classList.add("hidden");
+       document.body.classList.remove("overflow-hidden");
+   }
+   // Close modal on ESC key
+   document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+         RequestModalClose();
+      }
+   });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+<script>
+   document.addEventListener('alpine:init', () => {
+       Alpine.data('initCallBackFormWithValidation', function () {
+           const formValidation = hyva.formValidation(this.$el);
+           return Object.assign(formValidation, {
+               submitCallBackForm() {
+                   this.validate()
+                       .then(() => {
+                           const $callbackForm = document.querySelector('#<?= $escaper->escapeJs("callbackForm") ?>');
+                           document.getElementById('klever-loader').classList.remove('hidden');
+                           $callbackForm.submit();
+                       })
+                       .catch((invalid) => {
+                           if (invalid.length > 0) {
+                               invalid[0].focus();
+                           }
+                       });
+               }
+           });
+       });
+   });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+<?php $hyvaCsp->registerInlineScript() ?>
+<div class="sliebar">
+   <div id="send-inquiry-modal"
+      class="fixed top-0 left-0 h-full w-[447px] max-w-full bg-white z-60 transform -translate-x-full transition-transform ease-in-out duration-500 sm:duration-700">
+      <div class="tyre-sidebar-content">
+         <div class="flex items-center justify-between px-4 py-2 md:py-4 border-b border-border-color relative">
+            <h3
+               class="text-[1.2rem] md:text-[1.35rem] lg:text-[1.45rem] text-theme-dark font-bold relative uppercase mt-1">
+               <?php echo __('Send') ?> <span class="text-theme-blue"><?php echo __('Enquiry') ?></span>
+            </h3>
+            <button onclick="EnquiryFormClose()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:text-gray-800 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+         </div>
+         <div class="bg-white rounded-lg px-4 sm:px-4 py-4 sm:py-5">
+            <form method="post" id="enquiryForm" class="grid grid-cols-2 gap-2 md:gap-4" action="<?php echo $block->getUrl('enquiry/index/save'); ?>" x-data="initEnquiryFormWithValidation" @submit.prevent="submitEnquiryForm()">
+               <?php echo $block->getBlockHtml('formkey') ?>
+               <div class="col-span-2 md:col-span-1">
+                  <label class="label text-gray-700"><?php echo __('Name *') ?></label>
+                  <input type="text" placeholder="<?php echo __('Name') ?>" id="enquiryName" name="name" data-validate='{"required":true}' class="form-input w-full" />
+               </div>
+               <div class="col-span-2 md:col-span-1">
+                  <label class="label text-gray-700"><?php echo __('Phone *') ?></label>
+                  <input type="text" placeholder="<?php echo __('Phone') ?>"  id="enquiryNumber" name="number" data-validate='{"required":true}' class="form-input w-full" />
+               </div>
+               <div class="col-span-2">
+                  <label class="label text-gray-700"><?php echo __('Email *') ?></label>
+                  <input type="text" placeholder="<?php echo __('Email') ?>" id="enquiryEmail" name="email" data-validate='{"required":true, "email":true}' class="form-input w-full" />
+               </div>
+               <div class="col-span-2">
+                  <label class="label text-gray-700"><?php echo __('Select Service') ?></label>
+                  <select id="enquiryService" name="service" data-validate='{"required":true}' class="form-input w-full form-select">
+                     <option value=""><?php echo __('Select Service') ?></option>
+                     <option value="Tyre Service"><?php echo __('Tyre Service') ?></option>
+                     <option value="Battery Service"><?php echo __('Battery Service') ?></option>
+                     <option value="AC Service"><?php echo __('AC Service') ?></option>
+                     <option value="Brake Service"><?php echo __('Brake Service') ?></option>
+                     <option value="Oil Change Service"><?php echo __('Oil Change Service') ?></option>
+                     <option value="Mechanical Service"><?php echo __('Mechanical Service') ?></option>
+                     <option value="Electrical Service"><?php echo __('Electrical Service') ?></option>
+                     <option value="Suspension Service"><?php echo __('Suspension Service') ?></option>
+                     <option value="Alignment Service"><?php echo __('Alignment Service') ?></option>
+                     <option value="Balancing Service"><?php echo __('Balancing Service') ?></option>
+                     <option value="Wash Service"><?php echo __('Wash Service') ?></option>
+                     <option value="Car Rim Service"><?php echo __('Car Rim Service') ?></option>
+                  </select>
+               </div>
+               <div class="col-span-2">
+                  <label class="label text-gray-700"><?php echo __('Message') ?></label>
+                  <textarea rows="4" placeholder="<?php echo __('Messages') ?>" id="enquiryComment" name="comment" data-validate='{"required":true}' class="form-input w-full"></textarea>
+               </div>
+               <div class="col-span-2">
+                  <button type="submit" id="submitEnquiry" class="btn btn-primary"><span><?php echo __('Submit') ?></span></button>
+               </div>
+            </form>
+         </div>
+      </div>
+   </div>
+   <div id="send-inquiry-modal-overlay" onclick="EnquiryFormClose()"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-all ease-in-out duration-500 sm:duration-700">
+   </div>
+</div>
+<script>
+   function SendInquiryOpenModal() {
+       document.getElementById("send-inquiry-modal").classList.remove("-translate-x-full");
+       document.getElementById("send-inquiry-modal-overlay").classList.remove("hidden");
+       document.body.classList.add("overflow-hidden");
+   }
+   function EnquiryFormClose() {
+       document.getElementById("send-inquiry-modal").classList.add("-translate-x-full");
+       document.getElementById("send-inquiry-modal-overlay").classList.add("hidden");
+       document.body.classList.remove("overflow-hidden");
+   }
+   // Close modal on ESC key
+   document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+         EnquiryFormClose();
+      }
+   });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+<script>
+   document.addEventListener('alpine:init', () => {
+       Alpine.data('initEnquiryFormWithValidation', function () {
+           const formValidation = hyva.formValidation(this.$el);
+           return Object.assign(formValidation, {
+               submitEnquiryForm() {
+                   this.validate()
+                       .then(() => {
+                           const $enquiryForm = document.querySelector('#<?= $escaper->escapeJs("enquiryForm") ?>');
+                           document.getElementById('klever-loader').classList.remove('hidden');
+                           $enquiryForm.submit();
+                       })
+                       .catch((invalid) => {
+                           if (invalid.length > 0) {
+                               invalid[0].focus();
+                           }
+                       });
+               }
+           });
+       });
+   });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+<!-- Product Enquiry Modal (Desktop - listing pages) -->
+<!-- Product Enquiry Modal (right-side panel) -->
+<div class="sliebar">
+    <div id="product-enquiry-modal"
+        class="fixed top-0 left-0 h-full w-[500px] max-w-full bg-white shadow-2xl z-[9999] transform -translate-x-full transition-transform ease-out duration-300 flex flex-col overflow-hidden">
+        <div class="flex-shrink-0 px-4 sm:px-6 py-4 border-b border-border-color relative">
+            <h3 class="text-lg md:text-2xl font-extrabold text-gray-900 uppercase">
+                <?php echo __('Product') ?> <span class="text-theme-blue"><?php echo __('Enquiry') ?></span>
+            </h3>
+            <button type="button" onclick="closeProductEnquiryModal()"
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:text-gray-800 transition-all absolute top-4 left-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div class="flex-1 overflow-y-auto drawer-scrollbar px-4 sm:px-6">
+            <form id="productEnquiryForm" method="post" class="flex flex-col gap-4 py-4" action="<?php echo $block->getUrl('enquiry/index/save'); ?>">
+                <?php echo $block->getBlockHtml('formkey') ?>
+                <input type="hidden" name="service" value="Product Enquiry" />
+                <input type="hidden" name="product" id="enquiry-product-hidden" value="" />
+                <div class="enquiry-field-wrap">
+                    <label class="label text-gray-700"><?php echo __('Product') ?></label>
+                    <div id="enquiry-product-name" class="w-full w-full text-base md:text-lg font-bold [direction:ltr]"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="enquiry-field-wrap">
+                        <label class="label text-gray-700"><?php echo __('Name') ?> <span class="text-red-500">*</span></label>
+                        <input type="text" name="name" required class="form-input w-full" />
+                    </div>
+                    <div class="enquiry-field-wrap">
+                        <label class="label text-gray-700"><?php echo __('Phone') ?> <span class="text-red-500">*</span></label>
+                        <input type="text" name="number" required class="form-input w-full" />
+                    </div>
+                </div>
+                <div class="enquiry-field-wrap">
+                    <label class="label text-gray-700"><?php echo __('Email') ?> <span class="text-red-500">*</span></label>
+                    <input type="email" name="email" required class="form-input w-full" />
+                </div>
+                <div class="enquiry-field-wrap">
+                    <label class="label text-gray-700"><?php echo __('Comment') ?></label>
+                    <textarea name="comment" rows="4" class="form-input w-full"></textarea>
+                </div>
+                <div id="product-enquiry-success" class="hidden text-center py-5">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" class="mx-auto mb-3">
+                        <circle cx="12" cy="12" r="11" fill="#00843D"/>
+                        <path d="M7 12.5l3 3 7-7" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <p class="text-base font-bold text-theme-blue mb-1"><?php echo __('Thank You!') ?></p>
+                    <p id="product-enquiry-success-msg" class="text-sm text-gray-500"></p>
+                </div>
+                <div id="product-enquiry-error" class="hidden text-red-500 text-sm font-medium text-center"></div>
+                <div id="product-enquiry-buttons" class="action-button">
+                    <button type="submit" id="product-enquiry-submit-btn" class="btn btn-primary"><span><?php echo __('Submit') ?></span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="product-enquiry-overlay" onclick="closeProductEnquiryModal()"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998] hidden transition-all ease-out duration-300">
+    </div>
+</div>
+
+<script>
+    function openProductEnquiryModal(productName) {
+        document.getElementById('enquiry-product-name').textContent = productName;
+        document.getElementById('enquiry-product-hidden').value = productName;
+        document.getElementById('product-enquiry-modal').classList.remove('-translate-x-full');
+        document.getElementById('product-enquiry-overlay').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        // Reset to form view
+        document.getElementById('product-enquiry-success').classList.add('hidden');
+        document.getElementById('product-enquiry-error').classList.add('hidden');
+        document.getElementById('product-enquiry-buttons').classList.remove('hidden');
+        document.querySelectorAll('#productEnquiryForm .enquiry-field-wrap').forEach(function(f){ f.classList.remove('hidden'); });
+    }
+    function closeProductEnquiryModal() {
+        document.getElementById('product-enquiry-modal').classList.add('-translate-x-full');
+        document.getElementById('product-enquiry-overlay').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        document.getElementById('productEnquiryForm').reset();
+        // Reset visibility
+        document.getElementById('product-enquiry-success').classList.add('hidden');
+        document.getElementById('product-enquiry-error').classList.add('hidden');
+        document.getElementById('product-enquiry-buttons').classList.remove('hidden');
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (!document.getElementById('product-enquiry-modal').classList.contains('-translate-x-full')) {
+                closeProductEnquiryModal();
+            }
+        }
+    });
+    // AJAX form submission for Product Enquiry
+    document.getElementById('productEnquiryForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var submitBtn = document.getElementById('product-enquiry-submit-btn');
+        var errorDiv = document.getElementById('product-enquiry-error');
+
+        // Basic validation
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        // Disable button and show loading
+        submitBtn.disabled = true;
+        submitBtn.textContent = '<?php echo __("Submitting...") ?>';
+        errorDiv.style.display = 'none';
+
+        var formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.status === 'success') {
+                // Hide form fields and buttons, show success
+                var formFields = form.querySelectorAll('.enquiry-field-wrap');
+                formFields.forEach(function(f){ f.style.display = 'none'; });
+                document.getElementById('product-enquiry-buttons').style.display = 'none';
+                document.getElementById('product-enquiry-error').style.display = 'none';
+                document.getElementById('product-enquiry-success-msg').textContent = data.message;
+                document.getElementById('product-enquiry-success').style.display = 'block';
+                // Auto close after 3 seconds
+                setTimeout(function() {
+                    closeProductEnquiryModal();
+                }, 3000);
+            } else {
+                errorDiv.textContent = data.message || '<?php echo __("Something went wrong. Please try again.") ?>';
+                errorDiv.style.display = 'block';
+            }
+        })
+        .catch(function() {
+            errorDiv.textContent = '<?php echo __("Something went wrong. Please try again.") ?>';
+            errorDiv.style.display = 'block';
+        })
+        .finally(function() {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '<?php echo __("Submit") ?>';
+        });
+    });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/6.4.10/swiper-bundle.min.js" defer></script>
+<style>
+.rotete-image {
+    max-width: 45px;
+    animation: RoteteImage 6s linear infinite;
+}
+@keyframes RoteteImage {
+ 0%{
+    transform: rotate(0deg);
+   }
+100%{
+    transform: rotate(360deg);
+   }
+}
+</style>

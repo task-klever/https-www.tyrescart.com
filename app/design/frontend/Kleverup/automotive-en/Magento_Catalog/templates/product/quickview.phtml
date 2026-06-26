@@ -1,0 +1,402 @@
+<?php
+/**
+ * Quick View popup content - loaded via AJAX
+ */
+use Hdweb\Tyrefinder\Helper\Productlisting as ListingHelper;
+use Magento\Catalog\Helper\Output as CatalogOutputHelper;
+
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$escaper = $objectManager->get(\Magento\Framework\Escaper::class);
+$listingHelper = $objectManager->get(ListingHelper::class);
+$catalogOutputHelper = $objectManager->get(CatalogOutputHelper::class);
+$storeManager = $objectManager->get(\Magento\Store\Model\StoreManagerInterface::class);
+$imageHelper = $objectManager->get(\Magento\Catalog\Helper\Image::class);
+$priceHelper = $objectManager->get(\Magento\Framework\Pricing\Helper\Data::class);
+
+$product = $block->getData('product');
+if (!$product) return;
+
+$productId = $product->getId();
+$productName = $product->getName();
+$productUrl = $product->getProductUrl();
+$currency = $storeManager->getStore()->getCurrentCurrencyCode();
+$mediaUrl = $storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+
+// Image
+$imageUrl = $imageHelper->init($product, 'category_page_grid')->getUrl();
+
+// Brand
+$brand = $catalogOutputHelper->productAttribute($product, $product->getBrand(), 'brand');
+$brandImage = '';
+$brandName = '';
+$brandUrl = '';
+if ($brand) {
+    $brandDetails = $listingHelper->getBrandDetails($brand);
+    if ($brandDetails) {
+        $brandImage = $listingHelper->getBrandImageUrl($brandDetails);
+        $brandName = $brandDetails->getName();
+        $brandUrl = $listingHelper->getBrandUrl($brandDetails);
+    } else {
+        $brandName = $product->getAttributeText('brand') ?: '';
+    }
+}
+
+// Attributes
+$partsCategory = $product->getPartsCategory() ? $product->getAttributeText('parts_category') : '';
+$pattern = $product->getPattern() ? $product->getAttributeText('pattern') : '';
+$tyreSize = $product->getAttributeText('tyre_size');
+$width = $product->getAttributeText('width');
+$height = $product->getAttributeText('height');
+$rim = $product->getAttributeText('rim');
+$loadIndex = $product->getLoadIndex() ?: '';
+$year = $product->getYear() ? $product->getAttributeText('year') : null;
+$origin = $product->getCountry() ? $product->getAttributeText('country') : null;
+$warranty_period = $product->getWarrantyPeriod() ? $product->getAttributeText('warranty_period') : '';
+$oemMarking = $product->getOemMarking() ? $product->getAttributeText('oem_marking') : '';
+$oem_tyres = $product->getResource()->getAttribute("oem_tyres")->getFrontend()->getValue($product);
+$runflat = $product->getRunflat() ? $product->getAttributeText('runflat') : null;
+$sku = $product->getSku();
+
+// Pricing
+$regularPrice = $product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue();
+$finalPrice = $product->getPriceInfo()->getPrice('final_price')->getAmount()->getValue();
+$savePercent = ($finalPrice < $regularPrice && $regularPrice > 0) ? round((($regularPrice - $finalPrice) / $regularPrice) * 100) : 0;
+$set2price = $listingHelper->getSet2price($product);
+$set4price = $listingHelper->getSet4price($product);
+
+// Offer/discount data
+$isOfferProduct = 'No';
+$discountAmount = '';
+$discountQty = '';
+$productOfferRule = $listingHelper->isAnyRuleExist($product);
+if (!empty($productOfferRule) && !empty($productOfferRule['rule_id'])) {
+    if (!empty($productOfferRule['offer_price'])) {
+        $isOfferProduct = 'Yes';
+        $discountAmount = $productOfferRule['discount_amount'];
+        $discountQty = $productOfferRule['discount_qty_step'];
+    }
+}
+
+// Stock (same logic as listing page - cap at 8)
+$prod_qty = $listingHelper->getProductAvailableQty($product->getSku());
+$stockQty = 0;
+if ($prod_qty >= 8) {
+    $stockQty = 8;
+} else {
+    $stockQty = $prod_qty;
+}
+$isInStock = $stockQty > 0;
+
+// Gallery images
+$galleryImages = [];
+$mediaGallery = $product->getMediaGalleryImages();
+if ($mediaGallery) {
+    foreach ($mediaGallery as $galleryImage) {
+        $galleryImages[] = [
+            'thumb' => $imageHelper->init($product, 'product_page_image_small')->setImageFile($galleryImage->getFile())->getUrl(),
+            'img' => $imageHelper->init($product, 'product_page_image_medium')->setImageFile($galleryImage->getFile())->getUrl(),
+        ];
+    }
+}
+if (empty($galleryImages)) {
+    $galleryImages[] = ['thumb' => $imageUrl, 'img' => $imageUrl];
+}
+
+// Form key
+$formKey = $objectManager->get(\Magento\Framework\Data\Form\FormKey::class)->getFormKey();
+$addToCartUrl = $storeManager->getStore()->getUrl('checkout/cart/add');
+$qvId = 'qv-' . $productId;
+?>
+
+<div class="quickview-content flex flex-col md:flex-row gap-4 md:gap-6 p-4 md:p-6">
+    <!-- Left: Product Image Gallery -->
+    <div class="w-full md:w-2/5 shrink-0">
+        <div class="relative rounded-[10px] border border-[#D9D9D9] shadow-sm p-2">
+            <?php if ($isInStock): ?>
+            <span class="absolute top-2 right-0 bg-black text-white text-xs font-bold px-3 py-1 rounded-l-md z-10"><?= __('In Stock') ?></span>
+            <?php endif; ?>
+            <!-- Main Image -->
+            <div class="flex items-center justify-center min-h-[250px] md:min-h-[300px]">
+                <a href="<?= $escaper->escapeUrl($productUrl) ?>">
+                    <img id="<?= $qvId ?>-main-img" src="<?= $escaper->escapeUrl($galleryImages[0]['img']) ?>" alt="<?= $escaper->escapeHtmlAttr($productName) ?>" class="w-full max-h-[300px] object-contain mx-auto rounded-[10px]" loading="lazy"/>
+                </a>
+            </div>
+            <?php if (count($galleryImages) > 1): ?>
+            <!-- Thumbnails -->
+            <div class="flex items-center gap-2 mt-2 overflow-x-auto pb-1 justify-center">
+                <?php foreach ($galleryImages as $idx => $gImg): ?>
+                <button type="button" onclick="document.getElementById('<?= $qvId ?>-main-img').src='<?= $escaper->escapeJs($gImg['img']) ?>'; this.parentNode.querySelectorAll('button').forEach(function(b){b.classList.remove('border-theme-blue');b.classList.add('border-gray-300')}); this.classList.remove('border-gray-300'); this.classList.add('border-theme-blue');"
+                    class="shrink-0 border-2 <?= $idx === 0 ? 'border-theme-blue' : 'border-gray-300' ?> rounded hover:border-theme-blue transition-colors">
+                    <img src="<?= $escaper->escapeUrl($gImg['thumb']) ?>" alt="<?= $escaper->escapeHtmlAttr($productName) ?>" class="w-16 h-16 object-contain" loading="lazy"/>
+                </button>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Right: Product Info -->
+    <div class="w-full md:w-3/5">
+        <!-- Brand Logo -->
+        <?php if ($brandImage): ?>
+        <div class="mb-2">
+            <img src="<?= $escaper->escapeUrl($brandImage) ?>" alt="<?= $escaper->escapeHtmlAttr($brandName) ?>" class="h-[28px] max-w-[180px] object-contain" loading="lazy"/>
+        </div>
+        <?php elseif ($brandName): ?>
+        <div class="mb-2 font-semibold text-lg"><?= $escaper->escapeHtml($brandName) ?></div>
+        <?php endif; ?>
+
+        <!-- Product Name -->
+        <h2 class="text-lg md:text-xl font-bold text-gray-900 leading-tight">
+            <a href="<?= $escaper->escapeUrl($productUrl) ?>" class="hover:text-theme-blue"><?= $escaper->escapeHtml($productName) ?></a>
+        </h2>
+
+        <!-- Price Box -->
+        <div class="rounded-[10px] border border-border-color bg-[#f5f5f5] px-4 pt-3 pb-2 mt-3 relative">
+            <?php if ($savePercent > 0): ?>
+            <span class="absolute top-3 right-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white bg-red-500">
+                SAVE <?= (int) $savePercent ?>%
+            </span>
+            <?php endif; ?>
+            <span class="text-sm font-bold text-gray-600 uppercase"><?= __('Fully Fitted Price per Item') ?></span>
+            <div class="mt-2">
+                <span class="text-xs font-semibold text-black uppercase tracking-wide"><?= __('Single Price') ?></span>
+            </div>
+            <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-2xl font-bold text-black"><span class="currency-dirham">&#xe900;</span> <?= number_format($finalPrice, 2) ?></span>
+                <?php if ($savePercent > 0): ?>
+                <span class="text-sm text-gray-400 line-through"><span class="currency-dirham">&#xe900;</span> <?= number_format($regularPrice, 2) ?></span>
+                <?php endif; ?>
+            </div>
+            <?php if (strtolower($partsCategory) != 'battery'): ?>
+            <div class="flex items-center gap-3 flex-wrap mt-1 qv-set-price-box" id="qv-set-price-<?= $productId ?>">
+                <div class="flex items-center gap-1">
+                    <span class="text-sm font-medium text-gray-600"><?= __('Set of 2 :') ?></span>
+                    <span class="text-sm font-semibold text-black"><span class="currency-dirham">&#xe900;</span> <?= $set2price ?></span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="text-sm font-medium text-gray-600 qv-set-of"><?= __('Set of 4 :') ?></span>
+                    <span class="text-sm font-semibold text-black"><span class="currency-dirham">&#xe900;</span> <span class="qv-set-of-price"><?= $set4price ?></span></span>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Add to Cart / WhatsApp -->
+            <?php if ($product->isSaleable()): ?>
+            <div class="flex items-center gap-2 mt-3">
+                <select id="qv-qty-<?= $productId ?>" class="border border-gray-300 rounded-md px-2 py-2 text-sm w-16"
+                    onchange="qvChangePrice(this, <?= (float)$regularPrice ?>, <?= (float)$finalPrice ?>, '<?= strtolower($partsCategory) ?>', '<?= $isOfferProduct ?>', '<?= $discountAmount ?>', '<?= $discountQty ?>', '<?= $productId ?>')">
+                    <?php $defaultQty = (strtolower($partsCategory) == 'battery') ? 1 : 4; ?>
+                    <?php for ($i = 1; $i <= min($stockQty, 20); $i++): ?>
+                    <option value="<?= $i ?>" <?= $i == $defaultQty ? 'selected' : '' ?>><?= $i ?></option>
+                    <?php endfor; ?>
+                </select>
+                <?php $defaultBtnPrice = (int) round($finalPrice * $defaultQty); ?>
+                <button type="button"
+                    onclick="quickViewAddToCart(<?= $productId ?>, '<?= $escaper->escapeJs($addToCartUrl) ?>', '<?= $escaper->escapeJs($formKey) ?>')"
+                    class="w-1/2 bg-theme-blue hover:bg-black text-white font-semibold py-2.5 px-4 rounded-md transition-colors flex items-center justify-center gap-2 text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg>
+                    <?= __('Add to Cart') ?> - <span class="currency-dirham">&#xe900;</span><span id="qv-btn-price-<?= $productId ?>"><?= $defaultBtnPrice ?></span>
+                </button>
+            </div>
+            <?php else: ?>
+            <?php $whatsappUrl = "https://api.whatsapp.com/send/?phone=+971505069575&text=" . urlencode("I would like to enquire about " . $productName); ?>
+            <div class="mt-3 flex gap-2">
+                <!-- Mobile: WhatsApp redirect -->
+                <a href="<?= $escaper->escapeUrl($whatsappUrl) ?>" target="_blank"
+                    class="md:hidden w-1/2 bg-[#00843d] hover:bg-black text-white font-semibold py-2.5 px-4 rounded-md transition-colors flex items-center justify-center gap-2 text-sm">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.097"></path></svg>
+                    <?= __('Whatsapp') ?>
+                </a>
+                <!-- Desktop: Open enquiry popup -->
+                <button type="button" onclick="closeQuickView(); openProductEnquiryModal('<?= $escaper->escapeJs($productName) ?>')"
+                    class="hidden md:inline-flex w-1/2 bg-[#00843d] hover:bg-black text-white font-semibold py-2.5 px-4 rounded-md transition-colors items-center justify-center gap-2 text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <?= __('Contact Us') ?>
+                </button>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Size Specs -->
+        <div class="grid grid-cols-4 gap-2 mt-3">
+            <?php if ($width): ?>
+            <div class="flex flex-col items-center justify-center border border-border-color rounded-[10px] p-2 text-center">
+                <span class="text-base font-bold text-gray-800"><?= $escaper->escapeHtml($width) ?></span>
+                <span class="text-[10px] text-gray-500 uppercase tracking-wide mt-1"><?= __('Width (mm)') ?></span>
+            </div>
+            <?php endif; ?>
+            <?php if ($height): ?>
+            <div class="flex flex-col items-center justify-center border border-border-color rounded-[10px] p-2 text-center">
+                <span class="text-base font-bold text-gray-800"><?= $escaper->escapeHtml($height) ?></span>
+                <span class="text-[10px] text-gray-500 uppercase tracking-wide mt-1"><?= __('Profile') ?></span>
+            </div>
+            <?php endif; ?>
+            <?php if ($rim): ?>
+            <div class="flex flex-col items-center justify-center border border-border-color rounded-[10px] p-2 text-center">
+                <span class="text-base font-bold text-gray-800">R<?= $escaper->escapeHtml($rim) ?></span>
+                <span class="text-[10px] text-gray-500 uppercase tracking-wide mt-1"><?= __('Rim Size') ?></span>
+            </div>
+            <?php endif; ?>
+            <?php if ($loadIndex): ?>
+            <div class="flex flex-col items-center justify-center border border-border-color rounded-[10px] p-2 text-center">
+                <span class="text-base font-bold text-gray-800"><?= $escaper->escapeHtml($loadIndex) ?></span>
+                <span class="text-[10px] text-gray-500 uppercase tracking-wide mt-1"><?= __('Load/Speed') ?></span>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Product Specifications -->
+        <div class="mt-3">
+            <h4 class="text-base font-medium text-black"><?= __('Product Specifications') ?></h4>
+            <dl class="grid grid-cols-2 lg:grid-cols-4 gap-2 mt-2">
+                <?php if ($brandName): ?>
+                <div class="bg-[#f5f5f5] rounded-[10px] p-2 border border-border-color">
+                    <div class="flex items-center flex-col">
+                        <div class="w-7 h-7 bg-theme-blue rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                        </div>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wide mt-1"><?= __('Brand') ?></span>
+                        <span class="text-xs font-medium"><?= $escaper->escapeHtml($brandName) ?></span>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($pattern): ?>
+                <div class="bg-[#f5f5f5] rounded-[10px] p-2 border border-border-color">
+                    <div class="flex items-center flex-col">
+                        <div class="w-7 h-7 bg-theme-blue rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                        </div>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wide mt-1"><?= __('Pattern') ?></span>
+                        <span class="text-xs font-medium"><?= $escaper->escapeHtml($pattern . ' ' . $oemMarking) ?></span>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($tyreSize): ?>
+                <div class="bg-[#f5f5f5] rounded-[10px] p-2 border border-border-color">
+                    <div class="flex items-center flex-col">
+                        <div class="w-7 h-7 bg-theme-blue rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                        </div>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wide mt-1"><?= __('Size') ?></span>
+                        <div class="flex items-center gap-1">
+                            <span class="text-xs font-medium"><?= $escaper->escapeHtml($tyreSize . ' ' . $loadIndex) ?></span>
+                            <button type="button" title="<?= $escaper->escapeHtmlAttr(__('Check if this Tyre fits in your vehicle')) ?>"
+                               onclick="qvOpenBuyTyreSearch('<?= $escaper->escapeJs($width) ?>', '<?= $escaper->escapeJs($height) ?>', '<?= $escaper->escapeJs($rim) ?>', '<?= $escaper->escapeJs($productName) ?>')"
+                               class="w-4 h-4 rounded-full flex items-center justify-center transition-colors duration-200 hover:opacity-70">
+                                <svg class="w-4 h-4 text-black" fill="none" stroke="#000" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($year): ?>
+                <div class="bg-[#f5f5f5] rounded-[10px] p-2 border border-border-color">
+                    <div class="flex items-center flex-col">
+                        <div class="w-7 h-7 bg-theme-blue rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wide mt-1"><?= __('Year') ?></span>
+                        <span class="text-xs font-medium"><?= $escaper->escapeHtml($year) ?></span>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($warranty_period): ?>
+                <div class="bg-[#f5f5f5] rounded-[10px] p-2 border border-border-color">
+                    <div class="flex items-center flex-col">
+                        <div class="w-7 h-7 bg-theme-blue rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        </div>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wide mt-1"><?= __('Warranty') ?></span>
+                        <span class="text-xs font-medium"><?= $escaper->escapeHtml(__($warranty_period)) ?></span>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($origin): ?>
+                <div class="bg-[#f5f5f5] rounded-[10px] p-2 border border-border-color">
+                    <div class="flex items-center flex-col">
+                        <div class="w-7 h-7 bg-theme-blue rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wide mt-1"><?= __('Country') ?></span>
+                        <span class="text-xs font-medium"><?= $escaper->escapeHtml(__($origin)) ?></span>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($oem_tyres): ?>
+                <div class="bg-[#f5f5f5] rounded-[10px] p-2 border border-border-color">
+                    <div class="flex items-center flex-col">
+                        <div class="w-7 h-7 bg-theme-blue rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wide mt-1"><?= __('OEM Tyres') ?></span>
+                        <div class="flex items-center gap-1 mt-1">
+                            <?php $oem_tyresArray = explode(', ', $oem_tyres); ?>
+                            <?php foreach ($oem_tyresArray as $oemData): ?>
+                            <?php $oemSlug = str_replace(' ', '-', strtolower($oemData)); ?>
+                            <img src="<?= $mediaUrl ?>cars-logo/<?= $oemSlug ?>.png" alt="<?= $escaper->escapeHtmlAttr($oemData) ?>" class="h-3 max-w-5" loading="lazy"/>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <div class="bg-[#f5f5f5] rounded-[10px] p-2 border border-border-color">
+                    <div class="flex items-center flex-col">
+                        <div class="w-7 h-7 bg-theme-blue rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wide mt-1"><?= __('SKU') ?></span>
+                        <span class="text-xs font-medium"><?= $escaper->escapeHtml($sku) ?></span>
+                    </div>
+                </div>
+            </dl>
+        </div>
+
+        <!-- Service Badges -->
+        <div class="grid grid-cols-3 gap-2 mt-3 bg-[#f0f7ff] rounded-[10px] p-3">
+            <div class="flex items-start gap-2">
+                <div class="w-8 h-8 bg-theme-blue rounded-full flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <div>
+                    <span class="text-xs font-bold block"><?= __('Fast Shipping & Installation') ?></span>
+                    <span class="text-[10px] text-gray-500"><?= __('We deliver and install most orders on the same day.') ?></span>
+                </div>
+            </div>
+            <div class="flex items-start gap-2">
+                <div class="w-8 h-8 bg-theme-blue rounded-full flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <div>
+                    <span class="text-xs font-bold block"><?= __('Free Wheel Balancing') ?></span>
+                    <span class="text-[10px] text-gray-500"><?= __('Free wheel balancing included with every tyre installation.') ?></span>
+                </div>
+            </div>
+            <div class="flex items-start gap-2">
+                <div class="w-8 h-8 bg-theme-blue rounded-full flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <span class="text-xs font-bold block"><?= __('Always Authentic') ?></span>
+                    <span class="text-[10px] text-gray-500"><?= __('We only sell 100% authentic products backed by manufacturers warranty.') ?></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Full Details -->
+        <div class="mt-3 text-center">
+            <a href="<?= $escaper->escapeUrl($productUrl) ?>" class="text-theme-blue font-semibold text-sm underline hover:no-underline">
+                <?= __('View Full Details') ?> &rarr;
+            </a>
+        </div>
+    </div>
+</div>

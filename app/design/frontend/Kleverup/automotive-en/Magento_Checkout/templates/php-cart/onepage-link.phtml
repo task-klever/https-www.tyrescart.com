@@ -1,0 +1,54 @@
+<?php
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$scopeConfig = $objectManager->get(\Magento\Framework\App\Config\ScopeConfigInterface::class);
+$installerDisplayPage = $scopeConfig->getValue(
+    'ecomteck_storelocator/installer/display_page',
+    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+);
+$isReferenceCart = ($installerDisplayPage === 'reference_cart');
+$storeManager = $objectManager->get(\Magento\Store\Model\StoreManagerInterface::class);
+$refCartUrl = $storeManager->getStore()->getBaseUrl() . 'storelocator?ref=cart';
+?>
+<?php if ($block->isPossibleOnepageCheckout()): ?>
+    <a @click.prevent.stop="validateBeforeCheckout()"
+       href="<?= $escaper->escapeUrl($block->getCheckoutUrl()) ?>"
+       title="<?= $escaper->escapeHtmlAttr(__('Proceed to Checkout')) ?>"
+       class="checkout btn hover:bg-theme-blue bg-black btn-size-lg justify-center transition-all duration-300 ease-in-out"
+       x-data="{
+           isReferenceCart: <?= $isReferenceCart ? 'true' : 'false' ?>,
+           refCartUrl: '<?= $escaper->escapeJs($refCartUrl) ?>',
+           async validateBeforeCheckout() {
+               // Reference Cart mode: redirect to installer selection page
+               if (this.isReferenceCart) {
+                   window.location.href = this.refCartUrl;
+                   return;
+               }
+
+               // Shopping Cart mode: validate installer form then checkout
+               const form = document.getElementById('installerSelectForm');
+               if (!form) {
+                   this.proceedToCheckout();
+                   return;
+               }
+
+               const formData = Alpine.$data(form);
+               if (formData?.validate) {
+                   try {
+                       await formData.validate();
+                       this.proceedToCheckout();
+                   } catch (invalidFields) {
+                       invalidFields[0]?.focus();
+                   }
+               } else {
+                   this.proceedToCheckout();
+               }
+           },
+           proceedToCheckout() {
+               $dispatch('toggle-authentication', {
+                   url: '<?= $escaper->escapeJs($block->getCheckoutUrl()) ?>'
+               });
+           }
+       }">
+        <?= $escaper->escapeHtml(__('Proceed to Checkout')) ?>
+    </a>
+<?php endif ?>

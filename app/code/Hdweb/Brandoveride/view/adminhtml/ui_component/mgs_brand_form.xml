@@ -1,0 +1,157 @@
+<?xml version="1.0" ?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <fieldset name="custom_tabs" sortOrder="50">
+        <settings>
+            <label>Custom Tabs & Banners</label>
+        </settings>
+        <field name="tab1_title">
+            <arguments>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="label" xsi:type="string">Tab 1 Title</item>
+                        <item name="dataType" xsi:type="string">text</item>
+                        <item name="formElement" xsi:type="string">input</item>
+                    </item>
+                </argument>
+            </arguments>
+        </field>
+        <field name="tab1_description">
+            <arguments>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="label" xsi:type="string">Tab 1 Description</item>
+                        <item name="dataType" xsi:type="string">textarea</item>
+                        <item name="formElement" xsi:type="string">textarea</item>
+                    </item>
+                </argument>
+            </arguments>
+        </field>
+
+
+        <field name="tab2_title">
+            <arguments>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="label" xsi:type="string">Tab 2 Title</item>
+                        <item name="dataType" xsi:type="string">text</item>
+                        <item name="formElement" xsi:type="string">input</item>
+                    </item>
+                </argument>
+            </arguments>
+        </field>
+        <field name="tab2_description">
+            <arguments>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="label" xsi:type="string">Tab 2 Description</item>
+                        <item name="dataType" xsi:type="string">textarea</item>
+                        <item name="formElement" xsi:type="string">textarea</item>
+                    </item>
+                </argument>
+            </arguments>
+        </field>
+
+
+       <!--- <field name="tab3_title">
+            <arguments>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="label" xsi:type="string">Tab 3 Title</item>
+                        <item name="dataType" xsi:type="string">text</item>
+                        <item name="formElement" xsi:type="string">input</item>
+                    </item>
+                </argument>
+            </arguments>
+        </field>
+        <field name="tab3_description">
+            <arguments>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="label" xsi:type="string">Tab 3 Description</item>
+                        <item name="dataType" xsi:type="string">textarea</item>
+                        <item name="formElement" xsi:type="string">textarea</item>
+                    </item>
+                </argument>
+            </arguments>
+        </field>
+
+
+        
+        <field name="tab4_title">
+            <arguments>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="label" xsi:type="string">Tab 4 Title</item>
+                        <item name="dataType" xsi:type="string">text</item>
+                        <item name="formElement" xsi:type="string">input</item>
+                    </item>
+                </argument>
+            </arguments>
+        </field>
+        <field name="tab4_description">
+            <arguments>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="label" xsi:type="string">Tab 4 Description</item>
+                        <item name="dataType" xsi:type="string">textarea</item>
+                        <item name="formElement" xsi:type="string">textarea</item>
+                    </item>
+                </argument>
+            </arguments>
+        </field>
+
+         <field name="tab5_title">
+            <arguments>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="label" xsi:type="string">Tab 5 Title</item>
+                        <item name="dataType" xsi:type="string">text</item>
+                        <item name="formElement" xsi:type="string">input</item>
+                    </item>
+                </argument>
+            </arguments>
+        </field>
+        <field name="tab5_description">
+            <arguments>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="label" xsi:type="string">Tab 5 Description</item>
+                        <item name="dataType" xsi:type="string">textarea</item>
+                        <item name="formElement" xsi:type="string">textarea</item>
+                    </item>
+                </argument>
+            </arguments>
+        </field> -->
+        <!-- Repeat same for tab2_title, tab2_description ... tab5_description -->
+
+        <field name="topbanner_image">
+            <arguments>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="label" xsi:type="string">Top Banner Image</item>
+                        <item name="formElement" xsi:type="string">fileUploader</item>
+                        <item name="dataType" xsi:type="string">text</item>
+                        <item name="uploaderConfig" xsi:type="array">
+                            <item name="url" xsi:type="url" path="mui/index/upload"/>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </field>
+
+        <field name="bottombanner_image">
+            <arguments>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="label" xsi:type="string">Bottom Banner Image</item>
+                        <item name="formElement" xsi:type="string">fileUploader</item>
+                        <item name="dataType" xsi:type="string">text</item>
+                        <item name="uploaderConfig" xsi:type="array">
+                            <item name="url" xsi:type="url" path="mui/index/upload"/>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </field>
+    </fieldset>
+</form>

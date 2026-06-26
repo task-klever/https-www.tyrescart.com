@@ -1,0 +1,22 @@
+{
+    "bitexpert_forcelogin_whitelist": {
+        "column": {
+            "whitelist_entry_id": true,
+            "store_id": true,
+            "label": true,
+            "url_rule": true,
+            "strategy": true,
+            "editable": true
+        },
+        "index": {
+            "BITEXPERT_FORCELOGIN_WHITELIST_STORE_ID": true,
+            "BITEXPERT_FORCELOGIN_WHITELIST_EDITABLE": true,
+            "BITEXPERT_FORCELOGIN_WHITELIST_URL_RULE_STORE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "BITEXPERT_FORCELOGIN_WHITELIST_STORE_ID_STORE_STORE_ID": true,
+            "BITEXPERT_FORCELOGIN_WHITELIST_LABEL": true
+        }
+    }
+}

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      layout="1column"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
+>
+    <head>
+        <script src="Hyva_Checkout::js/klever-hyva-checkout.js"/>
+    </head>
+    <body>
+        <!-- Keep Magento breadcrumbs -->
+        <referenceBlock name="breadcrumbs" remove="false"/>
+        
+        <!-- Remove Hyvä Checkout breadcrumbs to avoid duplicates -->
+        <referenceBlock name="hyva.checkout.breadcrumbs" remove="true"/>
+        
+        <!-- Optional: remove other unnecessary blocks -->
+        <referenceBlock name="mageplaza.recaptcha.load" remove="true"/>
+
+          <!-- Restore header and footer -->
+        <referenceContainer name="header.container" remove="false"/>
+        <referenceContainer name="footer-container" remove="true"/>
+
+        <!-- Move checkout content into main content -->
+        <move element="checkout.root" destination="content" after="-"/>
+
+        <!-- Company toggle: pure CSS, outside Livewire -->
+        <referenceContainer name="content">
+            <block name="checkout.company.toggle.css" class="Magento\Framework\View\Element\Template" template="Hyva_Checkout::checkout/company-toggle-css.phtml" before="-"/>
+        </referenceContainer>
+
+        <!-- <referenceBlock name="header-content" template="Magento_Theme::html/header.phtml"/> -->
+        <!-- <referenceBlock name="page.main.title" remove="true" /> -->
+        <referenceBlock name="page.main.title">
+            <arguments>
+                <argument name="css_class" xsi:type="string"></argument>
+            </arguments>
+        </referenceBlock>
+
+
+    </body>
+</page>

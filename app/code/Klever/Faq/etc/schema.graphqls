@@ -1,0 +1,45 @@
+type Query {
+    faqGroupByUrlKey(
+        url_key: String! @doc(description: "URL key slug of the FAQ group")
+    ): FaqGroupDetail @resolver(class: "Klever\\Faq\\Model\\Resolver\\FaqGroupByUrlKey") @doc(description: "Get FAQ group by URL key with its FAQs")
+
+    faqByUrlKey(
+        group_url_key: String! @doc(description: "URL key of the FAQ group")
+        faq_url_key: String! @doc(description: "URL key of the FAQ item")
+    ): FaqDetail @resolver(class: "Klever\\Faq\\Model\\Resolver\\FaqByUrlKey") @doc(description: "Get single FAQ by URL key")
+
+    allFaqGroups: [FaqGroupDetail] @resolver(class: "Klever\\Faq\\Model\\Resolver\\AllFaqGroups") @doc(description: "Get all active FAQ groups")
+}
+
+type FaqGroupDetail {
+    faqgroup_id: Int
+    groupname: String
+    icon: String
+    storeview: String
+    customer_group: String
+    sortorder: Int
+    status: Int
+    created_at: String
+    updated_at: String
+    footer_slugs: String
+    url_key: String
+    meta_title: String
+    meta_description: String
+    faqs: [FaqDetail]
+}
+
+type FaqDetail {
+    faq_id: Int
+    title: String
+    content: String
+    group: String
+    storeview: String
+    customer_group: String
+    sortorder: Int
+    status: Int
+    created_at: String
+    updated_at: String
+    url_key: String
+    meta_title: String
+    meta_description: String
+}

@@ -1,0 +1,201 @@
+/** Import the base elessar module stylesheet **/
+.elessar-handle {
+    display: block;
+    background: black;
+    height: 100%;
+    width: 5px;
+    cursor: ew-resize;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+  }
+  .elessar-handle:first-child {
+    left: 0;
+  }
+  .elessar-handle:last-child {
+    right: 0;
+  }
+  .elessar-vertical .elessar-handle {
+    height: 5px;
+    width: 100%;
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: auto;
+    cursor: ns-resize;
+  }
+  .elessar-vertical .elessar-handle:first-child {
+    top: 0;
+  }
+  .elessar-vertical .elessar-handle:last-child {
+    bottom: 0;
+  }
+  .elessar-indicator {
+    position: absolute;
+    background: black;
+    border-color: white;
+    border-style: solid;
+    border-width: 0 1px;
+    width: 2px;
+    height: 100%;
+    z-index: 15;
+  }
+  .elessar-vertical .elessar-indicator {
+    width: 100%;
+    height: 2px;
+  }
+  .elessar-range {
+    position: absolute;
+    cursor: pointer;
+    cursor: -webkit-grab;
+    cursor: -moz-grab;
+    cursor: grab;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: blue;
+    width: 0;
+    z-index: 10;
+  }
+  .elessar-vertical .elessar-range {
+    width: auto;
+    height: 0;
+  }
+  .elessar-label {
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+    border-left: 1px solid #999;
+    padding-left: 10px;
+  }
+  .elessar-readonly {
+    opacity: 0.6;
+    cursor: default !important;
+  }
+  .elessar-phantom {
+    background-color: transparent;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    cursor: pointer !important;
+  }
+  .elessar-rangebar {
+    position: relative;
+    height: 30px;
+    line-height: 30px;
+    background: #ccc;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  .elessar-delete-confirm {
+    background: red;
+  }
+  body.elessar-resizing,
+  body.elessar-dragging {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  body.elessar-resizing,
+  body.elessar-resizing .bar,
+  body.elessar-resizing .handle {
+    cursor: ew-resize !important;
+  }
+  body.elessar-resizing.elessar-resizing-vertical,
+  body.elessar-resizing.elessar-resizing-vertical .bar,
+  body.elessar-resizing.elessar-resizing-vertical .handle {
+    cursor: ns-resize !important;
+  }
+  body.elessar-dragging,
+  body.elessar-dragging .bar,
+  body.elessar-dragging .handle {
+    cursor: move !important;
+    cursor: -webkit-grabbing !important;
+    cursor: -moz-grabbing !important;
+    cursor: grabbing !important;
+  }
+  .opening-hours-container-fieldset {
+    margin-left: 70px;
+    margin-top: -30px;
+  }
+  .opening-hours-container-fieldset .admin__field-tooltip {
+    max-width: 100%;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .opening-hours-container-fieldset .admin__field-tooltip .admin__field-tooltip-action:before {
+    margin-right: 5px;
+  }
+  .opening-hours-fieldset-wrapper .admin__fieldset {
+    padding-top: 1rem;
+  }
+  .elessar-range {
+    background: #eb5202;
+    height: 10px;
+    overflow: visible;
+  }
+  .elessar-handle {
+    background-color: #d9d9d9;
+    border-radius: 4px;
+    border: 1px solid #808080;
+    height: 15px;
+    top: -3px;
+    width: 15px;
+  }
+  .elessar-rangebar {
+    height: 10px;
+  }
+  div.opening-hours-container {
+    margin-bottom: 20px;
+    width: 80%;
+  }
+  div.opening-hours-container label {
+    margin-top: 20px;
+  }
+  div.opening-hours-rangebar div.elessar-rangebar {
+    background: #FFFFFF;
+    border: 1px solid #aeaeae;
+    margin-left: -1px;
+  }
+  div.opening-hours-indicator {
+    margin-top: 40px;
+  }
+  div.opening-hours-indicator span.elessar-barlabel {
+    color: #808080;
+    left: -30px;
+    position: relative;
+    top: -35px;
+  }
+  div.opening-hours-indicator span.elessar-barlabel:after {
+    border-left: 1px solid #808080;
+    content: " ";
+    display: block;
+    height: 10px;
+    left: 29px;
+    position: relative;
+    top: -5px;
+  }
+  div.opening-hours-indicator .elessar-rangebar {
+    height: 0;
+  }
+  span.opening-hours-day {
+    color: #808080;
+    font-size: 80%;
+  }
+  .admin__control-table td .admin__control-text._has-datepicker.ecomteck-special-opening-hours-datepicker {
+    width: 15rem;
+  }
+  .admin__control-table td .opening-hours-wrapper {
+    min-width: 90rem;
+    margin-left: 10%;
+  }
+  .admin__control-table td .opening-hours-wrapper .opening-hours-container {
+    width: 90%;
+  }
+  

@@ -1,0 +1,138 @@
+<?php
+/**
+ * Ecomteck_StoreLocator extension
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the MIT License
+ * that is bundled with this package in the file LICENSE
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/mit-license.php
+ *
+ * @category  Ecomteck
+ * @package   Ecomteck_StoreLocator
+ * @copyright 2016 Ecomteck
+ * @license   http://opensource.org/licenses/mit-license.php MIT License
+ * @author    Ecomteck
+ */
+?>
+<?php /** @var \Ecomteck\StoreLocator\Block\StoreDetail $block */ ?>
+<?php 
+    $stores = $block->storelocatorConfig->getStoresForFrontend(); 
+    $storeDetails = $block->getStore();
+    $modulePath = "ecomteck_storelocator/stores/image/";
+    $storeId = $block->getStoreId();
+?>
+<div class="store-detail">
+
+    <div class="image">
+        <img src="<?php echo $block->storelocatorConfig->getBaseImageUrl().$modulePath.$block->escapeHtml($storeDetails->getData("details_image")) ?>"
+             alt="<?php echo $block->escapeHtml(__($storeDetails->getData("address"))) ?>" />
+        <div class="store-contact">
+            <?php  echo $this->getChildHtml('ecomteck_stores_contact_form');?>
+        </div>     
+    </div>
+    <div class="details">
+        <div class="title">
+            <p><?php echo $block->escapeHtml($storeDetails->getData("name")) ?></p>
+        </div>
+        <div class="border"></div>
+        <div class="address">
+            <div class="exact-address">
+                <p class="address-title"><?php echo $block->escapeHtml(__("Address")) ?></p>
+                <p><?php echo $block->escapeHtml($storeDetails->getData("address")) ?></p>
+                <p><?php echo $block->escapeHtml($storeDetails->getData("city")) ?></p>
+                <p><?php echo $block->escapeHtml($storeDetails->getData("postcode")) ?></p>
+            </div>
+            <?php if($storeDetails->getData("station")): ?>
+                <div class="station">
+                    <div class="nearest-station">
+                        <p>
+                            <span class="nearest"><?php echo $block->escapeHtml(__("Nearest Station")); ?>
+                            </span><?php echo $block->escapeHtml($storeDetails->getData("station")) ?></span>
+                        </p>
+                    </div>
+                    <div class="distance">
+                        <p><?php echo $storeDetails->getData("distance") ?></p>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+        <div class="clearfix"></div>
+        <div class="get-directions">
+            <a href="http://maps.google.com/maps?saddr=&daddr=<?php echo $block->escapeHtml($storeDetails->getData("latitude")).",".$block->escapeHtml($storeDetails->getData("longitude")); ?>" target="_blank">
+                <?php echo $block->escapeHtml(__("Get Directions")) ?>
+            </a>
+        </div>
+        <div id="map-canvas-individual"></div>
+        <?php if($storeDetails->getData("intro")): ?>
+        <div class="intro">
+            <p class="intro">
+                <?php echo $block->escapeHtml(__($storeDetails->getData("intro"))); ?>
+            </p>
+        </div>
+        <?php endif; ?>
+
+        <?php if($storeDetails->getData("description")): ?>
+        <div class="intro">
+            <p class="intro">
+                <?php echo $block->escapeHtml(__($storeDetails->getData("description"))); ?>
+            </p>
+        </div>
+        <?php endif; ?>
+
+        <?php if ($storeDetails->getOpeningHoursFormated()): ?>
+            <div class="schedule">
+                <b><?php echo __('Opening Hours')?></b>
+                <?php echo $storeDetails->getOpeningHoursFormated();?>
+            </div>
+        <?php endif; ?>
+        <?php if ($storeDetails->getSpecialOpeningHoursFormated()): ?>
+            <div class="schedule">
+                <b><?php echo __('Special Opening Hours')?></b>
+                <?php echo $storeDetails->getSpecialOpeningHoursFormated();?>
+            </div>
+        <?php endif; ?>
+
+    </div>
+    
+    <div class="clearfix"></div>
+
+</div>
+<div class="clearfix"></div>
+
+<?php if($block->storelocatorConfig->getOtherStoresSettings()): ?>
+    <div class="all-stores">
+        <div class="all-stores-title">
+            <p><?php echo $block->escapeHtml(__("View Our Other Stores")) ?></p>
+        </div>
+        <div class="all-stores-slider-wrapper">
+            <?php foreach($stores as $store): ?>
+		<?php $stores = explode(",", $store["store_id"]); ?>
+		<?php if ($storeDetails->getData("stores_id") != $store["stores_id"]): ?>
+			<div class="item">
+			    <div class="image">
+				<img src="<?php echo $store->getImageUrl()?>"
+				     alt="<?php echo $block->escapeHtml($store->getData("address")) ?>" />
+			    </div>
+			    <a href="<?php echo $store->getStoresUrl() ?>" class="individual-store-link">
+				<div class="details">
+				    <p><?php echo $block->escapeHtml($store->getData("name")) ?></p>
+				</div>
+			    </a>
+			</div>
+		<?php endif; ?>
+            <?php endforeach; ?>
+        </div>
+    </div>
+<?php endif; ?>
+
+<script type="text/x-magento-init">
+    {
+        "*": {
+
+            "storelocator_individual_stores": <?php echo $block->getJsonConfig()?>
+
+        }
+    }
+</script>

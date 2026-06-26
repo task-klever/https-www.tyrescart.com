@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- <referenceBlock name="brand_edit_tabs">
+            <block class="Hdweb\Brandoveride\Block\Adminhtml\Brand\Edit\Tab\Custom" name="brand_custom_tab">
+                <arguments>
+                    <argument name="label" xsi:type="string">Custom Tabs  Banners</argument>
+                </arguments>
+            </block>
+        </referenceBlock> -->
+
+        
+
+         <referenceBlock name="brand_edit_tabs">
+            <!-- Add new tab block -->
+            <block class="Hdweb\Brandoveride\Block\Adminhtml\Brand\Edit\Tab\Custom"
+                   name="brand_edit_tab_custom"/>
+            <action method="addTab">
+                <argument name="name" xsi:type="string">custom_section</argument>
+                <argument name="block" xsi:type="string">brand_edit_tab_custom</argument>
+            </action>
+        </referenceBlock>
+    </body>
+</page>

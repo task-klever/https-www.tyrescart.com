@@ -1,0 +1,79 @@
+<?php
+
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+/** @var Details $block */
+/** @var Escaper $escaper */
+
+use Magento\Catalog\Block\Product\View\Details;
+use Magento\Framework\Escaper;
+
+$titleRenderer = $block->getChildBlock('product.section.title.renderer');
+$defaultTitleTemplate = $titleRenderer->getTemplate();
+
+?>
+<?php
+$childBlocks = $block->getGroupSortedChildNames('detailed_info', '');
+$tabLabels = [
+   'description' => __('Product Description'),
+   'product.review.form.details' => __('Reviews'),
+];
+$firstTab = $childBlocks[0] ?? 'description';
+?>
+
+<section class="section section-padding product-description bg-[#f5f5f5]">
+   <div class="absolute inset-0 bg-gradient-to-r from-blue-600/8 via-indigo-500/8 to-slate-600/8"></div>
+   <div class="container-theme h-full flex relative pt-7 md:pt-10">
+      <div class="w-full flex flex-wrap justify-center">
+         <div class="finder-box w-full max-w-[1234px] bg-white rounded-[10px] border-b-[6px] border-black">
+            <div class="w-full">
+               <div x-data="{ activeTab: '<?= $escaper->escapeJs($firstTab) ?>' }">
+                  <div class="text-center">
+                     <div class="w-full max-w-max bg-white border-b-[6px] border-black rounded-[10px] h-[55px] md:h-[86px] inline-block overflow-x-auto -mt-[28px] md:-mt-[42px] overflow-y-hidden px-4 md:px-12">
+                        <div class="flex flex-row gap-0 h-full items-center whitespace-nowrap">
+                           <?php foreach ($childBlocks as $sectionName): ?>
+                              <?php
+                              $label = $tabLabels[$sectionName] ?? ucfirst($sectionName);
+                              ?>
+                              <button
+                                 type="button"
+                                 @click="activeTab = '<?= $escaper->escapeJs($sectionName) ?>'"
+                                 :class="activeTab === '<?= $escaper->escapeJs($sectionName) ?>' ? 'font-bold text-theme-blue' : 'text-theme-dark font-bold hover:text-theme-blue'"
+                                 class="flex-shrink-0 h-[45px] md:h-[77px] px-3 md:px-4 text-base md:text-xl focus:ring-0 outline-none">
+                                 <span><?= $label ?></span>
+                              </button>
+                           <?php endforeach; ?>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="block">
+                     <?php foreach ($childBlocks as $sectionName): ?>
+                        <?php
+                        $sectionBlock = $block->getLayout()->getBlock($sectionName);
+                        if (!$sectionBlock) continue;
+                        $sectionHtml = trim((string) $sectionBlock->toHtml());
+                        $titleTemplate = $sectionBlock->getData('title_template') ?? $defaultTitleTemplate;
+                        if ($sectionHtml === '') continue;
+                        ?>
+                        <div x-show="activeTab === '<?= $escaper->escapeJs($sectionName) ?>'" x-cloak>
+                           <section id="<?= $escaper->escapeHtmlAttr($sectionBlock->getNameInLayout()) ?>" class="tab-info block px-4 py-4">
+                              <div class="finder-form flex flex-col gap-4 border border-[#D9D9D9] rounded-[10px] p-4">
+                                 <?= $sectionHtml ?>
+                              </div>
+                           </section>
+                        </div>
+                     <?php endforeach; ?>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</section>

@@ -1,0 +1,56 @@
+<!--@subject {{trans "New Service Appointment Request"}}  @-->
+{{template config_path="design/email/header_template"}}
+<table>
+     <tr class="">
+         <td>
+         	Name: {{var name}} 
+         </td>
+    </tr>
+    <tr>
+         <td>
+        	 Last Name: {{var lname}} 
+         </td>
+    </tr>
+    
+    <tr>
+     	 <td>
+         	Email: {{var email}} 
+         </td>
+    </tr>
+    <tr>
+     	 <td>
+         	Mobile: {{var mobile}}
+         </td>
+    </tr>
+    <tr>
+     	 <td>
+         	Appointment Date : {{var datetimepicker}} 
+         </td>
+    </tr>
+    <tr>
+         <td>
+            Appointment Time: {{var time}}
+         </td>
+    </tr>
+    <tr>
+         <td>
+            Vehicle: {{var vehicle}} 
+         </td>
+    </tr>
+    <tr>
+         <td>
+            Location: {{var location}} 
+         </td>
+    </tr>
+    <tr>
+         <td>
+            Kilometers: {{var kilometers}} 
+         </td>
+    </tr>
+    <tr>
+     	 <td>
+         	Comments : {{var comments}} 
+         </td>
+    </tr>
+ </table>
+{{template config_path="design/email/footer_template"}}

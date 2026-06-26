@@ -1,0 +1,77 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\Checkout\ViewModel\Checkout\Formatter as FormatterViewModel;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Tax\Model\Config as TaxConfig;
+
+/** @var Template $block */
+/** @var FormatterViewModel $formatterViewModel */
+/** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
+/** @var TaxConfig $taxConfig */
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+$formatterViewModel = $viewModels->require(FormatterViewModel::class);
+$segment = $block->getSegment();
+$taxConfig = $block->getTaxConfig();
+
+?>
+<?php if ($segment && $taxConfig && $taxConfig->displayCartFullSummary()): ?>
+<div x-data="hyvaCheckoutTaxGrandTotalDetails">
+    <button
+        type="button"
+        class="flex items-center justify-between cursor-pointer w-full"
+        aria-controls="checkout-tax-grandtotals-details"
+        x-on:click="toggleVisible"
+        x-bind:aria-expanded="visible"
+    >
+        <span><?= $escaper->escapeHtml(__('Tax Breakdown')) ?></span>
+        <span x-bind:class="rotate180Class">
+            <?= $heroicons->chevronDownHtml('', 16, 16, ['aria-hidden' => 'true']) ?>
+        </span>
+    </button>
+    <ul
+        id="checkout-tax-grandtotals-details"
+        role="list"
+        x-show="visible"
+        x-cloak
+    >
+        <?php foreach ($segment as $key => $item): ?>
+            <?php $rates = array_filter($item['rates'] ?? [], fn ($rate) => ! (($rate['hidden'] ?? false) === true)) ?>
+            <?php if (empty($rates)): continue; endif ?>
+            <?php $percentage = array_sum(array_column($item['rates'], 'percent')) ?>
+
+            <?php foreach ($rates as $rate): ?>
+                <li class="flex gap-4 justify-between md:gap-0">
+                    <span class="tax-label">
+                        <?= $escaper->escapeHtml($rate['title']) ?>
+
+                        <?php if ($rate['percent']): ?>
+                            <span class="tax-percentage">
+                                ( <?= (float) $rate['percent'] ?>% )
+                            </span>
+                        <?php endif ?>
+                    </span>
+
+                    <span class="tax-unit">
+                        <?= /* @noEscape */ $formatterViewModel->currency(($item['amount'] * (float) $rate['percent']) / $percentage) ?>
+                    </span>
+                </li>
+            <?php endforeach ?>
+        <?php endforeach ?>
+    </ul>
+</div>
+<?php endif ?>

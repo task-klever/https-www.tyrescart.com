@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Email:etc/email_templates.xsd">
+    <template id="installer_general_admin_installer_email_template" label="Notify Installer Email" file="notify_installer.html" type="html" module="Hdweb_Installer" area="frontend"/>
+
+    <template id="installer_general_admin_notify_customer_email_template" label="Notify Customer Email" file="notify_customer.html" type="html" module="Hdweb_Installer" area="frontend"/>
+</config>

@@ -1,0 +1,50 @@
+================================================================================
+HOW TO GENERATE AND ACCESS LLMs.txt FILE
+================================================================================
+
+After saving your configuration, the LLMs.txt file is automatically generated
+when accessed. You can access it in two ways:
+
+METHOD 1: ADMIN PREVIEW (Recommended for Testing)
+--------------------------------------------------
+1. Go to your Magento Admin Panel
+2. Navigate to: Stores > Configuration > Hdweb > LLMs.txt File Generator
+3. Save your configuration if you haven't already
+4. Access the preview URL:
+   http://yourstore.com/admin/generateurl/preview/index
+   
+   Or with store parameter:
+   http://yourstore.com/admin/generateurl/preview/index/store/{store_id}
+
+METHOD 2: FRONTEND ACCESS (Public URL)
+--------------------------------------
+1. Make sure "Enable" is set to "Yes" in configuration
+2. Check your "LLMs.txt File Path" setting (default is "llms")
+3. Access the file at:
+   http://yourstore.com/{file_path}.txt
+   
+   Examples:
+   - If file path is "llms": http://yourstore.com/llms.txt
+   - If file path is "hyva": http://yourstore.com/hyva.txt
+   - If file path is "llms/llms": http://yourstore.com/llms/llms.txt
+
+TROUBLESHOOTING
+---------------
+If you get a 404 error:
+
+1. Clear Magento cache:
+   php bin/magento cache:flush
+
+2. Recompile:
+   php bin/magento setup:di:compile
+
+3. Check that "Enable" is set to "Yes" in configuration
+
+4. Verify the file path doesn't contain special characters (only alphanumeric)
+
+5. Make sure you're accessing the correct store view URL if using multi-store
+
+6. Check that products/categories/CMS pages are enabled and have data
+
+================================================================================
+

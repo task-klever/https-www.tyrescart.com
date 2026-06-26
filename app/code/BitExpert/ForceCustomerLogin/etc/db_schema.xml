@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+  <table name="bitexpert_forcelogin_whitelist" resource="default" engine="innodb" comment="bitExpert Force Customer Login Whitelist Table">
+    <column xsi:type="int" name="whitelist_entry_id" padding="10" unsigned="true" nullable="false" identity="true" comment="bitExpert Force Customer Login Whitelist Entry ID"/>
+    <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" identity="false" comment="Store_id"/>
+    <column xsi:type="varchar" name="label" nullable="true" length="255" comment="Label"/>
+    <column xsi:type="varchar" name="url_rule" nullable="true" length="255" comment="Url_rule"/>
+    <column xsi:type="text" name="strategy" nullable="true" comment="strategy matcher identifier"/>
+    <column xsi:type="boolean" name="editable" nullable="false" default="true" comment="Editable"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="whitelist_entry_id"/>
+    </constraint>
+    <constraint xsi:type="foreign" referenceId="BITEXPERT_FORCELOGIN_WHITELIST_STORE_ID_STORE_STORE_ID" table="bitexpert_forcelogin_whitelist" column="store_id" referenceTable="store" referenceColumn="store_id" onDelete="CASCADE"/>
+    <constraint xsi:type="unique" referenceId="BITEXPERT_FORCELOGIN_WHITELIST_LABEL">
+      <column name="label"/>
+    </constraint>
+    <index referenceId="BITEXPERT_FORCELOGIN_WHITELIST_STORE_ID" indexType="btree">
+      <column name="store_id"/>
+    </index>
+    <index referenceId="BITEXPERT_FORCELOGIN_WHITELIST_EDITABLE" indexType="btree">
+      <column name="editable"/>
+    </index>
+    <index referenceId="BITEXPERT_FORCELOGIN_WHITELIST_URL_RULE_STORE_ID" indexType="btree">
+      <column name="url_rule"/>
+      <column name="store_id"/>
+    </index>
+  </table>
+</schema>

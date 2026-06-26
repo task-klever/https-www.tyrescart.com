@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="sales_order" resource="default" engine="innodb" comment="Sales Order">
+        <column xsi:type="smallint" name="is_abandoned_send" nullable="false" default="0" comment="Is Abandoned Mail Sent"/>
+        <column xsi:type="timestamp" name="abandoned_send_at" nullable="true" comment="Abandoned Mail Sent At"/>
+    </table>
+</schema>
+

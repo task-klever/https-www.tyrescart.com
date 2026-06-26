@@ -1,0 +1,28 @@
+{
+  "name": "ecomteck/module-storepickup",
+  "description": "Click And Collect for Magento 2",
+  "type": "magento2-module",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name": "Ecomteck",
+      "email": "ecomteck@gmail.com",
+      "homepage": "http://www.ecomteck.com"
+    }
+  ],
+  "license": [
+    "OSL-3.0"
+  ],
+  "require": {
+    "php": "~5.5.0|~5.6.0|~7.0.0",
+    "magento/framework": "~100.0.4"
+  },
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Ecomteck\\StorePickup\\": ""
+    }
+  }
+}

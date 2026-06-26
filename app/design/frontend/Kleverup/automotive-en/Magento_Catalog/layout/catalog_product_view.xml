@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<page
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
+>
+    <body>
+        <referenceBlock name="script-alpine-js">
+            <block name="alpine-plugin-ajax-cart" template="Magento_Theme::page/js/plugins/ajax-cart.phtml">
+                <arguments>
+                    <argument name="delay" xsi:type="number">500</argument>
+                    <argument name="show_sku" xsi:type="boolean">true</argument>
+                    <!-- <argument name="display_on_success" xsi:type="string">false</argument> -->
+                    <!-- <argument name="display_on_success" xsi:type="string">minicart</argument> -->
+                    <argument name="display_on_success" xsi:type="string">modal</argument>
+                    <!-- <argument name="form_selectors" xsi:type="string">#product_addtocart_form, .product_addtocart_form, #custom_form</argument> -->
+                </arguments>
+            </block>
+        </referenceBlock>
+        <referenceBlock name="product.attributes" remove="true"/>
+        <referenceBlock name="product.review.form" remove="true"/>
+        <referenceBlock name="review_list" remove="true"/>
+        
+
+        <referenceBlock name="recently_viewed" remove="true"/>
+         <!-- Remove stock status from its default position -->
+         <!-- <move element="product.info.stockstatus" destination="product.info.media" after="-" />  -->
+        <referenceBlock name="product.info.stockstatus" remove="true" /> 
+
+
+         <!-- Ensure breadcrumbs block is available -->
+        <referenceBlock name="breadcrumbs" remove="false"/>
+
+    
+        <move element="breadcrumbs" destination="breadcrumbs.title.container" before="-"/>
+        <move element="page.main.title" destination="breadcrumbs.title.container" before="breadcrumbs"/>
+        <move element="messages" destination="main.content" after="breadcrumbs.title.container"/>
+
+            
+        <referenceBlock name="product.info.details">
+            <block
+                class="Magento\Review\Block\Form"
+                name="product.review.form.details"
+                as="review_form"
+                template="Magento_Review::form.phtml"
+                group="detailed_info">
+                <arguments>
+                    <argument name="title" xsi:type="string" translate="true">Review</argument>
+                    <argument name="sort_order" xsi:type="number">10</argument>
+                </arguments>
+
+
+<block class="Magento\Review\Block\Product\View" name="review_list_new"
+                   template="Magento_Review::product/view/list.phtml"
+                   ifconfig="catalog/review/active"
+            >
+                <arguments>
+                    <argument name="heading_tag" xsi:type="string">h2</argument>
+                </arguments>
+                <block class="Magento\Theme\Block\Html\Pager" name="review_list.toolbar" ifconfig="catalog/review/active">
+                    <arguments>
+                        <argument name="pagination_url_anchor" xsi:type="string">customer-review-list</argument>
+                    </arguments>
+                </block>
+            </block>
+
+
+            </block>
+        </referenceBlock>
+
+        
+    </body>
+</page>

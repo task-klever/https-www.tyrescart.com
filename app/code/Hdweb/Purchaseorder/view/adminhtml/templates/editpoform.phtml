@@ -1,0 +1,808 @@
+<?php
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$podetail_item=$block->getPobyid();
+$podetail=$podetail_item['podetail'];
+$poitem=$podetail_item['poitem'];
+$vendor=$block->getVendor();
+// $orderitems=$order->getAllItems();
+$currencycode=$block->getCurrencycode();
+$vat=$podetail['vat'];
+$subtotal=$podetail['subtotal'];
+$grandtotal=$podetail['grandtotal'];
+
+/*$vatpercentage= '5';*/
+$vatpercentage = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface')->getValue('purchaseorder/general/vat');
+ 
+$orderIncrementId = $podetail['orderreference_no'];
+if($orderIncrementId != ''){
+
+$orderInfo = $objectManager->create('Magento\Sales\Model\Order')->loadByIncrementId($orderIncrementId);
+$orderStatus = $orderInfo->getStatus();
+$createdAt = $orderInfo->getCreatedAt();
+$orderDate = date("d-m-Y H:i:s", strtotime($createdAt));
+$hdwebPOHelper = $this->helper('Hdweb\Purchaseorder\Helper\Data');
+$installer_id = $orderInfo->getPickupStore();
+$installerDetails = $hdwebPOHelper->getIntallerDetails($installer_id);
+$country = $objectManager->create('\Magento\Directory\Model\Country')->load($installerDetails['country'])->getName();
+$poData = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorder')->getCollection()
+                        ->addfieldtofilter('orderreference_no',$orderIncrementId)
+                        ->addfieldtofilter('po_type','mpo');
+$fpoData = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorder')->getCollection()
+                        ->addfieldtofilter('orderreference_no',$orderIncrementId)
+                        ->addfieldtofilter('po_type','fpo');
+$dpoData = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorder')->getCollection()
+                        ->addfieldtofilter('orderreference_no',$orderIncrementId)
+                        ->addfieldtofilter('po_type','dpo');
+$ppoData = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorder')->getCollection()
+                        ->addfieldtofilter('orderreference_no',$orderIncrementId)
+                        ->addfieldtofilter('po_type','ppo');
+$relatedPoIds = array();
+  foreach ($poData as $relatedPo) { 
+    if($relatedPo->getId() == $podetail['id']){
+      continue;
+    }
+    $relatedPoIds[] = array('po_id' => $relatedPo->getId(), 'poreference_no' => $relatedPo->getPoreferenceNo());
+  }
+$relatedFPoIds = array();
+  foreach ($fpoData as $relatedFPo) { 
+    if($relatedFPo->getId() == $podetail['id']){
+      continue;
+    }
+    $relatedFPoIds[] = array('po_id' => $relatedFPo->getId(), 'poreference_no' => $relatedFPo->getPoreferenceNo());
+  }
+$relatedDPoIds = array();
+  foreach ($dpoData as $relatedDPo) { 
+    if($relatedDPo->getId() == $podetail['id']){
+      continue;
+    }
+    $relatedDPoIds[] = array('po_id' => $relatedDPo->getId(), 'poreference_no' => $relatedDPo->getPoreferenceNo());
+  }
+$relatedPPoIds = array();
+  foreach ($ppoData as $relatedPPo) { 
+    if($relatedPPo->getId() == $podetail['id']){
+      continue;
+    }
+    $relatedPPoIds[] = array('po_id' => $relatedPPo->getId(), 'poreference_no' => $relatedPPo->getPoreferenceNo());
+  }
+
+$orderitems = $orderInfo->getAllItems();
+$productObj = $objectManager->get('Magento\Catalog\Model\Product');
+}
+?>
+<form id="po_edit_form" action="<?= $block->getEditUrl() ?>" method="post" enctype="multipart/form-data" data-mage-init='{"validation":{}}'>
+         <?= $block->getBlockHtml('formkey') ?>
+      <input type="hidden" data-validate='{"required":true}'  name="subtotal" value="<?php echo $subtotal; ?>" class="hidden_subtotal">
+        <input type="hidden" data-validate='{"required":true}' name="vat" value="<?php echo $vat; ?>" class="hidden_vat">
+        <input type="hidden"  data-validate='{"required":true}' name="grandtotal" value="<?php echo $grandtotal; ?>" class="hidden_grandtotal">
+        <input type="hidden"   name="poid" value="<?php echo $podetail['id']; ?>" class="">
+        <input type="hidden"  name="po_type" value="<?php echo $podetail['po_type']; ?>">
+
+        <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('PO No.:') ?>
+            </label>
+
+             <label for="" class="admin__field-label">
+                <?=  $podetail['poreference_no'] ?>
+            </label>
+            <input type="hidden"  name="poreference_no" value="<?=  $podetail['poreference_no'] ?>">
+
+            <?php if($podetail['po_type'] == 'mpo'): ?>
+                <a href="<?= $this->getUrl('purchaseorder/create/index') . 'order_id/' . $orderInfo->getId() . '/po_type/dpo/dpo/1/reference_po/' . $podetail['id'] ?>" class="action-default scalable save primary" style="background-color:#2ea553; border-color:#2ea553; color:#fff; text-decoration:none; padding:6px 12px; margin-left:15px;">
+                    <span>Create Delivery</span>
+                </a>
+            <?php endif; ?>
+
+        </div>
+
+        <?php if(count($relatedPoIds) > 0):?>
+        <div class="admin__field admin__field-option ">
+                <label for="" class="admin__field-label">
+                    <?=  __('Related MPO No:') ?>
+                </label>
+
+                 <label for="" class="admin__field-label">
+            <?php foreach($relatedPoIds as $relatedPoData):?>
+                   <a target="_blank" href="<?php echo $this->getUrl('purchaseorder/create/edit').'po_id/'.$relatedPoData['po_id'] ?>"><?php echo $relatedPoData['poreference_no'] ?></a>
+            <?php endforeach;?>
+                </label>
+            </div>
+        <?php endif;?>
+
+        <?php if(count($relatedFPoIds) > 0):?>
+        <div class="admin__field admin__field-option ">
+                <label for="" class="admin__field-label">
+                    <?=  __('Related FPO No:') ?>
+                </label>
+
+                 <label for="" class="admin__field-label">
+            <?php foreach($relatedFPoIds as $relatedFPoData):?>
+                   <a target="_blank" href="<?php echo $this->getUrl('purchaseorder/create/edit').'po_id/'.$relatedFPoData['po_id'] ?>"><?php echo $relatedFPoData['poreference_no'] ?></a>
+            <?php endforeach;?>
+                </label>
+            </div>
+        <?php endif;?>
+
+        <?php if(count($relatedDPoIds) > 0):?>
+        <div class="admin__field admin__field-option ">
+                <label for="" class="admin__field-label">
+                    <?=  __('Related DPO No:') ?>
+                </label>
+
+                 <label for="" class="admin__field-label">
+            <?php foreach($relatedDPoIds as $relatedDPoData):?>
+                   <a target="_blank" href="<?php echo $this->getUrl('purchaseorder/create/edit').'po_id/'.$relatedDPoData['po_id'] ?>"><?php echo $relatedDPoData['poreference_no'] ?></a>
+            <?php endforeach;?>
+                </label>
+            </div>
+        <?php endif;?>
+
+
+        <?php if(count($relatedPPoIds) > 0):?>
+        <div class="admin__field admin__field-option ">
+                <label for="" class="admin__field-label">
+                    <?=  __('Related PPO No:') ?>
+                </label>
+
+                 <label for="" class="admin__field-label">
+            <?php foreach($relatedPPoIds as $relatedPPoData):?>
+                   <a target="_blank" href="<?php echo $this->getUrl('purchaseorder/create/edit').'po_id/'.$relatedPPoData['po_id'] ?>"><?php echo $relatedPPoData['poreference_no'] ?></a>
+            <?php endforeach;?>
+                </label>
+            </div>
+        <?php endif;?>
+
+        <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('Order No.: ') ?>
+            </label>
+
+            <label for="" class="admin__field-label">
+                <a href="<?php echo $this->getUrl('sales/order/view').'order_id/'.$orderInfo->getId(); ?>"><?=  $podetail['orderreference_no'] ?></a>
+            </label>
+            <input type="hidden"  name="orderreference_no" value="<?=  $podetail['orderreference_no'] ?>">
+            
+        </div>
+    
+    <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('Order Date.: ') ?>
+            </label>
+
+            <label for="" class="admin__field-label">
+                <?=  $orderDate ?>
+            </label>
+            <input type="hidden"  name="order_date" value="<?=  $orderDate ?>">
+            
+        </div>
+    
+    <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('Order Status.: ') ?>
+            </label>
+
+            <label for="" class="admin__field-label">
+                <?=  $orderStatus ?>
+            </label>
+            <input type="hidden"  name="order_status" value="<?=  $orderStatus ?>">
+            
+        </div>
+
+        <?php if($installerDetails['name'] != ''): ?>
+
+        <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('Installer Name: ') ?>
+            </label>
+
+            <label for="" class="admin__field-label">
+                <?=  $installerDetails['name'] ?>
+            </label>
+            <input type="hidden"  name="installer_name" value="<?=  $installerDetails['name'] ?>">
+            
+        </div>
+
+        <?php endif; ?>
+        <?php if($installerDetails['address'] != ''): ?>
+
+        <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('Installer Address: ') ?>
+            </label>
+
+            <label for="" class="admin__field-label">
+                <?=  $installerDetails['address'] ?> <?=  $installerDetails['city'] ?>, <?=  $country ?>
+            </label> 
+        </div>
+
+        <?php endif; ?>
+        
+        <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('Select Vendor: ')  ?>
+            </label>
+
+            <select name="vendor" id="vendor" class="admin__control-select">
+               <?php $vatApplicable = [];  
+                    foreach ($vendor as $key => $value) {
+                      if ($value->getData('vatApplicable') == 1) {
+                        $vatApplicable[] = $value->getId();
+                      }
+                         $selected="";
+                         if($podetail['vendor'] == $value->getId()){
+                           $selected="selected";
+                         }
+                        echo '<option value='.$value->getId().' '.$selected.' >'.$value->getName().'</option>';
+               } ?>
+                                                    
+            </select>
+            
+        </div>
+        <?php $vatApplicableString = implode(',', $vatApplicable); ?>
+ 
+     <?php /* Item */  ?>
+      <section id="">
+        
+        <section class="admin__page-section">
+            <div class="admin__page-section-title">
+                        <span class="title">Items</span>
+            </div>
+            <div class="admin__page-section-content grid">
+                <div class="admin__table-wrapper">
+                    <table class="data-table admin__table-primary ">
+                        <thead>
+                            <tr class="headings">
+                                <th class="col-product"><span>Product</span></th>
+                                <th class="col-price"><span>Cost Price</span></th>
+                                <th class="col-qty"><span>Qty</span></th>
+                                <th class="col-action"><span>Action</span></th>
+                            </tr>
+                        </thead>
+                        <tfoot style="display: none;">
+                            <tr>
+                                <td colspan="1">&nbsp;</td>
+                                <td colspan="3">
+                                    <button title="Update Price" type="button" class="action-default scalable update-button">
+                                      <span>Update Price</span>
+                                        </button>
+                                </td>
+                                <td colspan="3">&nbsp;</td>
+                            </tr>
+                        </tfoot>
+
+                         <tbody class="even">
+
+                            <?php  foreach ($poitem as $key => $value) { ?>
+                                <tr class="productitem">
+                                    <td class="col-product">
+                                    <div  class="product-title">
+                                        <!-- Need to add separate function for static products -->
+                                         <?= $this->getNamebyOrderitem($podetail['orderreference_no'],$value['sku']) ?>    </div>
+
+                                    <input type="hidden"  name="item[<?= $key ?>][sku]" value="<?= $value['sku'] ?>" class="">     
+
+                                    <div class="product-sku-block">
+                                        <?php
+                                            $orderGrandTotal = $orderInfo->getGrandTotal();
+                                            $orderPaymentMethod = $orderInfo->getPayment()->getMethod();
+                                            $price = 0;
+                                            $totalpay_checkout_price = ($orderGrandTotal * 0.020) + 1.5;
+                                            $tabby_installments_price = ($orderGrandTotal * 0.0699) + 1.5;
+                                            $tamara_pay_by_instalments_4_price = ($orderGrandTotal * 0.06) + 1.5;
+                                            if ($orderPaymentMethod == 'totalpay_checkout') {
+                                                $price = $totalpay_checkout_price;
+                                            } elseif ($orderPaymentMethod == 'tabby_installments') {
+                                                $price = $totalpay_checkout_price;
+                                            } elseif ($orderPaymentMethod == 'tamara_pay_by_instalments_4') {
+                                                $price = $tamara_pay_by_instalments_4_price;
+                                            }
+                                        ?>
+                                      <div class="product-sku-block">
+                                        <span>SKU:</span> <?php echo $value['sku']; ?><br>
+                                        <?php if($podetail['po_type'] == 'ppo'): ?>
+                                        <br>
+                                        <span>Total : </span> <?php echo number_format($totalpay_checkout_price, 2); ?><br>
+                                        <span>Tabby : </span> <?php echo number_format($tabby_installments_price, 2); ?><br>
+                                        <span>Tamara : </span> <?php echo number_format($tamara_pay_by_instalments_4_price, 2); ?><br>
+                                        <?php endif; ?>
+                                      </div>
+                                        </td>
+                                    <td class="col-price">
+                                          <input type="text" data-validate='{"required":true}' class="input-text admin__control-text qty-input costprice" 
+                                          name="item[<?= $key ?>][price]" value="<?php echo number_format($value['price'], 2) ?>">
+                                    </td>
+                                   
+                                    <td class="col-qty-invoice">
+                                        <?php
+                                        $soQty = 0;
+                                        $SEV200200231 = 0;
+                                        $SEV200200232 = 0;
+                                        $SEV200200233 = 0;
+                                        foreach ($orderitems as $item) {
+                                            if($value['po_type'] == 'mpo'){
+                                                if($item->getSku() == $value['sku']){
+                                                    $soQty = $item->getQtyOrdered();
+                                                }
+                                            } else {
+                                                
+                                                $_product = $productObj->load($item->getProductId());
+                                                $rim = $productObj->getResource()->getAttribute("rim")->getFrontend()->getValue($_product);
+                                                if($rim <= 17){
+                                                    $rimSizeSku = 'SEV200200231';
+                                                    $fitmentCharge = '25.0000';                   
+                                                    $rimKey = '12-17';
+                                                    $firstSkuQty = $item->getQtyOrdered();
+                                                    $SEV200200231 +=$firstSkuQty;
+                                                }
+                                                if($rim >= 18 && $rim <= 20){
+                                                    $rimSizeSku = 'SEV200200232';
+                                                    $fitmentCharge = '35.0000';                   
+                                                    $rimKey = '18-20';
+                                                    $secondSkuQty = $item->getQtyOrdered();
+                                                    $SEV200200232 +=$secondSkuQty;
+                                                }
+                                                if($rim >= 21){
+                                                    $rimSizeSku = 'SEV200200233';   
+                                                    $fitmentCharge = '45.0000'; 
+                                                    $rimKey = '21-23';
+                                                    $thirdSkuQty = $item->getQtyOrdered();
+                                                    $SEV200200233 +=$thirdSkuQty;
+
+                                                }
+                                                $rim_diameter[][$rimKey] = array('rim' => $rim, 'qty' => $item->getQtyOrdered(), 'sku' => $rimSizeSku, 'fitment_charge' => $fitmentCharge);
+                                                $rimTotalQty = array();
+                                            foreach($rim_diameter as $keyRimD => $rim_diameterArray){
+                                              foreach($rim_diameterArray as $keyRimD => $rim_diameterArrayVal){
+                                                if (isset($rimTotalQty[$keyRimD]))
+                                                {
+                                                  
+                                                  $rimTotalQty[$keyRimD][$rim_diameterArrayVal['sku']]['qty'] += (int) $rim_diameterArrayVal['qty'];
+                                                }
+                                                else
+                                                {
+                                                  $rimTotalQty[$keyRimD][$rim_diameterArrayVal['sku']]['qty'] = (int) $rim_diameterArrayVal['qty'];
+                                                }
+                                                
+                                              }
+                                            }
+                                            }
+                                            
+                                        }
+                                        if($value['po_type'] == 'mpo'){
+                                            $totalPo = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorderitem')->getCollection()
+                                                                            ->addfieldtofilter('order_id',$orderIncrementId)
+                                                                            ->addfieldtofilter('sku',$value['sku'])
+                                                                            ->addfieldtofilter('po_type',$value['po_type']);
+                                            $totalPOQty = 0;
+                                            $allowedQty = 0;
+                                            $totalPOQtyForAllow = 0;
+                                            foreach ($totalPo as $po) {
+                                                if ($value['sku'] == $po['sku']) {
+                                                    $totalPOQty += $po['qty'];
+                                                    if($value['poid'] != $po['poid']){
+                                                        $totalPOQtyForAllow += $po['qty'];
+                                                    }
+                                                }
+                                            }
+                                            $allowedQty = $soQty - $totalPOQtyForAllow;
+                                        } else {
+                                            foreach($rimTotalQty as $fitemnetData){
+                                                foreach($fitemnetData as $sku => $fitemnetItems){
+                                                    $totalFpo = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorderitem')->getCollection()
+                                                                                    ->addfieldtofilter('order_id',$orderIncrementId)
+                                                                                    ->addfieldtofilter('sku',$value['sku'])
+                                                                                    ->addfieldtofilter('po_type',$value['po_type']);
+                                                    $totalPOQty = 0;
+                                                    $allowedQty = 0;
+                                                    $totalPOQtyForAllow = 0;
+                                                    foreach ($totalFpo as $po) {
+                                                    if ($value['sku'] == $po['sku']) {
+                                                      $totalPOQty += $po['qty'];
+                                                      if($value['poid'] != $po['poid']){
+                                                        $totalPOQtyForAllow += $po['qty'];
+                                                      }
+                                                    }
+
+                                                    }
+                                                    if ($value['sku'] == 'SEV200200231') {
+                                                        $soQty = $SEV200200231;
+                                                        $allowedQty = $soQty - $totalPOQtyForAllow;
+                                                    } elseif ($value['sku'] == 'SEV200200232'){
+                                                        $soQty = $SEV200200232;
+
+                                                        $allowedQty = $soQty - $totalPOQtyForAllow;
+                                                    } elseif ($value['sku'] == 'SEV200200233'){
+                                                        $soQty = $SEV200200233;
+                                                        $allowedQty = $soQty - $totalPOQtyForAllow;
+                                                    } else {
+                                                        $soQty = 0;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        ?>
+                                            <input type="text" data-validate='{"required":true}' class="input-text admin__control-text qty-input qtyinput" name="item[<?= $key ?>][qty]" value="<?php echo $value['qty'] ?>" data-soqty="<?php echo $soQty; ?>" data-poqty="<?php echo $totalPOQty; ?>" data-allowedqty="<?php echo $allowedQty; ?>">
+                                            <?php if($value['sku'] != 'SEV200200216'): ?>
+                                                <input type="hidden" name="item[<?= $key ?>][allowedqty]" value="<?php echo $allowedQty; ?>">
+                                            <?php endif; ?>
+                                    </td>
+
+                                    <td class="">
+                                          <a href="javascript:void(0)" class="action-close _close removeitem update-button" data-role="close-submenu"></a>
+                                    </td>
+
+                                    
+                        
+                                 </tr>
+                             <?php  }  ?>    
+                                                                     
+                         </tbody>
+                                                            
+                    </table>
+                </div>
+            </div>
+        </section>
+
+       </section>
+
+      <?php /* comment */  ?>  
+        <section class="admin__page-section">
+            <div class="admin__page-section-title">
+                <span class="title">Order Total</span>
+            </div>
+            <div class="admin__page-section-content">
+                <fieldset class="admin__fieldset order-history" id="order-comment">
+                    <legend class="admin__legend"><span>Order History</span></legend>
+                    <br>
+                    
+                    <div class="admin__field field-comment">
+                            <label for="order-comment" class="admin__field-label"><span>Order Comments</span></label>
+                            <div class="admin__field-control">
+                                <textarea data-validate='{"required":true}' id="comment" name="comment"
+                                value="<?php echo $podetail['comment']?>" class="admin__control-textarea"><?php echo $podetail['comment']?></textarea>
+                            </div>
+                        </div>
+
+                        <?php if($podetail['po_type'] == 'dpo'): ?>
+                        <div style="display:flex !important; flex-direction:row !important; gap:15px; width:100%;">
+                            <div style="width:50% !important; display:inline-block !important; float:left !important;">
+                                <label for="pickup_location" class="admin__field-label"><span>Pickup Location</span></label>
+                                <div class="admin__field-control">
+                                    <textarea id="pickup_location" name="pickup_location" data-validate='{"required":true}' class="admin__control-textarea" style="width:100%; min-height:80px;" rows="3"><?= $block->escapeHtml($podetail['pickup_location'] ?? '') ?></textarea>
+                                </div>
+                            </div>
+                            <div style="width:50% !important; display:inline-block !important; float:left !important;">
+                                <label for="dropoff_location" class="admin__field-label"><span>Dropoff Location</span></label>
+                                <div class="admin__field-control">
+                                    <textarea id="dropoff_location" name="dropoff_location" data-validate='{"required":true}' class="admin__control-textarea" style="width:100%; min-height:80px;" rows="3"><?= $block->escapeHtml($podetail['dropoff_location'] ?? '') ?></textarea>
+                                </div>
+                            </div>
+                            <div style="clear:both;"></div>
+                        </div>
+                        <?php endif; ?>
+
+                </fieldset>
+                <fieldset id="order-totals" class="admin__fieldset order-totals">
+                  <legend class="admin__legend"><span>Order Totals</span></legend>
+                        <br>
+
+                        <table class="admin__table-secondary data-table">
+                            <tbody>
+                                <tr class="row-totals">
+                                    <td style="" class="admin__total-mark" colspan="1">
+                                        Subtotal    </td>
+                                    <td style="" class="admin__total-amount">
+                                        <span class="price subtotal"><?php echo $this->helper('Magento\Framework\Pricing\Helper\Data')->currency($podetail['subtotal'],true,false);?></span>    
+                                    </td>
+                                </tr>
+                    
+                                    <tr class="tax  row-totals">
+                                        <td style="" class="admin__total-mark" colspan="1">
+                                                        Tax          
+                                        </td>
+                                        <td style="" class="admin__total-amount"><span class="price vat"><?php echo $this->helper('Magento\Framework\Pricing\Helper\Data')->currency($podetail['vat'],true,false);?> </span></td>
+                                    </tr>
+
+                                    <tr class="row-totals">
+                                        <td style="" class="admin__total-mark" colspan="1">
+                                            <strong>Grand Total</strong>
+                                        </td>
+                                        <td style="" class="admin__total-amount">
+                                            <strong><span class="price grandtotal"><?php echo $this->helper('Magento\Framework\Pricing\Helper\Data')->currency($podetail['grandtotal'],true,false); ?></span></strong>
+                                        </td>
+                                    </tr>
+
+                            </tbody>
+                        </table>
+
+                        <div class="order-totals-actions">
+                           
+                            <div class="actions">
+                               
+                              <button id="" title="Save Po" type="submit" name="submit" value="save" class="action-default scalable save primary" data-ui-id="widget-button-16">
+                                <span>Save PO</span>
+                              </button>
+
+                              <button id="delete-po-btn" title="Delete Po" type="button" class="action-default scalable save primary" data-ui-id="widget-button-16" onclick="confirmDeletePo()">
+                                <span>Delete PO</span>
+                              </button>
+
+                              <button id="" title="Submit Order" type="submit" name="submit" value="pdf" class="action-default scalable save primary" data-ui-id="widget-button-16">
+                                <span>Send Email & PDF</span>
+                              </button>
+
+                               <button id="" title="Submit Order" type="submit" name="submit" value="download" class="action-default scalable save primary" data-ui-id="widget-button-16">
+                                <span>Download PDF</span>
+                              </button>
+
+                              <?php if($podetail['po_type'] == 'dpo'): ?>
+                              <button id="" title="Download Delivery" type="submit" name="submit" value="download_delivery" class="action-default scalable save primary btn-download-delivery" style="background-color:#2ea553; border-color:#2ea553; color:#fff;">
+                                <span>Download Delivery</span>
+                              </button>
+                              <?php endif; ?>
+
+                            </div>
+                        </div>
+
+                  
+                </fieldset>
+            </div>
+        </section>    
+</form>
+
+<script type="text/javascript">
+    function confirmDeletePo() {
+        require(['Magento_Ui/js/modal/confirm'], function(confirm) {
+            confirm({
+                title: 'Delete Purchase Order',
+                content: 'Are you sure you want to delete this Purchase Order?',
+                actions: {
+                    confirm: function() {
+                        var form = document.getElementById('po_edit_form');
+                        var input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'submit';
+                        input.value = 'delete';
+                        form.appendChild(input);
+                        HTMLFormElement.prototype.submit.call(form);
+                    },
+                    cancel: function() {}
+                }
+            });
+        });
+    }
+</script>
+<script type = 'text/javascript'>
+    require([
+            'jquery',
+            'Magento_Ui/js/modal/confirm'
+        ],
+        function ($, confirmation) {
+                $('.removeitem').click(function (event) {
+                    
+                    var msg=confirm("Do you wish to remove this item");
+                      if (msg==true)
+                      {
+                         $(this).closest('.productitem').remove();
+                      }
+
+                  
+                    return false;
+                });
+
+              jQuery('.qtyinput,.costprice').focusout(function(){      
+              updateprice();
+            });
+                      
+         function updateprice() {   
+            var conceptName = $('#vendor').find(":selected").val(); 
+            var vatApplicable = '<?php echo $vatApplicableString ?>'; 
+            vatApplicable1 = vatApplicable.split(",");
+            console.log(conceptName);console.log(vatApplicable);
+            if($.inArray(conceptName,vatApplicable1) >= 0 ){
+              
+               var vat="<?php echo $vatpercentage ?>";
+              
+            }else{
+              var vat="0";
+            }           
+                    var subtotal=0;
+
+                          $('.hidden_vat').val("");
+                          $('.vat').html("");
+                           $('.hidden_subtotal').val("");
+                           $('.subtotal').html("");
+                           $('.hidden_grandtotal').val("");
+                           $('.grandtotal').html("");
+
+                       $('.productitem').each(function(){
+                           var costprice =$(this).find('.costprice').val();
+                           var qtyinput =$(this).find('.qtyinput').val();
+                           var rowprice=costprice  * qtyinput;
+                           subtotal=subtotal + rowprice;
+ 
+                       });
+
+                       var currencycode="<?php echo $currencycode ?>";
+                       
+
+                       if(subtotal > 0 ){
+                          var percentage_amount=( subtotal * vat ) / 100;
+                          var grandtotal=subtotal  + percentage_amount;
+
+                          percentage_amount_with_code=currencycode +' '+percentage_amount.toFixed(2);  
+                          $('.hidden_vat').val(percentage_amount.toFixed(2));
+                          $('.vat').html(percentage_amount_with_code);
+
+                           var finalsubtotal=currencycode +' '+subtotal.toFixed(2);
+                           $('.hidden_subtotal').val(subtotal.toFixed(2));
+                           $('.subtotal').html(finalsubtotal);
+
+                           var grandtotal_with_code=currencycode +' '+grandtotal.toFixed(2);
+                           $('.hidden_grandtotal').val(grandtotal.toFixed(2));
+                           $('.grandtotal').html(grandtotal_with_code); 
+                       }
+                       
+                 };
+
+
+    });
+  
+</script>
+
+<section class="invoice-section">
+    <div>
+        <?php
+        $mediaURL = $objectManager->get('Magento\Store\Model\StoreManagerInterface')
+            ->getStore()
+            ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+        ?>
+        <form id="invoice_edit_form" action="<?= $block->getUdateInvoiceUrl() ?>" method="post" enctype="multipart/form-data" data-mage-init='{"validation":{}}'>
+            <?= $block->getBlockHtml('formkey') ?>
+
+            <input type="hidden" name="poid" value="<?php echo $podetail['id']; ?>" class="">
+
+            <section class="admin__page-section">
+                <div class="admin__page-section-title">
+                    <span class="title">Invoice Details</span>
+                </div>
+                <div class="admin__page-section-content">
+                    <fieldset class="admin__fieldset" id="order-invoice">
+
+                        <div class="admin__field field">
+                            <label class="admin__field-label" for="invoice_number">
+                                <span>Invoice Number</span>
+                            </label>
+                            <div class="admin__field-control">
+                                <input type="text" id="invoice_number" name="invoice_number"
+                                    value="<?= $block->escapeHtml($podetail['invoice_number'] ?? '') ?>"
+                                    class="admin__control-text" autocomplete="off" data-validate="{required:true}" />
+                            </div>
+                        </div>
+
+                        <div class="admin__field field">
+                            <label class="admin__field-label" for="invoice_date">
+                                <span>Invoice Date</span>
+                            </label>
+                            <div class="admin__field-control">
+                                <input type="date" id="invoice_date" name="invoice_date"
+                                    value="<?= isset($podetail['invoice_date']) ? date('Y-m-d', strtotime($podetail['invoice_date'])) : '' ?>"
+                                    class="admin__control-text" data-validate="{required:true}" />
+                            </div>
+                        </div>
+
+                        <div class="admin__field field">
+                            <label class="admin__field-label" for="invoice_due_date">
+                                <span>Invoice Due Date</span>
+                            </label>
+                            <div class="admin__field-control">
+                                <input type="date" id="invoice_due_date" name="invoice_due_date"
+                                    value="<?= isset($podetail['invoice_due_date']) ? date('Y-m-d', strtotime($podetail['invoice_due_date'])) : '' ?>"
+                                    class="admin__control-text" />
+                            </div>
+                        </div>
+
+                        <div class="admin__field field">
+                            <label class="admin__field-label" for="payment_date">
+                                <span>Payment Date</span>
+                            </label>
+                            <div class="admin__field-control">
+                                <input type="date" id="payment_date" name="payment_date"
+                                    value="<?= isset($podetail['payment_date']) ? date('Y-m-d', strtotime($podetail['payment_date'])) : '' ?>"
+                                    class="admin__control-text" />
+                            </div>
+                        </div>
+
+                        <div class="admin__field field">
+                            <label class="admin__field-label" for="payemnt_term_days">
+                                <span>Payment Term Days</span>
+                            </label>
+                            <div class="admin__field-control">
+                                <input type="text" id="payemnt_term_days" name="payemnt_term_days"
+                                    value="<?= $block->escapeHtml($podetail['payemnt_term_days'] ?? '') ?>"
+                                    class="admin__control-text" autocomplete="off" />
+                            </div>
+                        </div>
+
+                        <div class="admin__field field">
+                            <label class="admin__field-label" for="invoice_status">
+                                <span>Invoice Status</span>
+                            </label>
+                            <div class="admin__field-control">
+                                <select id="invoice_status" name="invoice_status" class="admin__control-select">
+                                    <option value="">Select Status</option>
+                                    <option value="Unpaid" <?= (isset($podetail['invoice_status']) && $podetail['invoice_status'] == 'Unpaid') ? 'selected' : '' ?>>Unpaid</option>
+                                    <option value="Paid" <?= (isset($podetail['invoice_status']) && $podetail['invoice_status'] == 'Paid') ? 'selected' : '' ?>>Paid</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="admin__field field">
+                            <label class="admin__field-label" for="invoice_upload">
+                                <span>Invoice Upload</span>
+                            </label>
+                            <div class="admin__field-control">
+                                <input type="file" id="invoice_upload" name="invoice_upload" class="admin__control-file" />
+                                <?php if (!empty($podetail['invoice_upload'])): ?>
+                                    <div class="current-file">
+                                        <?php
+                                        $fileUrl = $mediaURL . $block->escapeUrl($podetail['invoice_upload']);
+                                        $fileName = basename($podetail['invoice_upload']);
+                                        ?>
+                                        <a href="<?= $fileUrl ?>" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">
+                                            <?= $block->escapeHtml($fileName) ?>
+                                        </a>
+                                        <input type="hidden" name="existing_invoice_upload" value="<?= $block->escapeHtml($podetail['invoice_upload']) ?>">
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="admin__field field">
+                            <label class="admin__field-label" for="invoice_remarks">
+                                <span>Invoice Remarks</span>
+                            </label>
+                            <div class="admin__field-control">
+                                <?php /* 
+                                <textarea id="invoice_remarks" name="invoice_remarks"
+                                    class="admin__control-textarea" data-validate="{required:true}"><?= $block->escapeHtml($podetail['invoice_remarks'] ?? '') ?></textarea>
+                                    */ ?>
+                                <input type="text" id="invoice_remarks" name="invoice_remarks"
+                                    value="<?= $block->escapeHtml($podetail['invoice_remarks'] ?? '') ?>"
+                                    class="admin__control-text" autocomplete="off" />
+                            </div>
+                        </div>
+
+                        
+                        <div class="order-totals-actions">
+                            <div class="actions">
+                                <button id="" title="Save Invoice Details" type="submit" name="submit" value="save" class="action-default scalable save primary" data-ui-id="widget-button-16">
+                                    <span>Save Invoice Details</span>
+                                </button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+            </section>
+        </form>
+    </div>
+</section>
+<style>
+.invoice-section .admin__fieldset .admin__field {
+    width: 25%;
+    box-sizing: border-box;
+    padding-right: 10px;
+    display: inline-block;
+}
+
+.invoice-section .admin__fieldset .admin__field:last-of-type {
+    width: 100%;
+    padding-right: 0;
+}
+.invoice-section .current-file{
+    position: absolute;
+}
+.invoice-section select#invoice_status{
+    width: 100%;
+}
+</style>

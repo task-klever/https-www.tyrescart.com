@@ -1,0 +1,98 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Checkout\ViewModel\Breadcrumbs\SigninRegister;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
+/** @var SigninRegister $viewModel */
+/** @var HyvaCsp $hyvaCsp */
+
+$viewModel = $viewModels->require(SigninRegister::class);
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+$helperData = $this->helper(\Mageplaza\SocialLogin\Helper\Data::class);
+$availableSocials = [];
+if ($helperData->isEnabled()) {
+    $socialBlock = $block->getLayout()->createBlock(\Mageplaza\SocialLogin\Block\Popup\Social::class);
+    $availableSocials = $socialBlock->getAvailableSocials();
+}
+$checkoutUrl = $block->getUrl('checkout');
+?>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-4 items-center">
+<?php if ($viewModel->getCustomerSession()->isLoggedIn() === false): ?>
+<div class="mb-1.5">
+    <p class="text-base">
+        <?= $escaper->escapeHtml(__('Regular shopper?')) ?>
+        <a
+            href="<?= $escaper->escapeUrl($block->getUrl('customer/account/login', ['referer' => base64_encode($checkoutUrl)])) ?>"
+            class="hover:underline"
+        ><?= $escaper->escapeHtml(__('Sign in')) ?></a>
+        <?= $escaper->escapeHtml(__('or')) ?>
+        <a
+            href="<?= $escaper->escapeUrl($block->getUrl('customer/account/create', ['referer' => base64_encode($checkoutUrl)])) ?>"
+            class="hover:underline"
+        ><?= $escaper->escapeHtml(__('Create an Account')) ?></a>
+    </p>
+</div>
+<?php if (!empty($availableSocials)): ?>
+<div class="mb-1.5">
+    <?php foreach ($availableSocials as $key => $social): ?>
+        <a class="js-social-login-checkout inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-full text-sm font-medium hover:shadow-md transition-all duration-200 cursor-pointer bg-white"
+           href="<?= $escaper->escapeUrl($social['login_url']) ?>"
+        >
+            <?php if ($key === 'google'): ?>
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            <?php endif ?>
+            <span><?= $escaper->escapeHtml(__('Sign in with %1', $social['label'])) ?></span>
+        </a>
+    <?php endforeach; ?>
+</div>
+<script>
+    (function() {
+        /* Set login_redirect cookie so after social login it redirects to checkout */
+        document.cookie = 'login_redirect=<?= $escaper->escapeJs($checkoutUrl) ?>;path=/;domain=.tyrescart.com;secure';
+
+        /* Open social login in popup window */
+        document.querySelectorAll('.js-social-login-checkout').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                var url = this.getAttribute('href');
+                var w = 500, h = 420;
+                var left = (screen.width - w) / 2;
+                var top = (screen.height - h) / 2.5;
+                window.open(url, 'SocialLogin', 'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top);
+            });
+        });
+
+        /* Listen for login success from popup via BroadcastChannel */
+        var ch = new BroadcastChannel('social-login-channel');
+        ch.onmessage = function(e) {
+            console.log('[SocialLogin] BroadcastChannel received:', e.data);
+            if (e.data && e.data.event === 'loginRedirect') {
+                window.location.href = '<?= $escaper->escapeJs($checkoutUrl) ?>';
+            }
+            if (e.data && e.data.event === 'socialLoginSuccess') {
+                window.location.href = '<?= $escaper->escapeJs($checkoutUrl) ?>';
+            }
+            if (e.data && e.data.event === 'windowClose') {
+                window.location.reload();
+            }
+        };
+    })();
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+<?php endif ?>
+<?php endif ?>

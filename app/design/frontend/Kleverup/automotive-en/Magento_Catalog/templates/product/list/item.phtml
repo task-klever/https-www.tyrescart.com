@@ -1,0 +1,1440 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Hyva\Theme\ViewModel\HeroiconsSolid;
+use Hyva\Theme\ViewModel\BlockJsDependencies;
+use Hyva\Theme\ViewModel\ProductCompare;
+use Hyva\Theme\ViewModel\ProductListItem;
+use Hyva\Theme\ViewModel\ProductPage;
+use Hyva\Theme\ViewModel\Wishlist;
+use Magento\Catalog\Block\Product\AbstractProduct;
+use Magento\Catalog\Helper\Output as CatalogOutputHelper;
+use Magento\Catalog\ViewModel\Product\OptionsData as ProductOptionsData;
+use Magento\Framework\Escaper;
+use Hdweb\Tyrefinder\Helper\Productlisting as ListingHelper;
+use Hyva\Theme\ViewModel\ProductPrice;
+use Magento\Catalog\Pricing\Price\RegularPrice;
+use Magento\Catalog\Pricing\Price\FinalPrice;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundThis
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+// phpcs:disable Generic.Files.LineLength.TooLong
+// phpcs:disable Generic.WhiteSpace.ScopeIndent
+
+/** @var AbstractProduct $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var ProductPage $productViewModel */
+$productViewModel = $viewModels->require(ProductPage::class);
+
+/** @var ProductListItem $productListItemViewModel */
+$productListItemViewModel = $viewModels->require(ProductListItem::class);
+
+/** @var CatalogOutputHelper $catalogOutputHelper */
+$catalogOutputHelper = $this->helper(CatalogOutputHelper::class);
+
+/** @var ProductCompare $compareViewModel */
+$compareViewModel = $viewModels->require(ProductCompare::class);
+/** @var Wishlist $wishlistViewModel */
+$wishlistViewModel = $viewModels->require(Wishlist::class);
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+/** @var HeroiconsSolid $heroiconsSolid */
+$heroiconsSolid = $viewModels->require(HeroiconsSolid::class);
+
+$productOptionsViewmodel = $viewModels->require(ProductOptionsData::class);
+
+/** @var Magento\Catalog\Model\Product $product */
+if (! ($product = $block->getData('product'))) {
+    return;
+}
+$imageDisplayArea = $block->getData('image_display_area');
+$templateType = $block->getData('template_type');
+$showDescription = $block->getData('show_description');
+$showAddToWishlist = $wishlistViewModel->isEnabled();
+$showAddToCompare = $compareViewModel->showInProductList();
+$productType = $product->getTypeId();
+$isProductGroupedOrBundle = $productType === 'bundle' || $productType === "grouped";
+$productId = $product->getId();
+$options   = $productOptionsViewmodel->getOptionsData($product);
+
+$hideDetails       = $block->getData('hide_details') ?: false;
+$hideRatingSummary = $block->getData('hide_rating_summary') ?: false;
+
+$itemRelationTypeEarly = $block->getData('item_relation_type');
+$isSliderContext = in_array($itemRelationTypeEarly, ['related', 'upsell', 'crosssell'], true);
+
+$imageCustomAttributes = $product->getData('image_custom_attributes')
+    ?? $block->getData('image_custom_attributes')
+    ?? [];
+$productName = $catalogOutputHelper->productAttribute($product, $product->getName(), 'name');
+
+// Ensure the required JS is rendered on the page
+$viewModels->require(BlockJsDependencies::class)->setBlockTemplateDependency($block, 'Magento_Catalog::product/list/js/price-box.phtml');
+
+
+// ---
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface');
+$currency = $storeManager->getStore()->getCurrentCurrencyCode();
+$listingHelper = $this->helper(ListingHelper::class);
+$mediaUrl = $objectManager->get('Magento\Store\Model\StoreManagerInterface')
+    ->getStore()
+    ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+
+$partsCategory = '';
+if ($product->getPartsCategory()) {
+    $partsCategory = $product->getAttributeText('parts_category');
+}
+
+$brand = $catalogOutputHelper->productAttribute($product, $product->getBrand(), 'brand');
+
+if ($brand) {
+    $brandDetails = $listingHelper->getBrandDetails($brand);
+    if ($brandDetails) {
+        $brandImage = $listingHelper->getBrandImageUrl($brandDetails);
+        $brand_title = $brandDetails->getName();
+        /* $brandUrl = $listingHelper->getBrandUrl($brandDetails); */
+    }else{
+        $selectedBrandInProduct = $product->getAttributeText('brand');
+        /* $brandUrl = $listingHelper->getNotCreatedBrandUrl($partsCategory, $selectedBrandInProduct); */
+    }
+
+    // Override: link to current category with ?brand= filter
+    $brandFilterName = $brandDetails ? $brand_title : ($selectedBrandInProduct ?? '');
+    if ($brandFilterName) {
+        $catalogLayer = \Magento\Framework\App\ObjectManager::getInstance()->get(\Magento\Catalog\Model\Layer\Resolver::class)->get();
+        $currentCategory = $catalogLayer->getCurrentCategory();
+        if ($currentCategory && $currentCategory->getId()) {
+            $brandUrl = $currentCategory->getUrl() . '?brand=' . urlencode($brandFilterName);
+        } else {
+            $brandUrl = '#';
+        }
+    } else {
+        $brandUrl = '#';
+    }
+}
+
+
+
+$prod_qty =  $listingHelper->getProductAvailableQty($product->getSku());
+$stockQty = 0;
+if ($prod_qty >= 8) {
+    $stockQty = 8;
+} else {
+    $stockQty = $prod_qty;
+}
+
+$set1price = $listingHelper->getSet1price($product);
+$set2price = $listingHelper->getSet2price($product);
+$set4price = $listingHelper->getSet4price($product);
+
+/** @var ProductPrice $productPriceViewModel */
+
+$productPriceViewModel = $viewModels->require(ProductPrice::class);
+$unitRegularPrice = $productPriceViewModel->getPriceValue(RegularPrice::PRICE_CODE, $product);
+$unitFinalPrice = $productPriceViewModel->getPriceValue(FinalPrice::PRICE_CODE, $product);
+$productOfferRule = $listingHelper->isAnyRuleExist($product);
+
+$banner_img_name = '';
+if (isset($productOfferRule) && !empty($productOfferRule) && $productOfferRule['rule_id'] != ''){
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+    $rule_id =$productOfferRule['rule_id'];
+    $rule=$objectManager->create('Magento\SalesRule\Model\Rule')->load($rule_id);
+    $banner_img_name =  $rule->getRuleBanner();
+}
+
+$isOfferProduct = 'No';
+$discountAmount = '';
+$discountQty = '';
+if (isset($productOfferRule) && !empty($productOfferRule) && $productOfferRule['rule_id'] != '') {
+    if ($productOfferRule['offer_price']) {
+        $isOfferProduct = 'Yes';
+        $discountAmount = $productOfferRule['discount_amount'];
+        $discountQty = $productOfferRule['discount_qty_step'];
+    }
+}
+
+$oem_tyres = $product->getResource()->getAttribute("oem_tyres")->getFrontend()->getValue($product);
+$origin = $product->getAttributeText('country');
+$tyre_type = $product->getAttributeText('tyre_type');
+$year = $product->getAttributeText('year');
+$priceIncludedText = $product->getAttributeText('price_included_text');
+$runflat = $product->getAttributeText('runflat');
+
+$width = $product->getAttributeText('width');
+$height = $product->getAttributeText('height');
+$rim = $product->getAttributeText('rim');
+$ev = $product->getAttributeText('ev');
+$tyreSize = $product->getAttributeText('tyre_size');
+$pattern = '';
+if ($product->getPattern()) {
+    $pattern = $product->getAttributeText('pattern');
+}
+$oemMarking = '';
+if ($product->getOemMarking()) {
+    $oemMarking = $product->getAttributeText('oem_marking');
+}
+$loadIndex = '';
+if ($product->getLoadIndex()) {
+    $loadIndex = $product->getLoadIndex();
+}
+$warranty = '';
+if ($product->getWarrantyPeriod()) {
+    $warranty = $product->getAttributeText('warranty_period');
+}
+?>
+
+<div class="relative h-full">
+<a href="javascript:void(0);" class="quickview-trigger absolute top-1 left-1 z-[6] flex bg-white rounded-full p-1.5 shadow-md border border-gray-200 hover:bg-theme-blue hover:text-white hover:border-theme-blue transition-all duration-200 cursor-pointer text-gray-500 no-underline"
+    data-quickview-id="<?= (int) $productId ?>"
+    title="<?= $escaper->escapeHtmlAttr(__('Quick View')) ?>">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+</a>
+<?php if ($product->isSaleable()): ?>
+<form method="post"
+    action="<?= $escaper->escapeUrl($productViewModel->getAddToCartUrl($product, ['useUencPlaceholder' => true])) ?>"
+    class="item product product-item h-full product_addtocart_form grow flex flex-col w-full rounded-[10px] border border-[#eee] <?= $isSliderContext ? 'overflow-hidden min-w-0' : 'md:flex-row flex-wrap' ?> list-view"
+    <?php if ($product->getOptions()): ?>
+    enctype="multipart/form-data"
+    <?php endif; ?>
+>
+    <?= /** @noEscape */ $block->getBlockHtml('formkey') ?>
+    <input type="hidden" name="product" value="<?= (int)$productId ?>"/>
+    <?php foreach ($options as $optionItem): ?>
+    <input type="hidden"
+           name="<?= $escaper->escapeHtml($optionItem['name']) ?>"
+           value="<?= $escaper->escapeHtml($optionItem['value']) ?>">
+    <?php endforeach; ?>
+<?php else: ?>
+<div class="item product product-item h-full grow flex flex-col w-full rounded-[10px] border border-[#eee] <?= $isSliderContext ? 'overflow-hidden min-w-0' : 'md:flex-row flex-wrap' ?> list-view"
+     <?php foreach ($block->getData('product_data_attributes') as $attribute => $include): ?>
+         <?php if ($include): ?>
+             <?php /** Append data-* attributes based on layout XML arguments */ ?>
+             <?= $escaper->escapeHtml(sprintf('data-%s', $attribute)); ?>="<?= $escaper->escapeHtmlAttr($product->getData($attribute)); ?>"
+         <?php endif; ?>
+    <?php endforeach; ?>
+>
+
+
+<?php endif; ?>
+    <?php if (isset($productOfferRule) && !empty($productOfferRule) && $productOfferRule['rule_id'] != '') : ?>
+    <?php if (isset($banner_img_name) && !empty($banner_img_name)) { ?>
+         <div class="product-offer-img w-full overflow-hidden rounded-tl-[8px] rounded-tr-[8px] w-full" data-rule-id="<?php echo $productOfferRule['rule_id']; ?>">
+    <img class="w-full h-auto" src="<?php echo $mediaUrl . 'salesrule/offerimage/' . $banner_img_name; ?>" alt="Offer Image">
+</div>
+    <?php } else { ?>
+ <div class="product-offer-img w-full overflow-hidden rounded-tl-[8px] rounded-tr-[8px] relative" data-rule-id="<?php echo $productOfferRule['rule_id']; ?>">
+    <img class="w-full h-auto" src="<?php echo $this->getViewFileUrl('images/pages/blue-color-img.jpg'); ?>" alt="">
+    <span class="position-text text-[1.1rem] lg:text-[1.1rem] xl:text-[1.4rem] text-white uppercase font-secondary font-bold leading-none absolute left-1/2 top-1/2 w-full h-full inline-block text-center content-center -translate-x-1/2 -translate-y-1/2 transform
+"><?php echo $productOfferRule['rule_name']; ?></span>
+</div>
+<?php } ?>
+    <?php endif; ?>
+
+<?php if ($partsCategory == 'Battery') : ?>
+<!-- ========== BATTERY PRODUCT CARD - DESKTOP ========== -->
+<div class="battery-card-desktop hidden md:block bg-white rounded-[10px] overflow-hidden">
+    <!-- Brand Logo -->
+    <div class="flex justify-center items-center p-2 border-b border-[#eee] min-h-[40px]">
+        <?php if ($brand) : ?>
+            <?php if (isset($brandDetails) && $brandDetails) : ?>
+                <a href="<?php echo $brandUrl; ?>">
+                    <?php if ($brandImage) : ?>
+                        <img loading="lazy" class="h-[30px] object-contain max-w-[160px]" src="<?php echo $brandImage; ?>" alt="<?php echo __($brand_title); ?>" title="<?php echo __($brand_title); ?>" />
+                    <?php else: ?>
+                        <span class="font-semibold text-sm"><?php echo __($brand_title); ?></span>
+                    <?php endif; ?>
+                </a>
+            <?php else: ?>
+                <?php if (isset($selectedBrandInProduct)) : ?>
+                    <a href="<?php echo $brandUrl; ?>"><span class="font-semibold text-sm"><?php echo __($selectedBrandInProduct); ?></span></a>
+                <?php endif; ?>
+            <?php endif; ?>
+        <?php endif; ?>
+    </div>
+
+    <!-- Product Image -->
+    <div class="product-image-wrap relative px-4 py-3 border-b">
+        <?php /* 
+        <?php if ($showAddToWishlist): ?>
+            <div class="absolute top-2 right-2 z-[5]">
+                <?= $block->getChildBlock('wishlist') ? $block->getChildBlock('wishlist')->setData('product', $product)->toHtml() : '' ?>
+            </div>
+        <?php endif; ?>
+        */ ?>
+        <a href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+            title="<?= $escaper->escapeHtmlAttr($product->getName()) ?>"
+            class="product photo product-item-photo block mx-auto battery-image"
+            tabindex="-1">
+            <?= $block->getImage($product, $imageDisplayArea)
+                ->setTemplate('Magento_Catalog::product/list/image.phtml')
+                ->setData('custom_attributes', $imageCustomAttributes)
+                ->setProductId($productId)
+                ->toHtml(); ?>
+        </a>
+        <?php if($warranty != ''): ?>
+            <div class="warrantry-text [direction:ltr] absolute bottom-0 px-2 left-0 bg-[#ffffffe6] z-[4] rounded-tr-[10px]">
+                <span class="uppercase text-black text-xs font-medium"><?php echo __($warranty); ?></span>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Product Details -->
+    <div class="product-details px-3 py-2 text-center">
+        <div class="product-name border-border-color [display:-webkit-box] [-webkit-line-clamp:1] [-webkit-box-orient:vertical] overflow-hidden flex text-primary font-semibold text-[0.9rem] h-auto rounded-tr-xl sm:bg-white">
+            <a class="product-item-link text-theme-dark hover:text-theme-blue transition-all duration-300 ease-in-out [direction:ltr]"
+                href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+                title="<?php echo $productName; ?>">
+                <?php echo $productName; ?>
+            </a>
+        </div>
+
+        <div class="fitment-info">
+            <span class="cursor-pointer text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide text-black hover:text-theme-blue transition-all duration-300 ease-in-out" onclick="OpenBatteryFittedPriceModal()"><?php echo __('Fully Fitted Price per Item'); ?></span>
+        </div>
+
+        <div class="text-theme-dark flex items-end leading-none justify-center mt-1"
+            x-data="initPriceBox()"
+            x-defer="intersect"
+            @update-prices-<?= (int)$productId ?>.window="updatePrice($event.detail);"
+        >
+            <?= /* @noEscape */ $productListItemViewModel->getProductPriceHtml($product) ?>
+            <span class="text-xs ml-1 whitespace-nowrap">/ item</span>
+        </div>
+    </div>
+
+    <!-- Add to Cart / Enquiry -->
+    <div class="border-t border-[#eee] mt-auto py-2 px-3 flex items-center gap-x-2 justify-center product-info">
+        <?php if ($product->isSaleable() && $stockQty > 0): ?>
+            <select class="form-select w-auto h-8 cursor-pointer text-sm pr-7" name="qty" onchange="changePrice(this,<?php echo $unitRegularPrice; ?>,<?php echo $unitFinalPrice; ?>,'<?php echo $partsCategory; ?>','<?php echo $isOfferProduct; ?>','<?php echo $discountAmount; ?>','<?php echo $discountQty; ?>','<?php echo $productId; ?>')">
+                <?php for ($cnt = 1; $cnt <= $stockQty; $cnt++) : ?>
+                    <option value=<?php echo $cnt; ?> <?php if ($cnt == 1) : ?> selected <?php endif ?>><?php echo $cnt; ?></option>
+                <?php endfor; ?>
+            </select>
+            <button class="w-full inline-flex items-center justify-center gap-1 px-2 py-1 text-white text-sm font-normal rounded-[6px] hover:bg-theme-blue bg-black transition-colors duration-300 h-[34px]"
+                title="<?= $escaper->escapeHtmlAttr(__('Add to Cart') . ' ' . $productName) ?>"
+                aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Cart') . ' ' . $productName) ?>"
+                data-addto="cart">
+                <?= $heroicons->shoppingCartHtml('', 16, 16, ['aria-hidden' => 'true']) ?>
+                <span class="inline"><?= $escaper->escapeHtml(__('Add to Cart')) ?></span>
+            </button>
+        <?php else: ?>
+            <div class="w-full">
+                <?= $block->getChildBlock('stockstatus') ? $block->getChildBlock('stockstatus')->setData('product', $product)->toHtml() : '' ?>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+<!-- ========== END BATTERY DESKTOP ========== -->
+
+<!-- ========== BATTERY PRODUCT CARD - MOBILE ========== -->
+<div class="battery-card-mobile md:hidden bg-white rounded-[10px] overflow-hidden">
+    <div class="flex">
+        <!-- Left Column: Brand + Image + Warranty -->
+        <div class="w-2/5 relative flex flex-col border-r border-[#eee]">
+            <!-- Brand -->
+            <div class="flex justify-center items-center p-1.5 border-b border-[#eee] min-h-[30px]">
+                <?php if ($brand) : ?>
+                    <?php if (isset($brandDetails) && $brandDetails) : ?>
+                        <a href="<?php echo $brandUrl; ?>">
+                            <?php if ($brandImage) : ?>
+                                <img loading="lazy" class="h-[20px] object-contain max-w-[120px]" src="<?php echo $brandImage; ?>" alt="<?php echo __($brand_title); ?>" />
+                            <?php else: ?>
+                                <span class="font-semibold text-xs"><?php echo __($brand_title); ?></span>
+                            <?php endif; ?>
+                        </a>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </div>
+            <!-- Image -->
+            <div class="px-2 py-2 flex-grow flex items-center justify-center">
+                <a href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+                    class="product photo product-item-photo block battery-image"
+                    tabindex="-1">
+                    <?= $block->getImage($product, $imageDisplayArea)
+                        ->setTemplate('Magento_Catalog::product/list/image.phtml')
+                        ->setData('custom_attributes', $imageCustomAttributes)
+                        ->setProductId($productId)
+                        ->toHtml(); ?>
+                </a>
+            </div>
+            <!-- Warranty -->
+            
+        </div>
+
+        <!-- Right Column: Name + Fitted Price + Price -->
+        <div class="w-3/5 flex flex-col p-2">
+            <div class="product-name mb-1">
+                <a class="product-item-link text-theme-dark hover:text-theme-blue transition-all duration-300 ease-in-out font-semibold text-sm leading-tight"
+                    href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+                    title="<?php echo $productName; ?>">
+                    <?php echo $productName; ?>
+                </a>
+            </div>
+
+            <?php if($warranty != ''): ?>
+                <div class="warranty-text">
+                    <span class="uppercase text-black text-[0.65rem] font-medium"><?php echo __($warranty); ?></span>
+                </div>
+            <?php endif; ?>
+
+            <div class="fitment-info mt-auto mb-1">
+                <span class="cursor-pointer text-[0.75rem] text-black hover:text-theme-blue transition-all duration-300 ease-in-out" onclick="OpenBatteryFittedPriceModal()"><?php echo __('Fully Fitted Price per Item'); ?></span>
+            </div>
+
+            <div class="text-theme-dark flex items-end leading-none mt-1"
+                x-data="initPriceBox()"
+                x-defer="intersect"
+                @update-prices-<?= (int)$productId ?>.window="updatePrice($event.detail);"
+            >
+                <?= /* @noEscape */ $productListItemViewModel->getProductPriceHtml($product) ?>
+                <span class="text-xs ml-1 whitespace-nowrap">/ item</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Bar: Add to Cart -->
+    <div class="border-t border-[#eee] py-1.5 px-2 flex items-center gap-x-2 justify-between product-info">
+        <?php if ($product->isSaleable() && $stockQty > 0): ?>
+            <select class="form-select w-auto h-7 cursor-pointer text-xs pr-6" name="qty" onchange="changePrice(this,<?php echo $unitRegularPrice; ?>,<?php echo $unitFinalPrice; ?>,'<?php echo $partsCategory; ?>','<?php echo $isOfferProduct; ?>','<?php echo $discountAmount; ?>','<?php echo $discountQty; ?>','<?php echo $productId; ?>')">
+                <?php for ($cnt = 1; $cnt <= $stockQty; $cnt++) : ?>
+                    <option value=<?php echo $cnt; ?> <?php if ($cnt == 1) : ?> selected <?php endif ?>><?php echo $cnt; ?></option>
+                <?php endfor; ?>
+            </select>
+            <button class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-white text-sm md:text-base font-medium rounded-[6px] hover:bg-theme-blue bg-black transition-colors duration-300 h-[33.75px] md:h-[2.5rem]"
+                title="<?= $escaper->escapeHtmlAttr(__('Add to Cart') . ' ' . $productName) ?>"
+                data-addto="cart">
+                <?= $heroicons->shoppingCartHtml('w-4', 20, 20, ['aria-hidden' => 'true']) ?>
+                <span class="inline"><?= $escaper->escapeHtml(__('Add to Cart')) ?></span>
+            </button>
+        <?php else: ?>
+            <div class="w-full">
+                <?= $block->getChildBlock('stockstatus') ? $block->getChildBlock('stockstatus')->setData('product', $product)->toHtml() : '' ?>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+<!-- ========== END BATTERY MOBILE ========== -->
+
+<?php else : ?>
+<!-- ========== TYRE/OTHER PRODUCT CARD (original layout) ========== -->
+<div class="product-wrap flex <?= $isSliderContext ? 'flex-col' : 'flex-wrap' ?> bg-white rounded-[10px] overflow-hidden">
+
+
+    <div class="product-left <?= $isSliderContext ? 'w-full' : 'w-2/5 md:w-full' ?> relative flex flex-col">
+        <?php if($warranty != ''): ?>
+            <div class="hidden md:block warrantry-text [direction:ltr] absolute bottom-0 px-2 left-0 bg-[#ffffffe6] z-[4] rounded-tr-[10px]">
+               <span class="uppercase text-black text-xs font-medium"><?php echo __($warranty); ?></span>
+             </div>
+        <?php endif; ?>
+
+        <?php if ($year) : ?>
+            <span class="hidden md:block absolute bottom-[6px] right-0 z-[4] text-black text-xs font-medium px-2"><?php echo "" . $year . ""; ?></span>
+        <?php endif; ?>
+
+         <div class="hidden md:block car-brands-img absolute right-0 top-[40%] -translate-y-1/2 z-[8] px-2 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#d8e9f3] [&::-webkit-scrollbar-thumb]:bg-theme-blue dark:[&::-webkit-scrollbar-track]:bg-[#d8e9f3] dark:[&::-webkit-scrollbar-thumb]:bg-theme-blue h-[130px] overflow-x-hidden content-center">
+            <?php if ($oem_tyres) : ?>
+                <?php $oem_tyresArray = explode(', ', $oem_tyres); ?>
+                <?php foreach ($oem_tyresArray as $oem_tyresData) : ?>
+                    <?php 
+                        $oem_tyresData = str_replace(" ", "-", strtolower($oem_tyresData));
+                        $oemTyresImg = $mediaUrl . 'cars-logo/' . $oem_tyresData . '.png';
+                    ?>
+                    <img src="<?php echo $oemTyresImg; ?>" title="<?php echo $oem_tyresData; ?>" alt="<?php echo $oem_tyresData; ?>" class="car-brand-img max-h-3 sm:max-h-7 max-w-5 sm:max-w-[23px] lazy mt-1">
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
+
+        <?php /*
+        <div class="product-brand hidden md:block">
+            <?php if ($brand) : ?>
+                <?php if ($brandDetails) : ?>
+                    <div class="brand p-1 border-b border-[#eee]">
+                        <a class="block" href="<?php echo $brandUrl; ?>">
+                            <?php if ($brandImage) : ?>
+                                <img loading="lazy" class="h-[30px] object-contain mx-auto max-w-[160px] md:max-w-[180px]" src="<?php echo $brandImage; ?>" loading="lazy" alt="<?php echo __($brand_title); ?>" title="<?php echo __($brand_title); ?>" />
+                            <?php else: ?>
+                                <span><?php echo __($brand_title); ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </div>
+                <?php else: ?>
+                    <?php if (isset($selectedBrandInProduct)) : ?>
+                        <div class="mt-2 mb-1 items-center justify-center text-primary font-semibold text-lg text-center flex">
+                            <a href="<?php echo $brandUrl; ?>">
+                                <span><?php echo __($selectedBrandInProduct); ?></span>
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
+        */ ?>
+
+   
+        <?php /* Product Image */ ?>
+        <?php
+        $partsCategoryClass = '';
+        $partsCategoryClass = strtolower(str_replace(' ', '-', $partsCategory));
+        ?>
+            <a href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+                title="<?= $escaper->escapeHtmlAttr($product->getName()) ?>"
+                class="product photo product-item-photo relative block overflow-hidden mx-auto h-full content-center  <?php echo $partsCategoryClass . '-image'; ?> mb-1 md:mb-0 md:h-[11rem] gride-image"
+                tabindex="-1">
+                <?= $block->getImage($product, $imageDisplayArea)
+                    ->setTemplate('Magento_Catalog::product/list/image.phtml')
+                    ->setData('custom_attributes', $imageCustomAttributes)
+                    ->setProductId($productId)
+                    ->toHtml(); ?>
+            </a>
+
+        <div class="px-1 md:flex md:hidden items-center justify-center relative -top-[0.4rem]">
+        <div class="custom-sroll-height flex items-center justify-center gap-x-1 lg:gap-x-1  overflow-x-auto overflow-y-hidden flex items-center pl-0 ml-0 [scroll-padding-left:0] snap-x snap-mandatory [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#d8e9f3] [&::-webkit-scrollbar-thumb]:bg-theme-blue dark:[&::-webkit-scrollbar-track]:bg-[#d8e9f3] dark:[&::-webkit-scrollbar-thumb]:bg-theme-blue">
+            <?php if ($oem_tyres) : ?>
+                <?php $oem_tyresArray = explode(', ', $oem_tyres); ?>
+                <?php foreach ($oem_tyresArray as $oem_tyresData) : ?>
+                    <?php 
+                        $oem_tyresData = str_replace(" ", "-", strtolower($oem_tyresData));
+                        $oemTyresImg = $mediaUrl . 'cars-logo/' . $oem_tyresData . '.png';
+                    ?>
+                    <img src="<?php echo $oemTyresImg; ?>" title="<?php echo $oem_tyresData; ?>" alt="<?php echo $oem_tyresData; ?>" class="max-h-4">
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+        </div>
+
+            <div class="car-logo px-2 pb-2 flex items-center justify-center h-auto md:h-[22px] relative mt-auto md:hidden">
+                     <?php if ($tyre_type == 'Car') : ?>
+                                                    <?php
+                    $hasSuggestedSize = $this->helper('Hdweb\Tyrefinder\Helper\Data')
+                        ->hasSuggestedSize($width, $height, $rim);
+                    ?>
+                                    <div class="mx-auto" x-data="buyTyreSearchModal()">
+                                    <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $width; ?>','<?php echo $height; ?>','<?php echo $rim; ?>','<?php echo $product->getName(); ?>', <?= $hasSuggestedSize ? 'true' : 'false' ?>)">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 47.747 16.977" class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]">
+                                                <g id="Group_243" data-name="Group 243" transform="translate(0)">
+                                                    <path id="Path_411" data-name="Path 411" d="M-122.615,146.25a14.294,14.294,0,0,0,.9,1.807,1.609,1.609,0,0,0,.935.518c1.073.245,2.161.424,3.313.642a4.4,4.4,0,0,1,2.574-3.96,4.107,4.107,0,0,1,2.686-.294,4.432,4.432,0,0,1,3.413,4.935l21.435.432a4.315,4.315,0,0,1,1.162-4.224,4.061,4.061,0,0,1,3.118-1.236,4.36,4.36,0,0,1,4.163,5.139c.687-.113,1.356-.194,2.011-.338,1.472-.323,1.693-.616,1.987-2.158a5.746,5.746,0,0,0-.342-2.547,2.327,2.327,0,0,0-1.6-1.7,39.349,39.349,0,0,0-7.593-2.017,16.658,16.658,0,0,1-3.88-1.389c-1.793-.78-3.566-1.607-5.351-2.407a21.266,21.266,0,0,0-9.744-1.617,33.618,33.618,0,0,0-11.928,2.885,20.127,20.127,0,0,1-5.156,1.381c-1.089.153-1.255.357-1.256,1.444,0,.358-.012.716,0,1.073a2.047,2.047,0,0,1-.454,1.677,2.842,2.842,0,0,0-.391.931Zm30.034-4.853a.274.274,0,0,1-.12.014c-2.485-.069-4.97-.144-7.455-.2-.27-.007-.33-.139-.381-.359-.23-.982-.476-1.96-.714-2.939-.071-.291-.135-.584-.222-.962,3.475.284,6.78.76,9.465,2.868Zm-9.58-.407a.745.745,0,0,1-.153.049c-2.3-.068-4.594-.135-6.89-.218a.451.451,0,0,1-.317-.243,1.572,1.572,0,0,1,.174-1.881,8.174,8.174,0,0,0,.455-.7.938.938,0,0,1,.418-.325,17.885,17.885,0,0,1,5.381-.687.411.411,0,0,1,.315.232C-102.558,138.468-102.363,139.723-102.161,140.989Zm-11.361-.195a1.036,1.036,0,0,1,.612-1.247c.563-.291,1.137-.561,1.714-.823.506-.23,1.022-.436,1.534-.653-.557.9-1.154,1.725-1.762,2.543a.451.451,0,0,1-.3.172C-112.325,140.8-112.928,140.794-113.522,140.794Z" transform="translate(122.615 -135.806)" />
+                                                    <path id="Path_412" data-name="Path 412" d="M512.565,314.14a3.6,3.6,0,1,0,3.6,3.624A3.629,3.629,0,0,0,512.565,314.14Zm.312,1.314,1.1.473c-.269.253-.451.444-.653.61-.235.192-.407.1-.443-.176A8.107,8.107,0,0,1,512.877,315.454Zm0,4.553c0-.385-.021-.647.006-.906s.2-.346.412-.185.426.372.718.632Zm-2.582-2.585.5-1.186c.23.3.4.5.543.717.06.089.121.236.086.313a.392.392,0,0,1-.29.149C510.886,317.437,510.64,317.422,510.295,317.422Zm.463,1.772-.445-1.135c.352,0,.615-.021.874.005.3.03.368.2.177.436C511.2,318.705,511.02,318.9,510.757,319.194Zm4.1-1.678-1.151-.247c.2-.267.4-.534.6-.8.012-.015.057,0,.144-.009Zm-.416,1.52-.189.072c-.151-.194-.314-.38-.449-.584a.47.47,0,0,1-.082-.321c.014-.063.158-.13.248-.137.259-.018.52-.006.861-.006Zm-2.194-3.58a7.38,7.38,0,0,1-.008.906c-.039.276-.2.369-.445.165-.2-.165-.407-.324-.714-.568Zm-1.139,4.083c.3-.255.48-.424.679-.567a.428.428,0,0,1,.309-.082c.067.017.138.154.145.242.019.255.007.513.007.871Z" transform="translate(-503.07 -304.356)" />
+                                                    <path id="Path_413" data-name="Path 413" d="M-32.965,314.14a3.616,3.616,0,0,0-3.619,3.614,3.631,3.631,0,0,0,3.609,3.579,3.607,3.607,0,0,0,3.585-3.545A3.6,3.6,0,0,0-32.965,314.14Zm.3,1.326,1.144.474c-.3.256-.5.447-.72.612s-.389.1-.418-.169S-32.665,315.835-32.665,315.466Zm1.5.812.453,1.144c-.355,0-.617.017-.876,0-.306-.025-.363-.2-.185-.434C-31.619,316.775-31.436,316.585-31.17,316.278Zm.472,1.782-.484,1.09c-.26-.282-.452-.465-.612-.673s-.1-.386.177-.413S-31.093,318.06-30.7,318.06Zm-2.6-2.6c0,.355.012.614-.007.871-.006.088-.074.225-.14.244a.419.419,0,0,1-.314-.071c-.208-.15-.4-.328-.682-.57Zm-1.483.8c.25.3.428.492.58.7a.415.415,0,0,1,.067.313c-.019.066-.156.131-.244.138-.258.018-.518.007-.863.007Zm.011,2.963-.474-1.164c.356,0,.619-.018.878,0,.287.025.382.18.194.428C-34.341,318.712-34.523,318.919-34.774,319.224Zm2.107.794c0-.357-.014-.6.007-.846a.379.379,0,0,1,.15-.279.394.394,0,0,1,.308.076c.213.145.409.314.708.55Zm-1.762-.474c.29-.253.468-.426.666-.572a.429.429,0,0,1,.312-.081c.065.016.136.154.142.242.019.258.007.519.007.871Z" transform="translate(72.415 -304.356)" />
+                                                </g>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($tyre_type == 'SUV') : ?>
+                                                    <?php
+                    $hasSuggestedSize = $this->helper('Hdweb\Tyrefinder\Helper\Data')
+                        ->hasSuggestedSize($width, $height, $rim);
+                    ?>
+                                    <!-- if suv car -->
+                                    <div class="mx-auto" x-data="buyTyreSearchModal()">
+                                    <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $width; ?>','<?php echo $height; ?>','<?php echo $rim; ?>','<?php echo $product->getName(); ?>', <?= $hasSuggestedSize ? 'true' : 'false' ?>)">
+                                            <svg version="1.2" xmlns="http://www.w3.org/2000/svg" width="47.747" height="16.977" viewBox="0 0 321 138" class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]">
+                                                <title>suv-svg</title>
+                                                
+                                                <g id="Layer">
+                                                    <g id="Layer">
+                                                        <path id="Layer" fill-rule="evenodd" class="s0" d="m16.1 14.5c3.2-7.4 10.4-12.3 18.3-12.7 58.5-2.9 107.2-1.9 148.7 3.2 3.6 0.4 7 1.8 9.9 4l21 16.3c17.7 13.9 44.6 0.3 90.8 21 15.8 7.2 22.2 39.4 9.1 54.9-3.9 4.7-9 7.1-14.9 7.2 0.1-0.8 0.1-1.6 0.1-2.4 0-25.1-20.4-45.5-45.4-45.5-25.1 0-45.5 20.4-45.5 45.5 0 0.8 0 1.6 0.1 2.4h-89.9c0.1-0.8 0.1-1.6 0.1-2.4 0-25.1-20.4-45.5-45.5-45.5-25.1 0-45.5 20.4-45.5 45.5 0 0.8 0 1.6 0.1 2.4h-1.7c-13.8 0-25.1-11.3-25.1-25.6-0.2-9.6 0.9-35.3 15.3-68.3zm135.8 33.1h49.7c1.3 0 2.7-0.5 3.6-1.5l6.3-6.3c-5.1-2.9-5.8-4.1-26.9-20.2-0.9-0.8-2-1.2-3.2-1.3-9.4-1.1-19.3-2.1-29.5-2.8zm-53-12.2c2.8 2.3-0.3-0.4 10.8 10.7 0.9 1 2.3 1.5 3.6 1.5h25.3v-32.9c-12.6-0.7-25.8-1.1-39.7-1.1zm-13.4-4.3v-17.5c-16 0.1-32.8 0.6-50.6 1.5-2.9 0.2-5.5 2-6.7 4.7-1.7 3.9-3.2 7.7-4.5 11.3z" />
+                                                    </g>
+                                                    <path id="Layer" class="s0" d="m73 138.1c-17.8 0-32.1-14.3-32.1-32.1 0-17.8 14.3-32.1 32.1-32.1 17.8 0 32.1 14.3 32.1 32.1 0 17.8-14.3 32.1-32.1 32.1z" />
+                                                    <path id="Layer" class="s0" d="m221.5 106c0 17.7 14.4 32.1 32.1 32.1 17.7 0 32.1-14.4 32.1-32.1 0-17.7-14.4-32.1-32.1-32.1-17.7-0.1-32.1 14.4-32.1 32.1z" />
+                                                </g>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                                <!-- truck icon -->
+                                            <?php if ($tyre_type == 'Truck Van') : ?>
+                                                                <?php
+                    $hasSuggestedSize = $this->helper('Hdweb\Tyrefinder\Helper\Data')
+                        ->hasSuggestedSize($width, $height, $rim);
+                    ?>
+                                    <!-- if truck -->
+                                    <div class="mx-auto" x-data="buyTyreSearchModal()">
+                                    <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $width; ?>','<?php echo $height; ?>','<?php echo $rim; ?>','<?php echo $product->getName(); ?>', <?= $hasSuggestedSize ? 'true' : 'false' ?>)">
+                                            <svg  class="w-[28px] sm:w-[32px] h-auto sm:h-auto"fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+                        width="100" height="80" viewBox="0 0 612 612" xml:space="preserve">
+                    <g>
+                        <path d="M612,327.56v-21.606c0-10.533-4.213-20.628-11.701-28.037L484.107,162.958c-7.384-7.306-17.352-11.403-27.739-11.403
+                            h-58.622v-21.988c0-16.336-13.243-29.58-29.58-29.58H29.58C13.243,99.987,0,113.23,0,129.567V327.56H612z M432.551,190.303
+                            c0-2.563,2.071-4.634,4.635-4.634h21.396c1.184,0,2.366,0.494,3.253,1.282l91.006,86.865c3.057,2.86,0.986,7.987-3.154,7.987
+                            h-112.5c-2.563,0-4.635-2.07-4.635-4.634V190.303z M612,343.903v65.486c0,16.336-13.243,29.578-29.579,29.578h-31.65
+                            c-5.719-39.242-39.539-69.412-80.357-69.412c-40.721,0-74.54,30.17-80.259,69.412h-160.42
+                            c-5.718-39.242-39.538-69.412-80.259-69.412c-40.721,0-74.541,30.17-80.259,69.412H29.58C13.243,438.968,0,425.726,0,409.39
+                            v-65.486H612z M470.456,389.313c-33.883,0-61.351,27.467-61.351,61.35s27.469,61.35,61.351,61.35s61.35-27.467,61.35-61.35
+                            S504.339,389.313,470.456,389.313z M470.456,481.339c-16.941,0-30.675-13.734-30.675-30.676s13.732-30.674,30.675-30.674
+                            c16.941,0,30.676,13.732,30.676,30.674S487.397,481.339,470.456,481.339z M149.464,389.313c-33.883,0-61.35,27.467-61.35,61.35
+                            s27.468,61.35,61.35,61.35s61.35-27.467,61.35-61.35S183.346,389.313,149.464,389.313z M149.464,481.339
+                            c-16.941,0-30.676-13.734-30.676-30.676s13.734-30.674,30.676-30.674c16.941,0,30.675,13.732,30.675,30.674
+                            S166.405,481.339,149.464,481.339z"/>
+                    </g>
+                    </svg>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+            </div>
+
+            <?php if($warranty != ''): ?>
+                <div class="warrantry-text [direction:ltr] relative mt-auto flex items-center border-t border-[#eee] justify-center bottom-0  h-[2rem] md:hidden">
+                  <span class="uppercase text-black font-medium block relative text-xs"><?php echo __($warranty); ?></span>
+               </div>
+            <?php endif; ?>
+
+            <?php if ($showAddToWishlist): ?>
+                <div class="hidden wishlist-btn group absolute bottom-[6.3rem] md:bottom-[8rem] absolute w-6 lg:w-9 bg-theme-yellow rounded-tl-[30px] rounded-bl-[30px] right-0 hover:bg-theme-blue transition-all duration-300 ease-in-out">
+                <?= $block->getChildBlock('wishlist')->setData('product', $product)->toHtml() ?>
+                   </div>
+            <?php endif; ?>
+
+
+            <?php if ($showAddToCompare): ?>
+                <div class="hidden compare-btn group absolute bottom-[9rem] md:bottom-[11rem] absolute w-6 lg:w-9 bg-theme-yellow rounded-tl-[30px] rounded-bl-[30px] right-0 hover:bg-theme-blue transition-all duration-300 ease-in-out">
+             <button x-data="initCompareOnProductList()"
+                      x-defer="intersect"
+                        @click.prevent="addToCompare(<?= (int)$productId ?>)"
+                       aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Compare') . ' ' . $productName) ?>"
+                        type="button"
+                       class="rounded-full w-6 h-5 lg:w-9 lg:h-8 bg-gray-200 p-0 border-0 inline-flex shrink-0 items-center justify-center bg-theme-yellow group-hover:bg-theme-blue  transition-all duration-300 ease-in-out"
+                        data-addto="compare">
+                    <?= $heroicons->scaleHtml("w-4 h-4 lg:w-5 lg:h-5 group-hover:text-white text-black transition-all duration-300 ease-in-out", 25, 25, ['aria-hidden' => 'true']) ?>
+              </button>
+                  </div>                 
+            <?php endif; ?>
+
+
+            <?php if ($addToBlock = $block->getChildBlock('addto')): ?>
+                <?= $addToBlock->setProduct($product)->getChildHtml() ?>
+            <?php endif; ?>
+    </div>
+
+
+    <div class="product-right <?= $isSliderContext ? 'w-full border-t' : "border-l w-3/5 md:w-full md:border-l-0 md:border-t" ?> border-[#eee] flex">
+        <div class="product-info relative flex flex-col grow <?= $isSliderContext ? 'w-full' : 'md:w-4/6' ?>">
+           <div class="item-info h-full">       
+                <div class="grideproduct-name h-full md:flex md:flex-col">
+                    <div class="product-name-brand flex gap-0 md:gap-1 md:gap-3 px-2 sm:px-3 pt-1 pb-0 md:pb-1 items-center flex-col md:flex-row">
+                      <div class="product-brand w-full md:w-1/2">
+                       <div class="w-max flex items-center h-[30px] md:h-auto my-1 md:my-0">
+                        <?php if ($brand) : ?>
+                            <?php if ($brandDetails) : ?>
+                                    <a class="inline-block font-medium text-[0.9rem]" href="<?php echo $brandUrl; ?>">
+                                        <?php if ($brandImage) : ?>
+                                            <img loading="lazy" class="h-auto w-auto object-contain max-w-[110px] md:max-w-[120px]" src="<?php echo $brandImage; ?>" loading="lazy" alt="<?php echo __($brand_title); ?>" title="<?php echo __($brand_title); ?>" />
+                                        <?php else: ?>
+                                            <span><?php echo __($brand_title); ?></span>
+                                        <?php endif; ?>
+                                    </a>
+                            <?php else: ?>
+                                <?php if (isset($selectedBrandInProduct)) : ?>
+                                    <div class="mt-2 mb-1 items-center justify-center text-primary font-semibold text-lg text-center flex">
+                                        <a href="<?php echo $brandUrl; ?>">
+                                            <span><?php echo __($selectedBrandInProduct); ?></span>
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                     </div>
+                    </div>
+                    <div class="product-name w-full md:w-1/2">
+                        <div class="product-name border-border-color [display:-webkit-box] [-webkit-line-clamp:1] [-webkit-box-orient:vertical] overflow-hidden flex text-primary font-semibold text-[0.9rem] h-auto rounded-tr-xl sm:bg-white">
+                            <a
+                                class="product-item-link text-theme-dark hover:text-theme-blue transition-all duration-300 ease-in-out [direction:ltr]"
+                                href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+                                title="<?php echo $pattern . ' ' . $oemMarking; ?>"
+                                :id="`slide-desc-<?= $escaper->escapeHtmlAttr($product->getId()) ?>-${$id('slider-id')}`">
+                                <?php echo $pattern . ' ' . $oemMarking; ?>
+                            </a>
+                        </div>
+
+                        <div class="flex flex-wrap md:flex-nowrap gap-x-[5px] items-center md:h-auto mb-0 md:mb-0.5">
+                        <?php if ($partsCategory == 'Battery') : ?>
+                            <div class="product-name border-border-color [display:-webkit-box] [-webkit-line-clamp:1] [-webkit-box-orient:vertical] overflow-hidden flex text-primary font-semibold text-[0.9rem] h-auto rounded-tr-xl sm:bg-white mb-[3px]">
+                                <a
+                                    class="leading-[1.4] product-item-link text-theme-dark hover:text-theme-blue transition-all duration-300 ease-in-out [direction:ltr]"
+                                    href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+                                    title="<?php echo $productName; ?>"
+                                >
+                                    <?php echo $productName; ?>
+                                </a>
+                            </div>
+                        <?php endif; ?>
+
+
+                        <?php if($ev): ?>     
+                            <img src="<?php echo $mediaUrl.'klever/icons/ev-icon.png'; ?>" title="<?php echo __('EV Compatible'); ?>" alt="<?php echo __('EV Compatible'); ?>" class="lazy w-auto max-h-4 2xl:max-h-6">
+                        <?php endif; ?>
+
+                        
+                        <?php if($tyreSize): ?>
+                            <p class="tyre-size whitespace-nowrap w-auto max-w-full sm:text-left mr-1 md:mr-0 text-[0.9rem] [direction:ltr]" href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>""><?php echo $tyreSize." ".$loadIndex; ?></p>
+                        <?php endif; ?>
+
+                        <div class="product-year md:hidden">
+                                <?php if ($year) : ?>
+                                    <span class="block text-sm"><?php echo "" . $year . ""; ?></span>
+                                <?php endif; ?>
+                        </div>
+
+                        <div class="year-run flex items-center md:hidden">
+                                    <div class="flex mr-1 min-h-auto md:min-h-[22px] lg:min-h-[24px]">
+                                        <?php if ($origin) : ?>
+                                            <span class="mr-1 block text-xs font-semibold"><?php echo __($origin); ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                        <?php if ($runflat) : ?>
+                                            <span class="leading-tight">
+                                                <img class="max-w-[58px]" src="<?php echo $mediaUrl . 'klever/icons/run-flat.svg'; ?>" alt="Run Flat" />
+                                            </span>
+                                        <?php endif; ?>
+                                        </div> 
+
+                    </div>
+
+                    </div>
+
+
+                    
+
+                   
+
+                                                           
+                                        
+                
+                    </div>
+
+                    <?php /*
+                    <?php if (!$hideRatingSummary): ?>
+                    <div class="py-1 mx-auto hidden md:mx-0 md:w-auto">
+                        <?= $block->getReviewsSummaryHtml($product, 'short') ?>
+                    </div>
+                    <?php endif; ?>
+                    */ ?>
+
+                    <!-- gride-product -->
+                    <div class="car-logo px-2 sm:px-3 py-2 border-t border-b border-[#eee] min-h-auto md:min-h-[33px] flex items-center justify-between hidden md:flex">
+
+
+
+                                <?php if ($tyre_type == 'Car') : ?>
+                                                    <?php
+                    $hasSuggestedSize = $this->helper('Hdweb\Tyrefinder\Helper\Data')
+                        ->hasSuggestedSize($width, $height, $rim);
+                    ?>
+                                    <div class="mr-auto" x-data="buyTyreSearchModal()">
+                                    <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $width; ?>','<?php echo $height; ?>','<?php echo $rim; ?>','<?php echo $product->getName(); ?>', <?= $hasSuggestedSize ? 'true' : 'false' ?>)">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 47.747 16.977" class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]">
+                                                <g id="Group_243" data-name="Group 243" transform="translate(0)">
+                                                    <path id="Path_411" data-name="Path 411" d="M-122.615,146.25a14.294,14.294,0,0,0,.9,1.807,1.609,1.609,0,0,0,.935.518c1.073.245,2.161.424,3.313.642a4.4,4.4,0,0,1,2.574-3.96,4.107,4.107,0,0,1,2.686-.294,4.432,4.432,0,0,1,3.413,4.935l21.435.432a4.315,4.315,0,0,1,1.162-4.224,4.061,4.061,0,0,1,3.118-1.236,4.36,4.36,0,0,1,4.163,5.139c.687-.113,1.356-.194,2.011-.338,1.472-.323,1.693-.616,1.987-2.158a5.746,5.746,0,0,0-.342-2.547,2.327,2.327,0,0,0-1.6-1.7,39.349,39.349,0,0,0-7.593-2.017,16.658,16.658,0,0,1-3.88-1.389c-1.793-.78-3.566-1.607-5.351-2.407a21.266,21.266,0,0,0-9.744-1.617,33.618,33.618,0,0,0-11.928,2.885,20.127,20.127,0,0,1-5.156,1.381c-1.089.153-1.255.357-1.256,1.444,0,.358-.012.716,0,1.073a2.047,2.047,0,0,1-.454,1.677,2.842,2.842,0,0,0-.391.931Zm30.034-4.853a.274.274,0,0,1-.12.014c-2.485-.069-4.97-.144-7.455-.2-.27-.007-.33-.139-.381-.359-.23-.982-.476-1.96-.714-2.939-.071-.291-.135-.584-.222-.962,3.475.284,6.78.76,9.465,2.868Zm-9.58-.407a.745.745,0,0,1-.153.049c-2.3-.068-4.594-.135-6.89-.218a.451.451,0,0,1-.317-.243,1.572,1.572,0,0,1,.174-1.881,8.174,8.174,0,0,0,.455-.7.938.938,0,0,1,.418-.325,17.885,17.885,0,0,1,5.381-.687.411.411,0,0,1,.315.232C-102.558,138.468-102.363,139.723-102.161,140.989Zm-11.361-.195a1.036,1.036,0,0,1,.612-1.247c.563-.291,1.137-.561,1.714-.823.506-.23,1.022-.436,1.534-.653-.557.9-1.154,1.725-1.762,2.543a.451.451,0,0,1-.3.172C-112.325,140.8-112.928,140.794-113.522,140.794Z" transform="translate(122.615 -135.806)" />
+                                                    <path id="Path_412" data-name="Path 412" d="M512.565,314.14a3.6,3.6,0,1,0,3.6,3.624A3.629,3.629,0,0,0,512.565,314.14Zm.312,1.314,1.1.473c-.269.253-.451.444-.653.61-.235.192-.407.1-.443-.176A8.107,8.107,0,0,1,512.877,315.454Zm0,4.553c0-.385-.021-.647.006-.906s.2-.346.412-.185.426.372.718.632Zm-2.582-2.585.5-1.186c.23.3.4.5.543.717.06.089.121.236.086.313a.392.392,0,0,1-.29.149C510.886,317.437,510.64,317.422,510.295,317.422Zm.463,1.772-.445-1.135c.352,0,.615-.021.874.005.3.03.368.2.177.436C511.2,318.705,511.02,318.9,510.757,319.194Zm4.1-1.678-1.151-.247c.2-.267.4-.534.6-.8.012-.015.057,0,.144-.009Zm-.416,1.52-.189.072c-.151-.194-.314-.38-.449-.584a.47.47,0,0,1-.082-.321c.014-.063.158-.13.248-.137.259-.018.52-.006.861-.006Zm-2.194-3.58a7.38,7.38,0,0,1-.008.906c-.039.276-.2.369-.445.165-.2-.165-.407-.324-.714-.568Zm-1.139,4.083c.3-.255.48-.424.679-.567a.428.428,0,0,1,.309-.082c.067.017.138.154.145.242.019.255.007.513.007.871Z" transform="translate(-503.07 -304.356)" />
+                                                    <path id="Path_413" data-name="Path 413" d="M-32.965,314.14a3.616,3.616,0,0,0-3.619,3.614,3.631,3.631,0,0,0,3.609,3.579,3.607,3.607,0,0,0,3.585-3.545A3.6,3.6,0,0,0-32.965,314.14Zm.3,1.326,1.144.474c-.3.256-.5.447-.72.612s-.389.1-.418-.169S-32.665,315.835-32.665,315.466Zm1.5.812.453,1.144c-.355,0-.617.017-.876,0-.306-.025-.363-.2-.185-.434C-31.619,316.775-31.436,316.585-31.17,316.278Zm.472,1.782-.484,1.09c-.26-.282-.452-.465-.612-.673s-.1-.386.177-.413S-31.093,318.06-30.7,318.06Zm-2.6-2.6c0,.355.012.614-.007.871-.006.088-.074.225-.14.244a.419.419,0,0,1-.314-.071c-.208-.15-.4-.328-.682-.57Zm-1.483.8c.25.3.428.492.58.7a.415.415,0,0,1,.067.313c-.019.066-.156.131-.244.138-.258.018-.518.007-.863.007Zm.011,2.963-.474-1.164c.356,0,.619-.018.878,0,.287.025.382.18.194.428C-34.341,318.712-34.523,318.919-34.774,319.224Zm2.107.794c0-.357-.014-.6.007-.846a.379.379,0,0,1,.15-.279.394.394,0,0,1,.308.076c.213.145.409.314.708.55Zm-1.762-.474c.29-.253.468-.426.666-.572a.429.429,0,0,1,.312-.081c.065.016.136.154.142.242.019.258.007.519.007.871Z" transform="translate(72.415 -304.356)" />
+                                                </g>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($tyre_type == 'SUV') : ?>
+                                                    <?php
+                    $hasSuggestedSize = $this->helper('Hdweb\Tyrefinder\Helper\Data')
+                        ->hasSuggestedSize($width, $height, $rim);
+                    ?>
+                                    <!-- if suv car -->
+                                    <div class="mr-auto" x-data="buyTyreSearchModal()">
+                                    <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $width; ?>','<?php echo $height; ?>','<?php echo $rim; ?>','<?php echo $product->getName(); ?>', <?= $hasSuggestedSize ? 'true' : 'false' ?>)">
+                                            <svg version="1.2" xmlns="http://www.w3.org/2000/svg" width="47.747" height="16.977" viewBox="0 0 321 138" class="w-[28px] sm:w-[36px] h-[10px] sm:h-[16px]">
+                                                <title>suv-svg</title>
+                                                
+                                                <g id="Layer">
+                                                    <g id="Layer">
+                                                        <path id="Layer" fill-rule="evenodd" class="s0" d="m16.1 14.5c3.2-7.4 10.4-12.3 18.3-12.7 58.5-2.9 107.2-1.9 148.7 3.2 3.6 0.4 7 1.8 9.9 4l21 16.3c17.7 13.9 44.6 0.3 90.8 21 15.8 7.2 22.2 39.4 9.1 54.9-3.9 4.7-9 7.1-14.9 7.2 0.1-0.8 0.1-1.6 0.1-2.4 0-25.1-20.4-45.5-45.4-45.5-25.1 0-45.5 20.4-45.5 45.5 0 0.8 0 1.6 0.1 2.4h-89.9c0.1-0.8 0.1-1.6 0.1-2.4 0-25.1-20.4-45.5-45.5-45.5-25.1 0-45.5 20.4-45.5 45.5 0 0.8 0 1.6 0.1 2.4h-1.7c-13.8 0-25.1-11.3-25.1-25.6-0.2-9.6 0.9-35.3 15.3-68.3zm135.8 33.1h49.7c1.3 0 2.7-0.5 3.6-1.5l6.3-6.3c-5.1-2.9-5.8-4.1-26.9-20.2-0.9-0.8-2-1.2-3.2-1.3-9.4-1.1-19.3-2.1-29.5-2.8zm-53-12.2c2.8 2.3-0.3-0.4 10.8 10.7 0.9 1 2.3 1.5 3.6 1.5h25.3v-32.9c-12.6-0.7-25.8-1.1-39.7-1.1zm-13.4-4.3v-17.5c-16 0.1-32.8 0.6-50.6 1.5-2.9 0.2-5.5 2-6.7 4.7-1.7 3.9-3.2 7.7-4.5 11.3z" />
+                                                    </g>
+                                                    <path id="Layer" class="s0" d="m73 138.1c-17.8 0-32.1-14.3-32.1-32.1 0-17.8 14.3-32.1 32.1-32.1 17.8 0 32.1 14.3 32.1 32.1 0 17.8-14.3 32.1-32.1 32.1z" />
+                                                    <path id="Layer" class="s0" d="m221.5 106c0 17.7 14.4 32.1 32.1 32.1 17.7 0 32.1-14.4 32.1-32.1 0-17.7-14.4-32.1-32.1-32.1-17.7-0.1-32.1 14.4-32.1 32.1z" />
+                                                </g>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                                <!-- truck icon -->
+                                            <?php if ($tyre_type == 'Truck Van') : ?>
+                                                                <?php
+                    $hasSuggestedSize = $this->helper('Hdweb\Tyrefinder\Helper\Data')
+                        ->hasSuggestedSize($width, $height, $rim);
+                    ?>
+                                    <!-- if truck -->
+                                    <div class="mr-auto" x-data="buyTyreSearchModal()">
+                                    <span class="cursor-pointer" @click="openbuyTyreSearchModal('<?php echo $width; ?>','<?php echo $height; ?>','<?php echo $rim; ?>','<?php echo $product->getName(); ?>', <?= $hasSuggestedSize ? 'true' : 'false' ?>)">
+                                            <svg  class="w-[28px] sm:w-[32px] h-auto sm:h-auto"fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+                        width="100" height="80" viewBox="0 0 612 612" xml:space="preserve">
+                    <g>
+                        <path d="M612,327.56v-21.606c0-10.533-4.213-20.628-11.701-28.037L484.107,162.958c-7.384-7.306-17.352-11.403-27.739-11.403
+                            h-58.622v-21.988c0-16.336-13.243-29.58-29.58-29.58H29.58C13.243,99.987,0,113.23,0,129.567V327.56H612z M432.551,190.303
+                            c0-2.563,2.071-4.634,4.635-4.634h21.396c1.184,0,2.366,0.494,3.253,1.282l91.006,86.865c3.057,2.86,0.986,7.987-3.154,7.987
+                            h-112.5c-2.563,0-4.635-2.07-4.635-4.634V190.303z M612,343.903v65.486c0,16.336-13.243,29.578-29.579,29.578h-31.65
+                            c-5.719-39.242-39.539-69.412-80.357-69.412c-40.721,0-74.54,30.17-80.259,69.412h-160.42
+                            c-5.718-39.242-39.538-69.412-80.259-69.412c-40.721,0-74.541,30.17-80.259,69.412H29.58C13.243,438.968,0,425.726,0,409.39
+                            v-65.486H612z M470.456,389.313c-33.883,0-61.351,27.467-61.351,61.35s27.469,61.35,61.351,61.35s61.35-27.467,61.35-61.35
+                            S504.339,389.313,470.456,389.313z M470.456,481.339c-16.941,0-30.675-13.734-30.675-30.676s13.732-30.674,30.675-30.674
+                            c16.941,0,30.676,13.732,30.676,30.674S487.397,481.339,470.456,481.339z M149.464,389.313c-33.883,0-61.35,27.467-61.35,61.35
+                            s27.468,61.35,61.35,61.35s61.35-27.467,61.35-61.35S183.346,389.313,149.464,389.313z M149.464,481.339
+                            c-16.941,0-30.676-13.734-30.676-30.676s13.734-30.674,30.676-30.674c16.941,0,30.675,13.732,30.675,30.674
+                            S166.405,481.339,149.464,481.339z"/>
+                    </g>
+                    </svg>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                    <!-- truck icon -->
+                                <?php /*
+                                <div class="brand-images-small flex items-center  ml-2 gap-x-[0.5rem]">
+                                    <?php if ($oem_tyres) : ?>
+                                        <?php $oem_tyresArray = explode(', ', $oem_tyres); ?>
+                                        <?php foreach ($oem_tyresArray as $oem_tyresData) : ?>
+                                            <?php 
+                                                $oem_tyresData = str_replace(" ", "-", strtolower($oem_tyresData));
+                                                $oemTyresImg = $mediaUrl . 'cars-logo/' . $oem_tyresData . '.png';
+                                            ?>
+                                            <img src="<?php echo $oemTyresImg; ?>" title="<?php echo $oem_tyresData; ?>" alt="<?php echo $oem_tyresData; ?>" class="car-brand-img max-h-3 sm:max-h-7 max-w-5 sm:max-w-[28px] lazy">
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                    <?php if ($runflat) : ?>
+                                        <span class="leading-tight">
+                                            <img class="max-w-[60px] 2xl:max-w-[64px]" src="<?php echo $mediaUrl . 'klever/icons/run-flat.svg'; ?>" alt="Run Flat" />
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                                */ ?>
+                                <?php if ($runflat) : ?>
+                                            <span class="leading-tight">
+                                                <img class="max-w-[58px]" src="<?php echo $mediaUrl . 'klever/icons/run-flat.svg'; ?>" alt="Run Flat" />
+                                            </span>
+                                        <?php endif; ?>
+
+
+
+                                <div class="text-right ml-auto w-1/3 sm:w-auto">
+                                    <?php if ($origin) : ?>
+                                        <span class="block text-xs font-medium "><?php echo __($origin); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                    <!-- gride-product -->
+
+                    <div class="product-bottom px-2 md:px-3 pt-0 pb-2 md:pt-2 md:pb-2 h-auto md:h-full content-end">
+                        <div class="replacement text-[0.625rem] sm:text-xs">
+                                    <?php if ($partsCategory == 'Battery') : ?>
+                                        <span class="cursor-pointer text-gray-500 uppercase tracking-wide" onclick="OpenBatteryFittedPriceModal()"><?php echo __('Fully Fitted Price'); ?></span>
+                                    <?php else : ?>
+                                        <span class="cursor-pointer text-gray-500 uppercase tracking-wide" onclick="OpenFittedPriceRelated('<?php echo $partsCategory; ?>')"><?php echo $priceIncludedText; ?></span>
+                                    <?php endif; ?>
+                        </div>
+                        <?php if ($product->getData('tabby_payment') == 1) : ?>
+                        <div class="flex items-center gap-2 my-1">
+                            <span class="text-[0.688] text-gray-600"><?php echo __('Pay In Installments'); ?></span>
+                            <img src="/media/tabby-tamara-full.webp" alt="Tabby & Tamara" style="height:20px; width:auto;">
+                        </div>
+                        <?php endif; ?>
+
+                     <div class="flex gap-1 flex-col md:flex-row">
+                         <div class="product-price-details flex-1">
+                               
+                            <?php if ($product->isAvailable() && !$hideDetails): ?>
+                                <?= $block->getProductDetailsHtml($product) ?>
+                            <?php endif; ?>
+                            <?php if ($showDescription): ?>
+                            <div class="mt-2 mb-[6px] items-center justify-center text-primary md:text-left hidden">
+                                <?= /* @noEscape */ $productViewModel->getShortDescriptionForProduct($product) ?>
+                            </div>
+                            <?php endif; ?>
+                            <?php if ($isProductGroupedOrBundle): ?>
+                                <span class="sr-only">
+                                    <?= $escaper->escapeHtml(__('The price depends on the options chosen on the product page')) ?>
+                                </span>
+                            <?php endif; ?>
+                            <div class="text-theme-dark flex items-end leading-none mt-1 h-[19.2px]"
+                                x-data="initPriceBox()"
+                                x-defer="intersect"
+                                @update-prices-<?= (int)$productId ?>.window="updatePrice($event.detail);"
+                            >
+                                <?= /* @noEscape */ $productListItemViewModel->getProductPriceHtml($product) ?>
+                            <?php 
+                            /*
+                            $regularPrice = (float) $product->getPrice();
+                            $finalPrice   = (float) $product->getFinalPrice();
+                            $customPriceHtml = '<span class="price">'
+                                . '<span class="currency-dirham no-underline"></span>&nbsp;'
+                                . ($regularPrice > $finalPrice ? '<span class="line-through">' . number_format($regularPrice, 2) . '</span> ' : '')
+                                . number_format($finalPrice, 2)
+                                . '</span>';
+                            echo $customPriceHtml;
+                            */
+                            ?>
+                            <?php /*
+                            <span class="text-xs 2xl:text-sm ml-1 2xl:ml-2 whitespace-nowrap"><?php if ($partsCategory != 'Battery') : ?>/ tyre<?php else: ?>/ item<?php endif; ?></span>
+                            */ ?>
+                            </div>
+                            <?php if ($partsCategory != 'Battery') : ?>
+                            <div class="relative top-[3px] md:top-0 set-price-box id-<?php echo $product->getId(); ?>">
+                                    <div class="set4-price">
+                                        <span class="set4 set-of"><?php echo __('Set of 4:'); ?></span>
+                                        <span class="aed currency price"><?php echo $currency; ?> </span>
+                                        <span class="setfourprice set-of-price"><?php echo $set4price; ?></span>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                    </div>
+                    <div class="flex items-end gap-x-1.5 justify-end w-auto mb-1">
+                    <?php if ($product->isSaleable() && $stockQty > 0): ?>
+                    <?php if ($isProductGroupedOrBundle): ?>
+                    <a
+                        href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+                        class="w-auto btn btn-primary justify-center text-sm min-h-10 mr-auto md:mr-0"
+                        title="<?= $escaper->escapeHtmlAttr(__('Configure %1 on the product page', $productName)) ?>"
+                        aria-label="<?= $escaper->escapeHtmlAttr(__('Configure %1 on the product page', $productName)) ?>"
+                    >
+                        <?= $heroicons->pencilAltHtml('', 24, 24, ['aria-hidden' => 'true']) ?>
+                        <span class="inline">
+                            <?= $escaper->escapeHtml(__('Configure')) ?>
+                        </span>
+                    </a>
+                    <?php else: ?>
+                    <select class="form-select cursor-pointer text-sm" name="qty" onchange="changePrice(
+                    this,
+                    <?php echo $unitRegularPrice; ?>,
+                    <?php echo $unitFinalPrice; ?>,
+                    '<?php echo $partsCategory; ?>',
+                    '<?php echo $isOfferProduct; ?>',
+                    '<?php echo $discountAmount; ?>',
+                    '<?php echo $discountQty; ?>',
+                    '<?php echo $productId; ?>'
+                    )">
+                        <?php for ($cnt = 1; $cnt <= $stockQty; $cnt++) : ?>
+                            <?php if ($partsCategory == 'Battery') : ?>
+                                <option value=<?php echo $cnt; ?> <?php if ($cnt == 1) : ?> selected <?php endif ?>><?php echo $cnt; ?> </option>
+                            <?php elseif ($partsCategory == 'Tyres') : ?>
+                                <option value=<?php echo $cnt; ?> <?php if ($cnt == 4) : ?> selected <?php endif ?>><?php echo $cnt; ?> </option>
+                            <?php else : ?>
+                                <option value=<?php echo $cnt; ?> <?php if ($cnt == 1) : ?> selected <?php endif ?>><?php echo $cnt; ?> </option>
+                            <?php endif; ?>
+                        <?php endfor; ?>
+                    </select>
+                    <button
+                        class="w-full md:w-auto inline-flex items-center justify-center gap-1 px-2 py-1 text-white text-sm font-normal rounded-[6px] hover:bg-theme-blue bg-black transition-colors duration-300 h-[34px]"
+                        title="<?= $escaper->escapeHtmlAttr(__('Add to Cart') . ' ' . $productName) ?>"
+                        aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Cart') . ' ' . $productName) ?>"
+                        data-addto="cart"
+                    >
+                        <?= $heroicons->shoppingCartHtml('', 16, 16, ['aria-hidden' => 'true']) ?>
+                        <span class="hidden md:inline"><?= $escaper->escapeHtml(__('Add')) ?></span>
+                        <span class="inline md:hidden"><?= $escaper->escapeHtml(__('Add To Cart')) ?></span>
+                    </button>
+                    <?php endif; ?>
+                <?php else: ?>
+                <div class="w-full">
+                    <?= $block->getChildBlock('stockstatus')->setData('product', $product)->toHtml() ?>
+                </div>
+                <?php endif; ?>
+            </div>
+                     </div>
+
+
+                        
+                    </div>
+            </div>
+
+
+
+            <?php /*
+            <!-- add to cart -->
+            <div class="rounded-br-[10px] border-t border-[#eee] mt-auto py-2 px-2 2xl:px-2 flex items-center gap-y-4 gap-x-2 justify-between
+                md:justify-center">
+                <?php if ($product->isSaleable() && $stockQty > 0): ?>
+                    <?php if ($isProductGroupedOrBundle): ?>
+                    <a
+                        href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+                        class="w-auto btn btn-primary justify-center text-sm min-h-10 mr-auto md:mr-0"
+                        title="<?= $escaper->escapeHtmlAttr(__('Configure %1 on the product page', $productName)) ?>"
+                        aria-label="<?= $escaper->escapeHtmlAttr(__('Configure %1 on the product page', $productName)) ?>"
+                    >
+                        <?= $heroicons->pencilAltHtml('', 24, 24, ['aria-hidden' => 'true']) ?>
+                        <span class="inline">
+                            <?= $escaper->escapeHtml(__('Configure')) ?>
+                        </span>
+                    </a>
+                    <?php else: ?>
+                    <select class="form-select w-auto h-8 cursor-pointer text-sm 2xl:text-base pr-7 2xl:pr-8" name="qty" onchange="changePrice(
+                    this,
+                    <?php echo $unitRegularPrice; ?>,
+                    <?php echo $unitFinalPrice; ?>,
+                    '<?php echo $partsCategory; ?>',
+                    '<?php echo $isOfferProduct; ?>',
+                    '<?php echo $discountAmount; ?>',
+                    '<?php echo $discountQty; ?>',
+                    '<?php echo $productId; ?>'
+                    )">
+                        <?php for ($cnt = 1; $cnt <= $stockQty; $cnt++) : ?>
+                            <?php if ($partsCategory == 'Battery') : ?>
+                                <option value=<?php echo $cnt; ?> <?php if ($cnt == 1) : ?> selected <?php endif ?>><?php echo $cnt; ?> </option>
+                            <?php elseif ($partsCategory == 'Tyres') : ?>
+                                <option value=<?php echo $cnt; ?> <?php if ($cnt == 4) : ?> selected <?php endif ?>><?php echo $cnt; ?> </option>
+                            <?php else : ?>
+                                <option value=<?php echo $cnt; ?> <?php if ($cnt == 1) : ?> selected <?php endif ?>><?php echo $cnt; ?> </option>
+                            <?php endif; ?>
+                        <?php endfor; ?>
+                    </select>
+                    <button
+                        class="btn btn-secondary justify-center text-xs sm:text-sm lg:text-xs 2xl:text-sm min-h-9 sm:min-h-10 py-1 addcart px-4 whitespace-nowrap w-full md:w-auto"
+                        title="<?= $escaper->escapeHtmlAttr(__('Add to Cart') . ' ' . $productName) ?>"
+                        aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Cart') . ' ' . $productName) ?>"
+                        data-addto="cart"
+                    >
+                        <?= $heroicons->shoppingCartHtml('w-5', 24, 24, ['aria-hidden' => 'true']) ?>
+                        <span class="inline">
+                            <?= $escaper->escapeHtml(__('Add to Cart')) ?>
+                        </span>
+                    </button>
+                    <?php endif; ?>
+                <?php else: ?>
+                <div class="w-full">
+                    <?= $block->getChildBlock('stockstatus')->setData('product', $product)->toHtml() ?>
+                </div>
+                <?php endif; ?>
+            </div>
+            <!-- add to cart -->
+            */ ?>
+
+    </div>
+ </div>
+ </div>
+<?php endif; ?>
+<!-- ========== END TYRE/OTHER PRODUCT CARD ========== -->
+<?php if ($product->isSaleable()): ?>
+</form>
+<?php else: ?>
+</div>
+<?php endif; ?>
+</div><!-- /quickview wrapper -->
+
+<?php
+// Skip fitment modals when rendering inside a product slider
+// The first item in a shared block may not have item_relation_type set,
+// so we also check if we're on a PDP page via full action name
+$fullActionName = $block->getRequest()->getFullActionName();
+$isOnPdpPage = ($fullActionName === 'catalog_product_view');
+?>
+<?php if (!$isOnPdpPage): ?>
+
+
+    
+<div class="fitment-bar-wrapper">
+<div id="fully-fitted-price-related"
+    class="fitment-drawer-panel fixed inset-x-0 bottom-0 z-[9999] overflow-hidden bg-white transform translate-y-full transition-transform ease-out duration-300">
+    <div class="container-theme w-full py-4 lg:py-6 h-full flex flex-col overflow-hidden">
+
+        <div class="tyre-sidebar-content-list-related hidden flex flex-col flex-1 overflow-hidden">
+            <div class="flex-shrink-0 pb-4 mb-3 border-b border-border-color relative">
+                <h3 class="text-lg md:text-2xl font-extrabold text-gray-900">
+                    
+                <?php echo __('Fully Fitted') ?> <span class="text-theme-blue"> <?php echo __('Price per tyre') ?></span>
+                </h3>
+                <button type="button" onclick="CLoseFittedPriceRelated()"
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:text-gray-800 transition-all absolute top-0 right-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto drawer-scrollbar content-center">
+            <div class="bg-white">
+                <p
+                    class="text-base md:text-lg mb-3 font-medium">
+                    <?php echo __('There are NO EXTRAS to pay on the day of your visit - in relation to the tyre fitting.') ?>
+                </p>
+                <p class="uppercase mb-3"><?php echo __('The following is included in the price,') ?></p>
+                <ul class="flex flex-col gap-3">
+                    <li class="flex items-start gap-2">
+                        <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                        <?php echo __('VAT') ?>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                        <?php echo __('Fitting (Bead lock wheel etc. excluded)') ?>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                        <?php echo __('Balancing') ?>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                        <?php echo __('New rubber valve (standard valve only)') ?>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                        <?php echo __('Delivery to installer') ?>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                        <?php echo __('Disposal of old tyres') ?>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                        <?php echo __('On purchase of 4 tyres, 1 FREE scheduled instance of tyre rotation every 10,000kms per year') ?>
+                    </li>
+                </ul>
+            </div>
+            </div>
+        </div>
+
+        <div class="battery-sidebar-content hidden flex flex-col flex-1 overflow-hidden">
+            <div class="flex-shrink-0 pb-4 mb-3 border-b border-border-color relative">
+                <h3 class="text-lg md:text-2xl font-extrabold text-gray-900">
+                   <?php echo __('Price Incl.') ?>  <span class="text-theme-blue"><?php echo __('Replacement per battery') ?></span>
+                </h3>
+                <button type="button" onclick="CLoseFittedPrice()"
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:text-gray-800 transition-all absolute top-0 right-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto drawer-scrollbar">
+            <div class="bg-white py-3">
+                <p class="text-body text-sm md:text-sm lg:text-base tracking-ls10 mb-4 lg:mb-4 leading-[1.5] font-medium">
+                    <?php echo __('There are NO EXTRAS to pay on the day of your visit - in relation to the battery fitting.') ?></p>
+                <h6 class="font-body text-black text-sm md:text-base lg:text-lg font-semibold uppercase mb-3"><?php echo __('The following is included in the price:') ?></h6>
+                <ul class="text-sm md:text-sm lg:text-base text-graydark3 leading-none block list-icon">
+                    <li class="flex items-start gap-2">
+                        <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                        <?php echo __('VAT') ?>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                        <?php echo __('Fitting') ?>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                        <?php echo __('Delivery to installer') ?>
+                    </li>
+                </ul>
+            </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div id="fully-fitted-price-overlay-related" onclick="CLoseFittedPriceRelated()"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-all ease-out duration-300">
+</div>
+</div>
+
+<script>
+function OpenFittedPriceRelated(partsCategory) {
+    console.log("Opening fitted price for category:", partsCategory);
+    document.getElementById("fully-fitted-price-related").classList.remove("translate-y-full");
+    document.getElementById("fully-fitted-price-overlay-related").classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+  
+        document.querySelector('.tyre-sidebar-content-list-related').classList.remove('hidden');
+        document.querySelector('.battery-sidebar-content').classList.add('hidden');
+  
+}
+
+function CLoseFittedPriceRelated() {
+    document.getElementById("fully-fitted-price-related").classList.add("translate-y-full");
+    document.getElementById("fully-fitted-price-overlay-related").classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+}
+
+document.addEventListener('keydown', function (event) {
+    // Detect ESC key
+    if (event.key === 'Escape' || event.key === 'Esc') {
+        const popup = document.getElementById('fully-fitted-price-related');
+        const overlay = document.getElementById('fully-fitted-price-overlay-related');
+
+        // Close only if popup is open
+        if (popup && !popup.classList.contains('translate-y-full')) {
+            CLoseFittedPriceRelated();
+        }
+
+        // Close battery modal if open
+        const batteryModal = document.getElementById('battery-fitted-price-modal');
+        if (batteryModal && !batteryModal.classList.contains('translate-y-full')) {
+            CloseBatteryFittedPriceModal();
+        }
+    }
+});
+
+function OpenBatteryFittedPriceModal() {
+    document.getElementById('battery-fitted-price-modal').classList.remove('translate-y-full');
+    document.getElementById('battery-fitted-price-overlay').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+}
+
+function CloseBatteryFittedPriceModal() {
+    document.getElementById('battery-fitted-price-modal').classList.add('translate-y-full');
+    document.getElementById('battery-fitted-price-overlay').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
+</script>
+
+<!-- Battery Fitted Price Modal - Bottom Sheet -->
+<div class="fitment-bar-wrapper">
+<div id="battery-fitted-price-modal"
+    class="fitment-drawer-panel fixed inset-x-0 bottom-0 z-[9999] overflow-hidden bg-white transform translate-y-full transition-transform ease-out duration-300">
+    <div class="container-theme w-full py-4 lg:py-6 h-full flex flex-col overflow-hidden">
+
+        <div class="flex-shrink-0 pb-4 mb-3 border-b border-border-color relative">
+            <h3 class="text-lg md:text-2xl font-extrabold w-[94%] md:w-full">
+                <?php echo __('Price Incl.') ?> <span class="text-theme-blue"><?php echo __('Battery Replacement only at Fitment Center') ?></span>
+            </h3>
+            <button type="button" onclick="CloseBatteryFittedPriceModal()"
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:text-gray-800 transition-all absolute top-0 right-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto drawer-scrollbar content-center">
+        <div class="bg-white">
+            <p class="text-base md:text-lg mb-3 font-medium"><?php echo __('Mobile van service is at an additional charge of AED 150 + VAT') ?></p>
+            <p class="uppercase mb-3"><?php echo __('The following is included in the price:') ?></p>
+            <ul class="flex flex-col gap-3">
+                <li class="flex items-start gap-2">
+                    <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                        <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    </span>
+                    <?php echo __('VAT') ?>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                        <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    </span>
+                    <?php echo __('Battery Fixing at Fitment Center') ?>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                        <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    </span>
+                    <?php echo __('Disposal of Old Batteries') ?>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                        <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    </span>
+                    <?php echo __('Mobile Van Fitting Charges Excluded') ?>
+                </li>
+            </ul>
+        </div>
+        </div>
+
+    </div>
+</div>
+<div id="battery-fitted-price-overlay" onclick="CloseBatteryFittedPriceModal()"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-all ease-out duration-300">
+</div>
+</div>
+
+<?php endif; ?>
+
+
+<div id="quickview-modal"
+    class="fitment-drawer-panel fixed inset-x-0 bottom-0 z-[9999] overflow-hidden bg-white transform translate-y-full transition-transform ease-out duration-300">
+    <div class="container-theme w-full py-4 lg:py-6 h-full flex flex-col overflow-hidden" style="max-height: 90vh;">
+        <div class="flex-shrink-0 pb-4 mb-3 border-b border-border-color relative">
+            <h3 class="text-lg md:text-2xl font-extrabold text-gray-900"><?= __('Quick View') ?></h3>
+            <button type="button" onclick="closeQuickView()"
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:text-gray-800 transition-all absolute top-0 right-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div id="quickview-content" class="flex-1 overflow-y-auto drawer-scrollbar">
+            <div class="flex items-center justify-center py-16">
+                <svg class="animate-spin h-8 w-8 text-theme-blue" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="quickview-overlay" onclick="closeQuickView()"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998] hidden transition-all ease-out duration-300">
+</div>
+
+<script>
+// Intercept quickview clicks at capture phase — before any form handler can fire
+document.addEventListener('click', function(e) {
+    var trigger = e.target.closest('.quickview-trigger');
+    if (!trigger) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    var productId = trigger.getAttribute('data-quickview-id');
+    if (productId) openQuickView(productId);
+}, true);
+
+function openQuickView(productId) {
+    var modal = document.getElementById('quickview-modal');
+    var overlay = document.getElementById('quickview-overlay');
+    var content = document.getElementById('quickview-content');
+
+    content.innerHTML = '<div class="flex items-center justify-center py-16"><svg class="animate-spin h-8 w-8 text-theme-blue" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg></div>';
+    modal.classList.remove('translate-y-full');
+    overlay.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+
+    fetch(BASE_URL + 'tyrefinder/ajax/quickview?id=' + productId, {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.status === 'success') {
+            content.innerHTML = data.html;
+        } else {
+            content.innerHTML = '<p class="text-red-500 p-8 text-center">Unable to load product details.</p>';
+        }
+    })
+    .catch(function() {
+        content.innerHTML = '<p class="text-red-500 p-8 text-center">Unable to load product details.</p>';
+    });
+}
+
+function closeQuickView() {
+    document.getElementById('quickview-modal').classList.add('translate-y-full');
+    document.getElementById('quickview-overlay').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
+
+function quickViewAddToCart(productId, addToCartUrl, formKey) {
+    var qtyEl = document.getElementById('qv-qty-' + productId);
+    var qty = qtyEl ? qtyEl.value : 1;
+
+    fetch(addToCartUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'form_key=' + formKey + '&product=' + productId + '&qty=' + qty + '&uenc=' + btoa(window.location.href),
+        credentials: 'include'
+    })
+    .then(function(r) { return r.text(); })
+    .then(function() {
+        closeQuickView();
+        window.location.reload();
+    })
+    .catch(function() {
+        alert('Error adding to cart. Please try again.');
+    });
+}
+
+function qvOpenBuyTyreSearch(width, height, rim, productName) {
+    var baseUrl = BASE_URL || '/';
+    var loader = document.getElementById('klever-loader');
+    if (loader) loader.classList.remove('hidden');
+    fetch(baseUrl + 'tyrefinder/ajax/buytyresearch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: new URLSearchParams({ form_key: hyva.getFormKey(), width: width, height: height, rim: rim, uenc: btoa(window.location.href) }),
+        credentials: 'include'
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (loader) loader.classList.add('hidden');
+        if (data.status === 'success') {
+            var nameEl = document.querySelector('#item-size .product-name');
+            if (nameEl) nameEl.textContent = productName;
+            var contentEl = document.querySelector('#item-size .tyre-popup-content');
+            if (contentEl) contentEl.innerHTML = data.html;
+            var searchInput = document.getElementById('item-size-search');
+            if (searchInput) searchInput.value = '';
+            document.getElementById('item-size').classList.remove('translate-y-full');
+            document.getElementById('item-size-overlay').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+    })
+    .catch(function() { if (loader) loader.classList.add('hidden'); });
+}
+
+function qvChangePrice(selectElement, unitRegularPrice, unitFinalPrice, partsCategory, isOfferProduct, discountAmount, discountQty, productId) {
+    var selectedQty = parseInt(selectElement.value);
+    var formatter = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    var price;
+    if (isOfferProduct == 'No') {
+        price = selectedQty * unitFinalPrice;
+    } else {
+        discountAmount = parseFloat(discountAmount) || 0;
+        discountQty = parseInt(discountQty) || 0;
+        if (selectedQty >= discountQty && discountQty > 0) {
+            price = selectedQty * unitFinalPrice;
+            var discount = (discountAmount / 100) * unitFinalPrice * discountQty;
+            var discountTimes = Math.floor(selectedQty / discountQty);
+            discount = discount * discountTimes;
+            price = price - discount;
+        } else {
+            price = selectedQty * unitFinalPrice;
+        }
+    }
+    var setPriceBox = document.getElementById('qv-set-price-' + productId);
+    if (setPriceBox && partsCategory !== 'battery') {
+        var setOfEl = setPriceBox.querySelector('.qv-set-of');
+        var setOfPriceEl = setPriceBox.querySelector('.qv-set-of-price');
+        if (setOfEl) setOfEl.textContent = 'Set of ' + selectedQty + ':';
+        if (setOfPriceEl) setOfPriceEl.textContent = formatter.format(price);
+    }
+    var btnPriceEl = document.getElementById('qv-btn-price-' + productId);
+    if (btnPriceEl) btnPriceEl.textContent = Math.round(price).toLocaleString();
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeQuickView();
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

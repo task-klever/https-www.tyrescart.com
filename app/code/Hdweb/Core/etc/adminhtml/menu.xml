@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../Magento/Backend/etc/menu.xsd">
+    <menu>
+        <add id="Hdweb_Core::parent" title="Klever" module="Hdweb_Core" sortOrder="10" resource="Hdweb_Core::parent"/>
+        <add id="Hdweb_Core::manage_offers" title="Manage Offers" module="Mageplaza_BannerSlider" sortOrder="10" parent="Hdweb_Core::parent" action="mpbannerslider/banner/index" resource="Mageplaza_BannerSlider::banner"/>
+        <add id="hdweb_enquiry::test" title="Enquiry Items" module="Hdweb_Enquiry" sortOrder="20" parent="Hdweb_Core::parent" action="hdweb_enquiry/items/" resource="Hdweb_Enquiry::items"/>
+        <add id="Ecomteck_StoreLocator::manage_stores"
+            title="Manage Store"
+            module="Ecomteck_StoreLocator"
+            sortOrder="30"
+            resource="Ecomteck_StoreLocator::stores"
+            parent="Hdweb_Core::parent"
+            dependsOnModule="Ecomteck_Core"
+            action="storelocator/stores"
+        />
+        <add id="Ecomteck_StoreLocator::configuration" 
+            title="Store Locator Configuration" 
+            module="Ecomteck_StoreLocator" 
+            sortOrder="40" 
+            action="adminhtml/system_config/edit/section/ecomteck_storelocator" 
+            resource="Ecomteck_StoreLocator::stores" 
+            parent="Hdweb_Core::parent"
+        />
+        <add id="Ecomteck_StorePickup::configuration" 
+            title="Store Pickup Shipping Configuration" 
+            module="Ecomteck_StorePickup" 
+            sortOrder="50" 
+            action="adminhtml/system_config/edit/section/carriers/storepickup" 
+            resource="Ecomteck_StorePickup::config"
+            parent="Hdweb_Core::parent"/>
+        <!-- FAQ menu items commented out - now handled by Mageprince/Faq/etc/adminhtml/menu.xml -->
+        <!--
+        <add id="Mageprince_Faq::faqgroup"
+			 action="mageprince_faq/faqgroup/index"
+			 module="Mageprince_Faq"
+			 parent="Hdweb_Core::parent"
+			 resource="Mageprince_Faq::FaqGroup"
+			 sortOrder="60"
+			 translate="title"
+			 title="Manage FAQGroup"/>
+        <add id="Mageprince_Faq::faq"
+			 action="mageprince_faq/faq/index"
+			 module="Mageprince_Faq"
+			 parent="Hdweb_Core::parent"
+			 resource="Mageprince_Faq::Faq"
+			 sortOrder="70"
+			 translate="title"
+			 title="Manage FAQ"/>
+        <add id="Mageprince_Faq::configuration"
+			 action="adminhtml/system_config/edit/section/faqtab"
+			 module="Mageprince_Faq"
+			 parent="Hdweb_Core::parent"
+			 resource="Mageprince_Faq::Configuration"
+			 sortOrder="80"
+			 translate="title"
+			 title="FAQ Configuration"/>
+        <add id="Mageprince_Faq::faq_user_guid"
+			 action="mageprince_faq/faq/index"
+			 module="Mageprince_Faq"
+			 parent="Hdweb_Core::parent"
+			 resource="Mageprince_Faq::menu"
+			 sortOrder="90"
+			 target="_blank"
+			 translate="title"
+			 title="FAQ User Guid"/>
+        -->
+    </menu>
+</config>

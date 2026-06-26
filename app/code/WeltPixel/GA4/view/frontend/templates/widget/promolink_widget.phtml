@@ -1,0 +1,39 @@
+<?php
+// @codingStandardsIgnoreFile
+use Magento\Framework\Escaper;
+/** @var Escaper $escaper */
+
+/** @var \WeltPixel\GA4\Helper\Data $ga4Helper */
+$ga4Helper = $this->helper('WeltPixel\GA4\Helper\Data');
+$cspNonceProvider = $ga4Helper->getCspNonceProvider();
+
+$promoId = $this->getData('promo_id');
+$promoName = $this->getData('promo_name');
+$promoCreative = $this->getData('promo_creative');
+$promoPosition = $this->getData('promo_position');
+$linkDestination = trim($this->getData('link_destination') ?? '');
+$linkDestination = ($linkDestination) ? $linkDestination : '#';
+$linkContent = $this->getData('link_content');
+$linkInNewTab = $this->getData('link_in_new_tab');
+$linkTarget = ($linkInNewTab) ? 'target="_blank"' : '';
+$productCollection = $this->getProductCollection();
+$itemProductIds = [];
+if ($productCollection) {
+    $itemProductIds = $productCollection->getAllIds();
+}
+$uniqueid = 'ga4-promo-id-items-'.uniqid();
+?>
+<a href="<?php echo $escaper->escapeUrl($linkDestination) ?>" <?php /* @noEscape */ echo $linkTarget ?>
+    data-unqiue-id-items="<?php echo $escaper->escapeHtmlAttr($uniqueid) ?>"
+    data-track-promo-id="<?php echo $escaper->escapeHtmlAttr($promoId) ?>"
+    data-track-promo-name="<?php echo $escaper->escapeHtmlAttr($promoName) ?>"
+    data-track-promo-creative="<?php echo $escaper->escapeHtmlAttr($promoCreative) ?>"
+    data-track-promo-position="<?php echo $escaper->escapeHtmlAttr($promoPosition) ?>"
+    data-track-promo-product-ids="<?php /* @noEscape */ echo implode(',', $itemProductIds) ?>"
+><?php /* @noEscape */ echo html_entity_decode($linkContent) ?></a>
+<?php if (count($itemProductIds)) : ?>
+    <script type="text/json" id="<?= /* @noEscape */ $uniqueid ?>"  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?> >
+        <?= /* @noEscape */  $this->getItemsJson(); ?>
+    </script>
+<?php endif; ?>
+

@@ -1,0 +1,9 @@
+input ProductAttributeSortInput 
+{
+    mst_sort: MstSortCriteria
+}
+
+input MstSortCriteria {
+    code: String
+    dir: SortEnum
+}

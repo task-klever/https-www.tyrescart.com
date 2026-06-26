@@ -1,0 +1,171 @@
+<?php  if ($block->getRequest()->getFullActionName() == 'hyva_checkout_index_index') : ?>
+  <css src="<?= $block->getViewFileUrl('css/tom-select.css'); ?>"/>   
+  <!-- Js plugins -->
+  <script src="<?= $block->getViewFileUrl('js/tom-select.complete.min.js'); ?>"></script>
+<?php endif;  ?>
+<?php
+
+use Hyva\Theme\ViewModel\ProductPrice;
+use Magento\Catalog\Pricing\Price\FinalPrice;
+
+$productPriceViewModel = $viewModels->require(ProductPrice::class);
+
+$pathInfo = $block->getRequest()->getPathInfo();
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$mediaURL = $objectManager->get('Magento\Store\Model\StoreManagerInterface')->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+$storeManager = $objectManager->get(\Magento\Store\Model\StoreManagerInterface::class);
+$baseUrlWithoutStoreCode = $storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_WEB, false);
+$currentUrl = $this->getRequest()->getUriString();
+$cleanUrl = strtok($currentUrl, '?');
+$cmsPage = $objectManager->get('\Magento\Cms\Model\Page');
+
+$logoUrl = $block->getViewFileUrl('images/dial-a-tire-logo.svg');
+$ogImageUrl = $block->getViewFileUrl('images/home/car-banner.jpg');
+?>
+  <?php if($block->getRequest()->getFullActionName() == 'cms_index_index'): ?>
+    <?php 
+      $baseUrlWithoutSlashAtEnd = rtrim($baseUrlWithoutStoreCode, '/');
+    ?>
+    <link rel="canonical" href="<?php echo $baseUrlWithoutSlashAtEnd; ?>">
+  <?php else: ?>
+    <link rel="canonical" href="<?php echo $cleanUrl;?>">
+  <?php endif; ?>
+
+<!-- Local Business Schema --> 
+
+<script type="application/ld+json"> 
+
+{ 
+
+  "@context": "https://schema.org", 
+  "@type": "LocalBusiness", 
+  "name": "Dial A Tire", 
+  "image": "<?= $logoUrl ?>",
+  "description": "Dial A Tire is your one-stop solution for tyres and car services across the UAE. Shop tyres online, book a fitting, and enjoy professional mobile van service at your location. Trusted by UAE drivers for quick, quality, and affordable auto care.", 
+  "address": { 
+    "@type": "PostalAddress", 
+    "streetAddress": "Alserkal Building, Office 310, Deira, Port Saeed, Dubai, United Arab Emirates", 
+    "addressLocality": "Dubai", 
+    "addressRegion": "Dubai", 
+    "addressCountry": "UAE" 
+  }, 
+  "telephone": "+971505065565", 
+  "url": "https://www.dialatire.com/" 
+
+} 
+
+</script> 
+
+
+<!-- Website Schema --> 
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "WebSite",
+  "name": "Dial a Tire",
+  "url": "https://www.dialatire.com/"
+}
+</script> 
+
+<?php if ($block->getRequest()->getFullActionName() == 'catalog_product_view') : ?>
+<!-- Dynamic Product Schema (for Magento) --> 
+
+<?php
+$currentProduct = $objectManager->get('Magento\Framework\Registry')->registry('current_product');
+    $imageUrl = '';
+    $imageUrl = $this->helper('Magento\Catalog\Helper\Image')
+        ->init($currentProduct, 'product_base_image')
+        ->constrainOnly(true)
+        ->keepAspectRatio(true)
+        ->keepTransparency(true)
+        ->keepFrame(false)
+        ->getUrl();
+    $brandLabel = '';
+    // Check if the current product exists
+    if ($currentProduct) {
+        // Get the product's "brand" attribute value
+        $brandAttributeValue = $currentProduct->getData('brand');
+
+        // If the attribute has a value
+        if ($brandAttributeValue !== null && $brandAttributeValue !== '') {
+            // Load the product attribute model
+            $productAttribute = $currentProduct->getResource()->getAttribute('brand');
+
+            // If the attribute model exists and it is a dropdown attribute
+            if ($productAttribute && $productAttribute->usesSource()) {
+                // Get the label of the selected option
+                $brandLabel = $productAttribute->getSource()->getOptionText($brandAttributeValue);
+            }
+        }
+    }
+    $finalPrice = $productPriceViewModel->getPriceValue(FinalPrice::PRICE_CODE, $currentProduct);
+    $currency = $storeManager->getStore()->getCurrentCurrencyCode();
+    if ($currentProduct->isSaleable()) {
+        $availability = "https://schema.org/InStock";
+    } else {
+        $availability = "https://schema.org/OutOfStock";
+    }
+    $productUrl = $currentProduct->getProductUrl();
+
+    ?>
+
+
+<script type="application/ld+json"> 
+
+{ 
+
+  "@context": "https://schema.org/", 
+
+  "@type": "Product", 
+
+  "name": "<?php echo $currentProduct->getName(); ?>", 
+
+  "image": "<?php echo $imageUrl; ?>", 
+
+  "description": "<?php echo strip_tags($currentProduct->getDescription()); ?>",
+
+  "sku": "<?php echo $currentProduct->getSku(); ?>",
+
+  "brand": { 
+
+    "@type": "Brand", 
+
+    "name": "<?php echo $brandLabel; ?>" 
+
+  }, 
+
+  "offers": { 
+
+    "@type": "Offer", 
+
+    "url": "<?php echo $productUrl; ?>", 
+
+    "priceCurrency": "<?php echo $currency; ?>", 
+
+    "price": "<?php echo number_format((float)$finalPrice, 2, '.', ''); ?>",
+
+    "availability": "<?php echo $availability; ?>"
+
+  } 
+
+} 
+
+</script> 
+
+<?php endif; ?>
+
+<!-- Open Graph Tags --> 
+
+<meta property="og:title" content="Dial A Tire — Buy Tyres Online & Car Service Experts" /> 
+<meta property="og:type" content="website" /> 
+<meta property="og:url" content="https://www.dialatire.com/" /> 
+<meta property="og:description" content="Order tyres online and get them fitted at your home or office anywhere in the UAE. Reliable, quick, and affordable car service by Dial A Tire." /> 
+<meta property="og:locale" content="en_US" /> 
+<meta property="og:image" content="<?= $ogImageUrl ?>" />
+<meta property="og:image:secure_url" content="<?= $ogImageUrl ?>" /> 
+<meta property="og:image:type" content="image/jpg" /> 
+<meta property="og:image:width" content="1200" /> 
+<meta property="og:image:height" content="630" /> 
+<meta property="og:image:alt" content="Dial A Tire — Buy Tyres Online & Car Service Experts" /> 
+<meta property="og:site_name" content="DialATire.com" /> 

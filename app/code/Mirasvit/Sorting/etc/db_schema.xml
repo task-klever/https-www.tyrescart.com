@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+  <table name="mst_sorting_criterion" resource="default" engine="innodb" comment="mst_sorting_criterion">
+    <column xsi:type="int" name="criterion_id" padding="11" unsigned="false" nullable="false" identity="true" comment="criterion_id"/>
+    <column xsi:type="text" name="name" nullable="false" comment="name"/>
+    <column xsi:type="text" name="code" nullable="false" comment="code"/>
+    <column xsi:type="int" name="is_active" padding="11" unsigned="false" nullable="false" identity="false" default="0" comment="is_active"/>
+    <column xsi:type="int" name="is_default" padding="11" unsigned="false" nullable="false" identity="false" default="0" comment="is_default"/>
+    <column xsi:type="int" name="is_search_default" padding="11" unsigned="false" nullable="false" identity="false" default="0" comment="is_search_default"/>
+    <column xsi:type="int" name="position" padding="11" unsigned="false" nullable="false" identity="false" default="1" comment="position"/>
+    <column xsi:type="mediumtext" name="conditions_serialized" nullable="true" comment="conditions_serialized"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="criterion_id"/>
+    </constraint>
+  </table>
+  <table name="mst_sorting_ranking_factor" resource="default" engine="innodb" comment="mst_sorting_ranking_factor">
+    <column xsi:type="int" name="factor_id" padding="11" unsigned="false" nullable="false" identity="true" comment="factor_id"/>
+    <column xsi:type="text" name="name" nullable="false" comment="name"/>
+    <column xsi:type="text" name="type" nullable="false" comment="type"/>
+    <column xsi:type="int" name="is_active" padding="11" unsigned="false" nullable="false" identity="false" default="0" comment="is_active"/>
+    <column xsi:type="int" name="is_global" padding="11" unsigned="false" nullable="false" identity="false" default="0" comment="is_global"/>
+    <column xsi:type="int" name="weight" padding="11" unsigned="false" nullable="false" identity="false" default="0" comment="weight"/>
+    <column xsi:type="mediumtext" name="config_serialized" nullable="true" comment="config_serialized"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="factor_id"/>
+    </constraint>
+  </table>
+  <table name="mst_sorting_index" resource="default" engine="innodb" comment="mst_sorting_index">
+    <column xsi:type="int" name="index_id" padding="10" unsigned="true" nullable="false" identity="true" comment="index_id"/>
+    <column xsi:type="int" name="product_id" padding="10" unsigned="true" nullable="false" identity="false" comment="product_id"/>
+    <column xsi:type="int" name="store_id" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="code"/>
+    <column xsi:type="decimal" name="factor_1_score" scale="8" precision="18" unsigned="false" nullable="true" comment="factor_1"/>
+    <column xsi:type="varchar" name="factor_1_value" nullable="true" length="255" comment="factor_1"/>
+    <column xsi:type="decimal" name="factor_2_score" scale="8" precision="18" unsigned="false" nullable="true" comment="factor_2"/>
+    <column xsi:type="varchar" name="factor_2_value" nullable="true" length="255" comment="factor_2"/>
+    <column xsi:type="decimal" name="factor_3_score" scale="8" precision="18" unsigned="false" nullable="true" comment="factor_3"/>
+    <column xsi:type="varchar" name="factor_3_value" nullable="true" length="255" comment="factor_3"/>
+    <column xsi:type="decimal" name="factor_4_score" scale="8" precision="18" unsigned="false" nullable="true" comment="factor_4"/>
+    <column xsi:type="varchar" name="factor_4_value" nullable="true" length="255" comment="factor_4"/>
+    <column xsi:type="decimal" name="factor_5_score" scale="8" precision="18" unsigned="false" nullable="true" comment="factor_5"/>
+    <column xsi:type="varchar" name="factor_5_value" nullable="true" length="255" comment="factor_5"/>
+    <column xsi:type="decimal" name="factor_6_score" scale="8" precision="18" unsigned="false" nullable="true" comment="factor_6"/>
+    <column xsi:type="varchar" name="factor_6_value" nullable="true" length="255" comment="factor_6"/>
+    <column xsi:type="decimal" name="factor_7_score" scale="8" precision="18" unsigned="false" nullable="true" comment="factor_7"/>
+    <column xsi:type="varchar" name="factor_7_value" nullable="true" length="255" comment="factor_7"/>
+    <column xsi:type="decimal" name="factor_8_score" scale="8" precision="18" unsigned="false" nullable="true" comment="factor_8"/>
+    <column xsi:type="varchar" name="factor_8_value" nullable="true" length="255" comment="factor_8"/>
+    <column xsi:type="decimal" name="factor_9_score" scale="8" precision="18" unsigned="false" nullable="true" comment="factor_9"/>
+    <column xsi:type="varchar" name="factor_9_value" nullable="true" length="255" comment="factor_9"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="index_id"/>
+    </constraint>
+    <constraint xsi:type="unique" referenceId="MST_SORTING_INDEX_PRODUCT_ID_STORE_ID">
+      <column name="product_id"/>
+      <column name="store_id"/>
+    </constraint>
+    <index referenceId="MST_SORTING_INDEX_PRODUCT_ID" indexType="btree">
+      <column name="product_id"/>
+    </index>
+    <index referenceId="MST_SORTING_INDEX_STORE_ID" indexType="btree">
+      <column name="store_id"/>
+    </index>
+  </table>
+</schema>

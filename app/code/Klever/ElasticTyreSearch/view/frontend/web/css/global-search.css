@@ -1,0 +1,227 @@
+/* ─── Klever Global Search Panel ─────────────────────────────────────── */
+
+#klever-global-search-panel,
+#klever-global-search-panel * {
+    box-sizing: border-box;
+}
+
+#klever-global-search-panel ul,
+#klever-global-search-panel li {
+    list-style: none !important;
+    list-style-type: none !important;
+    margin: 0;
+    padding: 0;
+}
+
+#klever-global-search-panel {
+    display: none;
+    width: 100%;
+    margin-top: 12px;
+    border: 1.5px solid #dee2e6;
+    border-radius: 10px;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.klever-gsp-inner {
+    display: flex !important;
+    min-height: 260px;
+    max-height: 420px;
+    overflow: hidden;
+}
+
+/* ─── Left: tabs ─────────────────────────────────────────────────────── */
+
+.klever-gsp-tabs {
+    display: flex;
+    flex-direction: column;
+    width: 150px;
+    flex-shrink: 0;
+    background: #f8f9fb;
+    border-right: 1.5px solid #dee2e6;
+    padding: 8px 0;
+}
+
+.klever-gsp-tab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    text-align: left;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    gap: 6px;
+    line-height: 1.3;
+}
+
+.klever-gsp-tab:hover {
+    background: rgba(0, 132, 61, 0.06);
+    color: #00843D;
+}
+
+.klever-gsp-tab.active {
+    background: #fff;
+    border-left-color: #00843D;
+    color: #00843D;
+    font-weight: 600;
+}
+
+.klever-gsp-tab.klever-gsp-tab-empty {
+    opacity: 0.4;
+}
+
+.klever-gsp-tab-count {
+    background: #00843D;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    flex-shrink: 0;
+}
+
+.klever-gsp-tab.klever-gsp-tab-empty .klever-gsp-tab-count {
+    display: none;
+}
+
+/* ─── Right: results ─────────────────────────────────────────────────── */
+
+.klever-gsp-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+    scrollbar-width: thin;
+    scrollbar-color: #00843D #f0f0f0;
+}
+
+.klever-gsp-content::-webkit-scrollbar {
+    width: 5px;
+}
+
+.klever-gsp-content::-webkit-scrollbar-track {
+    background: #f0f0f0;
+}
+
+.klever-gsp-content::-webkit-scrollbar-thumb {
+    background-color: #00843D;
+    border-radius: 5px;
+}
+
+.klever-gsp-pane {
+    display: none !important;
+}
+
+.klever-gsp-pane.active {
+    display: block !important;
+}
+
+.klever-gsp-pane ul {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.klever-gsp-pane ul li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 16px;
+    text-decoration: none;
+    color: #212529;
+    transition: background 0.12s, color 0.12s;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.klever-gsp-pane ul li:last-child a {
+    border-bottom: none;
+}
+
+.klever-gsp-pane ul li a:hover {
+    background: rgba(0, 132, 61, 0.06);
+    color: #00843D;
+}
+
+.klever-gsp-pane ul li a img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 4px;
+    background: #f5f5f5;
+    border: 1px solid #dee2e6;
+}
+
+.klever-gsp-no-img {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    background: #f0f2f5;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    display: inline-block;
+}
+
+.klever-gsp-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.klever-gsp-item-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #212529;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 320px;
+    transition: color 0.12s;
+}
+
+.klever-gsp-pane ul li a:hover .klever-gsp-item-name {
+    color: #00843D;
+}
+
+.klever-gsp-item-price {
+    font-size: 12px;
+    font-weight: 700;
+    color: #00843D;
+}
+
+.klever-gsp-empty-item {
+    padding: 20px 16px;
+    color: #999;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+    .klever-gsp-tabs {
+        width: 110px;
+    }
+
+    .klever-gsp-tab {
+        padding: 9px 10px;
+        font-size: 12px;
+    }
+
+    .klever-gsp-item-name {
+        max-width: 180px;
+    }
+}

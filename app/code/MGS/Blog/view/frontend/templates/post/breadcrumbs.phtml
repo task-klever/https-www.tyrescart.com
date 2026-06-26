@@ -1,0 +1,32 @@
+<?php
+$breadcrumbs = $block->getLayout()->getBlock('breadcrumbs');
+$post = $block->getLayout()->getBlock('post_view')->getPost(); // Get current post
+
+if ($breadcrumbs && $post && $post->getId()) {
+    $breadcrumbs->addCrumb(
+        'home',
+        [
+            'label' => __('Home'),
+            'title' => __('Home'),
+            'link'  => $block->getUrl('')
+        ]
+    );
+
+    $breadcrumbs->addCrumb(
+        'blog',
+        [
+            'label' => __('Blog'),
+            'title' => __('Blog'),
+            'link'  => $block->getUrl('blog')
+        ]
+    );
+
+    $breadcrumbs->addCrumb(
+        'post',
+        [
+            'label' => $post->getTitle(),
+            'title' => $post->getTitle()
+        ]
+    );
+}
+?>

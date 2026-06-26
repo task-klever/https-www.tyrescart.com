@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Mageprince\Faq\Block\Index\Index">
+        <plugin name="klever_faq_exclude_footer_groups"
+                type="Klever\Faq\Plugin\ExcludeFooterGroupsFromFaqPage"
+                sortOrder="10"/>
+    </type>
+    <!-- Register Klever FAQ router before Mageprince router (sortOrder 60) -->
+    <type name="Magento\Framework\App\RouterList">
+        <arguments>
+            <argument name="routerList" xsi:type="array">
+                <item name="kleverfaq" xsi:type="array">
+                    <item name="class" xsi:type="string">Klever\Faq\Controller\Router</item>
+                    <item name="disable" xsi:type="boolean">false</item>
+                    <item name="sortOrder" xsi:type="string">55</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+    <!-- Prevent MGS Blog router from hijacking FAQ URLs like /faqs/tyres -->
+    <type name="MGS\Blog\Controller\Router">
+        <plugin name="klever_faq_skip_blog_for_faq_urls"
+                type="Klever\Faq\Plugin\SkipBlogRouterForFaqUrls"
+                sortOrder="1"/>
+    </type>
+</config>

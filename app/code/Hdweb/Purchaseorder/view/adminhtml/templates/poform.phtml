@@ -1,0 +1,834 @@
+<?php
+  $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+  $order=$block->getOrder();
+  $vendor=$block->getVendor();
+  $orderitems=$order->getAllItems();
+  $currencycode=$block->getCurrencycode();
+  //$vat= '5'; //$block->getvat();
+  $vat = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface')->getValue('purchaseorder/general/vat');
+  $orderStatus = $order->getStatus();
+  $createdAt = $order->getCreatedAt();
+  $orderDate = date("d-m-Y H:i:s", strtotime($createdAt));
+  $hdwebPOHelper = $this->helper('Hdweb\Purchaseorder\Helper\Data');
+  $installer_id = $order->getPickupStore();
+  $installerDetails = $hdwebPOHelper->getIntallerDetails($installer_id);
+  $country = $objectManager->create('\Magento\Directory\Model\Country')->load($installerDetails['country'])->getName();
+  $poData = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorder')->getCollection()
+                          ->addfieldtofilter('orderreference_no',$order->getIncrementId())
+                          ->addfieldtofilter('po_type','mpo');
+  $fpoData = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorder')->getCollection()
+                          ->addfieldtofilter('orderreference_no',$order->getIncrementId())
+                          ->addfieldtofilter('po_type','fpo');
+$dpoData = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorder')->getCollection()
+                          ->addfieldtofilter('orderreference_no',$order->getIncrementId())
+                          ->addfieldtofilter('po_type','dpo');
+$ppoData = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorder')->getCollection()
+                          ->addfieldtofilter('orderreference_no',$order->getIncrementId())
+                          ->addfieldtofilter('po_type','ppo');
+  $relatedPoIds = array();
+  foreach ($poData as $relatedPo) { 
+    $relatedPoIds[] = array('po_id' => $relatedPo->getId(), 'poreference_no' => $relatedPo->getPoreferenceNo());
+  }
+  $relatedFPoIds = array();
+  foreach ($fpoData as $relatedFPo) { 
+    $relatedFPoIds[] = array('po_id' => $relatedFPo->getId(), 'poreference_no' => $relatedFPo->getPoreferenceNo());
+  }
+    $relatedDPoIds = array();
+    foreach ($dpoData as $relatedDPo) { 
+        $relatedDPoIds[] = array('po_id' => $relatedDPo->getId(), 'poreference_no' => $relatedDPo->getPoreferenceNo());
+    }
+    $relatedPPoIds = array();
+    foreach ($ppoData as $relatedPPo) { 
+        $relatedPPoIds[] = array('po_id' => $relatedPPo->getId(), 'poreference_no' => $relatedPPo->getPoreferenceNo());
+    }
+  $request = $objectManager->get('Magento\Framework\App\Request\Http');
+  $fpo = $request->getParam('fpo');
+  // $ppo = $request->getParam('ppo');
+  $dpo = $request->getParam('dpo');
+  $ppo = $request->getParam('ppo');
+  $po_type = $request->getParam('po_type');
+  $productObj = $objectManager->get('Magento\Catalog\Model\Product');
+  $mobileVanSku = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface')->getValue('purchaseorder/general/mobile_van_sku');
+  //$mobileVanSku = 'SEV200200216'; /* mobile van fitment sku */
+  $pickupDropoff_sku = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface')->getValue('purchaseorder/general/pickup_dropoff_sku');
+  //$pickupDropoff_sku = 'STG-Pickup-Dropoff-Charges';
+  $pickupDropoffDefaultVendorId = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface')->getValue('purchaseorder/general/pickup_dropoff_default_vendor_id');
+  $orderInstallerId = $order->getPickupStore();
+?>
+<form id="po_edit_form" action="<?= $block->getSaveUrl() ?>" method="post" enctype="multipart/form-data" data-mage-init='{"validation":{}}'>
+         <?= $block->getBlockHtml('formkey') ?>
+        <input type="hidden" data-validate='{"required":true}'  name="subtotal" value="" class="hidden_subtotal">
+        <input type="hidden" data-validate='{"required":true}' name="vat" value="" class="hidden_vat">
+        <input type="hidden"  data-validate='{"required":true}' name="grandtotal" value="" class="hidden_grandtotal">
+
+        <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('PO No.:') ?>
+            </label>
+
+             <label for="" class="admin__field-label">
+                <?=  $block->getPono() ?>
+            </label>
+            <input type="hidden"  name="poreference_no" value="<?=  $block->getPono() ?>">
+            
+        </div>
+
+        <?php if(count($relatedPoIds) > 0):?>
+        <div class="admin__field admin__field-option ">
+                <label for="" class="admin__field-label">
+                    <?=  __('Related MPO No:') ?>
+                </label>
+
+                 <label for="" class="admin__field-label">
+            <?php foreach($relatedPoIds as $relatedPoData):?>
+                   <a target="_blank" href="<?php echo $this->getUrl('purchaseorder/create/edit').'po_id/'.$relatedPoData['po_id'] ?>"><?php echo $relatedPoData['poreference_no'] ?></a>
+            <?php endforeach;?>
+                </label>
+            </div>
+        <?php endif;?>
+
+        <?php if(count($relatedFPoIds) > 0):?>
+        <div class="admin__field admin__field-option ">
+                <label for="" class="admin__field-label">
+                    <?=  __('Related FPO No:') ?>
+                </label>
+
+                 <label for="" class="admin__field-label">
+            <?php foreach($relatedFPoIds as $relatedFPoData):?>
+                   <a target="_blank" href="<?php echo $this->getUrl('purchaseorder/create/edit').'po_id/'.$relatedFPoData['po_id'] ?>"><?php echo $relatedFPoData['poreference_no'] ?></a>
+            <?php endforeach;?>
+                </label>
+            </div>
+        <?php endif;?>
+
+        <?php if(count($relatedDPoIds) > 0):?>
+        <div class="admin__field admin__field-option ">
+                <label for="" class="admin__field-label">
+                    <?=  __('Related DPO No:') ?>
+                </label>
+
+                 <label for="" class="admin__field-label">
+            <?php foreach($relatedDPoIds as $relatedDPoData):?>
+                   <a target="_blank" href="<?php echo $this->getUrl('purchaseorder/create/edit').'po_id/'.$relatedDPoData['po_id'] ?>"><?php echo $relatedDPoData['poreference_no'] ?></a>
+            <?php endforeach;?>
+                </label>
+            </div>
+        <?php endif;?>
+
+        <?php if(count($relatedPPoIds) > 0):?>
+        <div class="admin__field admin__field-option ">
+                <label for="" class="admin__field-label">
+                    <?=  __('Related PPO No:') ?>
+                </label>
+
+                 <label for="" class="admin__field-label">
+            <?php foreach($relatedPPoIds as $relatedPPoData):?>
+                   <a target="_blank" href="<?php echo $this->getUrl('purchaseorder/create/edit').'po_id/'.$relatedPPoData['po_id'] ?>"><?php echo $relatedPPoData['poreference_no'] ?></a>
+            <?php endforeach;?>
+                </label>
+            </div>
+        <?php endif;?>
+
+        <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('Order No.: ') ?>
+            </label>
+
+            <label for="" class="admin__field-label">
+                <a href="<?php echo $this->getUrl('sales/order/view').'order_id/'.$order->getId(); ?>"><?=  $order->getIncrementId() ?></a>
+            </label>
+            <input type="hidden"  name="orderreference_no" value="<?=  $order->getIncrementId() ?>">
+            
+        </div>
+    
+    <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('Order Date.: ') ?>
+            </label>
+
+            <label for="" class="admin__field-label">
+                <?=  $orderDate ?>
+            </label>
+            <input type="hidden"  name="order_date" value="<?=  $orderDate ?>">
+            
+        </div>
+    
+    <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('Order Status.: ') ?>
+            </label>
+
+            <label for="" class="admin__field-label">
+                <?=  $orderStatus ?>
+            </label>
+            <input type="hidden"  name="order_status" value="<?=  $orderStatus ?>">
+            
+        </div>
+
+        <?php if($installerDetails['name'] != ''): ?>
+
+        <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('Installer Name: ') ?>
+            </label>
+
+            <label for="" class="admin__field-label">
+                <?=  $installerDetails['name'] ?>
+            </label>
+            <input type="hidden"  name="installer_name" value="<?=  $installerDetails['name'] ?>">
+            
+        </div>
+
+        <?php endif; ?>
+
+
+        <?php if($installerDetails['address'] != ''): ?>
+
+        <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('Installer Address: ') ?>
+            </label>
+
+            <label for="" class="admin__field-label">
+                <?=  $installerDetails['address'] ?> <?=  $installerDetails['city'] ?>, <?=  $country ?>
+            </label> 
+        </div>
+
+        <?php endif; ?>
+        
+        <div class="admin__field admin__field-option ">
+            <label for="" class="admin__field-label">
+                <?=  __('Select Vendor: ')  ?>
+            </label>
+            <?php if($ppo != '' && $ppo == 1 && $pickupDropoff_sku != ''): ?>
+              
+              <select data-validate='{"required":true}' name="vendor" id="vendor" class="admin__control-select">
+                <?php   
+                $vatApplicable = [];
+                $selected = '';
+                foreach ($vendor as $key => $value) {
+                  if($value->getId() == $pickupDropoffDefaultVendorId){ //default selected vendor
+                    $selected = 'selected';
+                    echo '<option value='.$value->getId().' selected='.$selected.'>'.$value->getName().'</option>';
+                  }else{
+                    echo '<option value='.$value->getId().' >'.$value->getName().'</option>';
+                  }   
+                  if ($value->getData('vatApplicable') == 1) {
+                    $vatApplicable[] = $value->getId();
+                  } 
+                } 
+                ?>
+              </select>
+
+            <?php else: ?>
+
+              <select data-validate='{"required":true}' name="vendor" id="vendor" class="admin__control-select">
+                <?php   
+                 echo '<option value="">Please select...</option>';
+                 $vatApplicable = [];
+                 foreach ($vendor as $key => $value) {
+                      if($value->getPickupStore() == $orderInstallerId){ //default selected vendor
+                        $selected = 'selected';
+                        echo '<option value='.$value->getId().' selected='.$selected.'>'.$value->getName().'</option>';
+                      }else{
+                        echo '<option value='.$value->getId().' >'.$value->getName().'</option>';
+                      }
+                      if ($value->getData('vatApplicable') == 1) {
+                        $vatApplicable[] = $value->getId();
+                      }
+                  }
+                ?>                                    
+              </select>
+
+            <?php endif; ?>
+            
+        </div>
+        <input type="hidden"  name="po_type" value="<?=  $po_type ?>">
+        <input type="hidden"  name="reference_po" value="<?= $request->getParam('reference_po') ?? '' ?>">
+        <?php $vatApplicableString = implode('","', $vatApplicable); ?>
+ 
+      <?php /* Item */  ?>
+      <section id="">
+        
+        <section class="admin__page-section">
+            <div class="admin__page-section-title">
+                        <span class="title">Items</span>
+            </div>
+            <div class="admin__page-section-content grid">
+                <div class="admin__table-wrapper">
+                    <table class="data-table admin__table-primary ">
+                        <thead>
+                            <tr class="headings">
+                                <th class="col-product"><span>Product</span></th>
+                                <th class="col-price"><span>Cost Price</span></th>
+                                <th class="col-qty"><span>Qty</span></th>
+                                <th class="col-action"><span>Action</span></th>
+                            </tr>
+                        </thead>
+                        <tfoot style="display: none;">
+                            <tr>
+                                <td colspan="1">&nbsp;</td>
+                                <td colspan="3">
+                                    <button title="Update Price" type="button" class="action-default scalable update-button">
+                                      <span>Update Price</span>
+                                        </button>
+                                </td>
+                                <td colspan="3">&nbsp;</td>
+                            </tr>
+                        </tfoot>
+
+                         <tbody class="even">
+                            <?php if($fpo != '' && $fpo == 1): ?>
+                              <?php
+                                $rim_diameter = array();
+                                $rimQty = array();
+                                $totalQty = 0;
+                                $SEV200200231 = 0;
+                                $SEV200200232 = 0;
+                                $SEV200200233 = 0;
+                                foreach ($orderitems as $key => $value) {
+                                  $_product = $productObj->load($value->getProductId());
+                                  $rim = $productObj->getResource()->getAttribute("rim")->getFrontend()->getValue($_product);
+                                  //$rim_diameter[] = $rim;
+                                  $orderedQty = $value->getQtyOrdered();
+                                  $totalQty += $orderedQty;
+                                  $rimQty[$rim] = $orderedQty;
+                                  $rimKey = '';
+                                  if($rim <= 17){
+                                    $rimSizeSku = 'SEV200200231';
+                                    $fitmentCharge = '25.0000';                   
+                                    $rimKey = '12-17';
+                                    $firstSkuQty = $value->getQtyOrdered();
+                                    $SEV200200231 +=$firstSkuQty;
+                                  }
+                                  if($rim >= 18 && $rim <= 20){
+                                    $rimSizeSku = 'SEV200200232';
+                                    $fitmentCharge = '35.0000';                   
+                                    $rimKey = '18-20';
+                                    $secondSkuQty = $value->getQtyOrdered();
+                                    $SEV200200232 +=$secondSkuQty;
+                                  }
+                                  if($rim >= 21){
+                                    $rimSizeSku = 'SEV200200233';   
+                                    $fitmentCharge = '45.0000'; 
+                                    $rimKey = '21-23';
+                                    $thirdSkuQty = $value->getQtyOrdered();
+                                    $SEV200200233 +=$thirdSkuQty;
+
+                                  }
+                                  $rim_diameter[][$rimKey] = array('rim' => $rim, 'qty' => $value->getQtyOrdered(), 'sku' => $rimSizeSku, 'fitment_charge' => $fitmentCharge);
+                                }
+
+                                $rimTotalQty = array();
+                                foreach($rim_diameter as $key => $rim_diameterArray){
+                                  foreach($rim_diameterArray as $key => $rim_diameterArrayVal){
+                                    if (isset($rimTotalQty[$key]))
+                                    {
+                                      //$rimTotalQty[$key][$rim_diameterArrayVal['sku']] += $rim_diameterArrayVal['qty'];
+                                      $rimTotalQty[$key][$rim_diameterArrayVal['sku']]['qty'] += (int) $rim_diameterArrayVal['qty'];
+                                    }
+                                    else
+                                    {
+                                      $rimTotalQty[$key][$rim_diameterArrayVal['sku']]['qty'] = (int) $rim_diameterArrayVal['qty'];
+                                    }
+                                    
+                                  }
+                                }
+                              ?>
+                              <?php foreach($rimTotalQty as $key => $fitemnetData): ?>
+                                <?php foreach($fitemnetData as $sku => $fitemnetItems): ?>
+                                  <?php $productData = $productObj->loadByAttribute('sku', $sku);?>
+                                  <tr class="productitem">
+                                    <td class="col-product">
+                                      <div  class="product-title">
+                                        <?php echo $productData->getName(); ?>
+                                      </div>
+                                      <input type="hidden"  name="item[<?= $key ?>][sku]" value="<?php echo $sku; ?>" class="">     
+                                      <div class="product-sku-block">
+                                        <span>SKU:</span> <?php echo $sku; ?></div>
+                                    </td>
+                                    <td class="col-price">
+                                        <input type="number" data-validate='{"required":true}' class="input-text admin__control-text qty-input costprice" 
+                                        name="item[<?= $key ?>][price]" id="<?php echo $sku;?>" value="<?php echo $productData->getPrice();?>">
+                                    </td>
+                                    <td class="col-qty-invoice">
+                                        <?php
+                                        
+                                        $totalFpo = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorderitem')->getCollection()
+                                                                        ->addfieldtofilter('order_id',$order->getIncrementId())
+                                                                        ->addfieldtofilter('sku',$sku)
+                                                                        ->addfieldtofilter('po_type','fpo');
+                                          $totalFPOQty = 0;
+                                          $allowedFPOQty = 0;
+                                          foreach ($totalFpo as $po) {
+                                            if ($sku == $po['sku']) {
+                                              $totalFPOQty += $po['qty'];
+                                            }
+                                            
+                                          }
+                                          if ($sku == 'SEV200200231') {
+                                            $soQty = $SEV200200231;
+                                            $allowedFPOQty = $soQty - $totalFPOQty;
+                                          } elseif ($sku == 'SEV200200232'){
+                                            $soQty = $SEV200200232;
+                                            $allowedFPOQty = $soQty - $totalFPOQty;
+                                          } elseif ($sku == 'SEV200200233'){
+                                            $soQty = $SEV200200233;
+                                            $allowedFPOQty = $soQty - $totalFPOQty;
+                                          } else {
+                                            $soQty = 0;
+                                          }
+                                          
+                                        ?>
+                                        <input type="number" data-validate='{"required":true}' class="input-text admin__control-text qty-input qtyinput" name="item[<?= $key ?>][qty]" value="<?php echo $allowedFPOQty;?>" data-soqty="<?php echo $soQty; ?>" data-poqty="<?php echo $totalFPOQty; ?>" data-allowedqty="<?php echo $allowedFPOQty; ?>">
+                                        <input type="hidden" name="item[<?= $key ?>][allowedqty]" value="<?php echo $allowedFPOQty; ?>">
+                                    </td>
+                                    <td class="">
+                                        <a href="javascript:void(0)" class="action-close _close removeitem update-button" data-role="close-submenu"></a>
+                                    </td>
+                                  </tr>
+                                <?php endforeach; ?>
+                              <?php endforeach; ?>
+                              <?php $mobileVanProductData = $mobileVanSku ? $productObj->loadByAttribute('sku', $mobileVanSku) : false; ?>
+                              <?php if ($mobileVanProductData): ?>
+                              <tr class="">
+                                <td class=""><a href="javascript:void(0)" class="addmobilevan">Add Mobile Van</a></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                              </tr>
+                              <tr class="mobilevanitems" style="display:none;">
+                                <td class="col-product">
+                                <div  class="product-title">
+                                  <?php echo $mobileVanProductData->getName(); ?>
+                                </div>
+                                <input type="hidden"  name="item[0][sku]" value="<?php echo $mobileVanSku; ?>" class="" disabled>
+                                <div class="product-sku-block">
+                                  <span>SKU:</span> <?php echo $mobileVanSku; ?></div>
+                                  </td>
+                                <td class="col-price">
+                                    <input type="number" data-validate='{"required":true}' class="input-text admin__control-text qty-input costprice"
+                                    name="item[0][price]" id="<?php echo $mobileVanSku;?>" value="<?php echo $mobileVanProductData->getPrice();?>" disabled>
+                                </td>
+                                <td class="col-qty-invoice">
+                                    <input type="number" data-validate='{"required":true}' class="input-text admin__control-text qty-input qtyinput" name="item[0][qty]" value="1" disabled>
+                                </td>
+                                <td class="">
+                                    <a href="javascript:void(0)" class="action-close _close removeitem update-button" data-role="close-submenu"></a>
+                                </td>
+                              </tr>
+                              <?php endif; ?>
+
+                          <?php elseif($dpo != '' && $dpo == 1): ?>
+                              <?php
+                                $sku = 'SEV200200217';
+                                $SEV200200217 = 0;
+                                  $productData = $productObj->loadByAttribute('sku', $sku); ?>
+                                  <tr class="productitem">
+                                    <td class="col-product">
+                                      <div  class="product-title">
+                                        <?php echo $productData->getName(); ?>
+                                      </div>
+                                      <input type="hidden"  name="item[<?= $productData->getId() ?>][sku]" value="<?php echo $sku; ?>" class="">     
+                                      <div class="product-sku-block">
+                                        <span>SKU:</span> <?php echo $sku; ?></div>
+                                    </td>
+                                    <td class="col-price">
+                                        <input type="number" data-validate='{"required":true}' class="input-text admin__control-text qty-input costprice" 
+                                        name="item[<?= $productData->getId() ?>][price]" id="<?php echo $sku;?>" value="<?php echo $productData->getPrice();?>">
+                                    </td>
+                                    <td class="col-qty-invoice">
+                                        <input type="number" data-validate='{"required":true}' class="input-text admin__control-text qty-input qtyinput" name="item[<?= $productData->getId() ?>][qty]" value="1" >
+                                    </td>
+                                    <td class="">
+                                        <a href="javascript:void(0)" class="action-close _close removeitem update-button" data-role="close-submenu"></a>
+                                    </td>
+                                  </tr>
+
+                            <?php elseif($ppo != '' && $ppo == 1): ?>
+                              <?php
+                                $sku = 'SEV200200218';
+                                $SEV200200218 = 0;
+                                  $productData = $productObj->loadByAttribute('sku', $sku); ?>
+                                  <tr class="productitem">
+                                    <td class="col-product">
+                                      <div  class="product-title">
+                                        <?php echo $productData->getName(); ?>
+                                      </div>
+                                      <input type="hidden"  name="item[<?= $productData->getId() ?>][sku]" value="<?php echo $sku; ?>" class="">     
+                                        <?php 
+                                            $orderGrandTotal = $order->getGrandTotal(); 
+                                            $orderPaymentMethod = $order->getPayment()->getMethod();
+                                            $price = 0;
+                                            $totalpay_checkout_price = ($orderGrandTotal * 0.020) + 1.5;
+                                            $tabby_installments_price = ($orderGrandTotal * 0.0699) + 1.5;
+                                            $tamara_pay_by_instalments_4_price = ($orderGrandTotal * 0.06) + 1.5;
+                                            if ($orderPaymentMethod == 'totalpay_checkout') { 
+                                                $price = $totalpay_checkout_price;
+                                            } elseif ($orderPaymentMethod == 'tabby_installments') {
+                                                $price = $tabby_installments_price;
+                                            } elseif ($orderPaymentMethod == 'tamara_pay_by_instalments_4') {
+                                                $price = $tamara_pay_by_instalments_4_price;
+                                            }
+                                        ?>
+                                      <div class="product-sku-block">
+                                        <span>SKU:</span> <?php echo $sku; ?><br><br>
+                                        <span>Total : </span> <?php echo number_format($totalpay_checkout_price, 2); ?><br>
+                                        <span>Tabby : </span> <?php echo number_format($tabby_installments_price, 2); ?><br>
+                                        <span>Tamara : </span> <?php echo number_format($tamara_pay_by_instalments_4_price, 2); ?><br>
+                                      </div>
+                                    </td>
+
+                                    <td class="col-price">
+                                        <input type="number" data-validate='{"required":true}' class="input-text admin__control-text qty-input costprice" name="item[<?= $productData->getId() ?>][price]" id="<?php echo $sku;?>" value="<?php echo number_format($price, 2); ?>">
+                                    </td>
+                                    <td class="col-qty-invoice">
+                                        <input type="number" data-validate='{"required":true}' class="input-text admin__control-text qty-input qtyinput" name="item[<?= $productData->getId() ?>][qty]" value="1" >
+                                    </td>
+                                    <td class="">
+                                        <a href="javascript:void(0)" class="action-close _close removeitem update-button" data-role="close-submenu"></a>
+                                    </td>
+                                  </tr>
+                                  <?php $ppo = 10; ?>
+                             <?php elseif ($ppo != '' && $ppo == 1 && $pickupDropoff_sku != ''): ?>
+
+                              <?php
+                              $productRepository = $objectManager->get('Magento\Catalog\Model\ProductRepository');
+                              $pickupDropoffProductObj = $productRepository->get($pickupDropoff_sku);  
+                              ?>
+                            <tr class="productitem">
+                                 <td class="col-product">
+                                     <div  class="product-title">
+                                       <?= $pickupDropoffProductObj->getName() ?>   
+                                      </div>
+
+                                      <input type="hidden"  name="item[20][sku]" value="<?= $pickupDropoffProductObj->getSku() ?>" class="">     
+
+                                      <div class="product-sku-block">
+                                          <span>SKU:</span> <?= $pickupDropoffProductObj->getSku() ?>
+                                      </div>
+
+                                  </td>
+                                  <td class="col-price">
+                                        <input type="number" data-validate='{"required":true}' class="input-text admin__control-text qty-input costprice" 
+                                        name="item[20][price]" value="">
+                                  </td>
+                                  <td class="col-qty-invoice">
+                                          <input type="number" data-validate='{"required":true}' class="input-text admin__control-text qty-input qtyinput" name="item[20][qty]" value="1">
+                                  </td>
+                                  <td class="">
+                                        <a href="javascript:void(0)" class="action-close _close removeitem update-button" data-role="close-submenu"></a>
+                                  </td>
+                               </tr>
+
+                            <?php else: ?>
+                            
+                            
+
+                              <?php  foreach ($orderitems as $key => $value) { ?>
+                              <?php
+                              
+                              $totalPo = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorderitem')->getCollection()
+                                                                        ->addfieldtofilter('order_id',$order->getIncrementId())
+                                                                        ->addfieldtofilter('sku',$value->getSku())
+                                                                        ->addfieldtofilter('po_type','mpo');
+                              
+                              
+                              $totalPOQty = 0;
+                              $allowedQty = 0;
+                              foreach ($totalPo as $key => $po) {
+                                if ($value->getSku() == $po['sku']) {
+                                  //$allowedQty = $value->getQtyOrdered() - $po['qty'];
+                                  $totalPOQty += $po['qty'];
+                                }
+                                
+                              }
+                              $allowedQty = $value->getQtyOrdered() - $totalPOQty;
+                              
+                              ?>
+                                  <tr class="productitem">
+                                      <td class="col-product">
+                                      <div  class="product-title">
+                                           <?= $value->getName() ?>    </div>
+
+                                      <input type="hidden"  name="item[<?= $key ?>][sku]" value="<?= $value->getSku() ?>" class="">     
+
+                                      <div class="product-sku-block">
+                                          <span>SKU:</span> <?= $value->getSku() ?></div>
+
+                                          </td>
+                                      <td class="col-price">
+                                            <input type="text" data-validate='{"required":true}' class="input-text admin__control-text qty-input costprice" 
+                                            name="item[<?= $key ?>][price]" value="">
+                                      </td>
+                                     
+                                      <td class="col-qty-invoice">
+                                              <input type="text" data-validate='{"required":true}' class="input-text admin__control-text qty-input qtyinput" name="item[<?= $key ?>][qty]" data-soqty="<?php echo $value->getQtyOrdered(); ?>" data-poqty="<?php echo $totalPOQty; ?>" value="<?php echo $allowedQty; ?>" data-allowedqty="<?php echo $allowedQty; ?>">
+                                              <input type="hidden" name="item[<?= $key ?>][allowedqty]" value="<?php echo $allowedQty; ?>">
+                                      </td>
+
+                                      <td class="">
+                                            <a href="javascript:void(0)" class="action-close _close removeitem update-button" data-role="close-submenu"></a>
+                                      </td>
+
+                                      
+                          
+                                   </tr>
+                               <?php  }  ?>
+                            <?php endif; ?>    
+                                                                     
+                         </tbody>
+                                                            
+                    </table>
+                </div>
+            </div>
+        </section>
+
+       </section>
+
+      <?php /* comment */  ?>  
+        <section class="admin__page-section">
+            <div class="admin__page-section-title">
+                <span class="title">Order Total</span>
+            </div>
+            <div class="admin__page-section-content">
+                <fieldset class="admin__fieldset order-history" id="order-comment">
+                    <legend class="admin__legend"><span>Order History</span></legend>
+                    <br>
+                    
+                    <div class="admin__field field-comment">
+                            <label for="order-comment" class="admin__field-label"><span>Order Comments</span></label>
+                            <div class="admin__field-control">
+                                <textarea data-validate='{"required":true}' id="comment" name="comment" class="admin__control-textarea"></textarea>
+                            </div>
+                        </div>
+
+                        <?php if($dpo != '' && $dpo == 1): ?>
+                        <?php
+                        // Pre-fill pickup location from MPO vendor if reference_po is passed
+                        $pickupDefault = '';
+                        $referencePo = $request->getParam('reference_po');
+                        if ($referencePo) {
+                            $refPoModel = $objectManager->create('\Hdweb\Purchaseorder\Model\Purchaseorder')->load($referencePo);
+                            $refVendorId = $refPoModel->getVendor();
+                            if ($refVendorId) {
+                                $refVendorObj = $objectManager->create('\Hdweb\Purchaseorder\Model\Povendor')->load($refVendorId);
+                                if ($refVendorObj->getId()) {
+                                    $pickupName = $refVendorObj->getName() ?: '';
+                                    $pickupAddressParts = [];
+                                    if ($refVendorObj->getAddress()) { $pickupAddressParts[] = $refVendorObj->getAddress(); }
+                                    if ($refVendorObj->getCity()) { $pickupAddressParts[] = $refVendorObj->getCity(); }
+                                    if ($refVendorObj->getPhone()) { $pickupAddressParts[] = 'Phone: ' . $refVendorObj->getPhone(); }
+                                    $pickupDefault = $pickupName;
+                                    if (!empty($pickupAddressParts)) {
+                                        $pickupDefault .= "\n" . implode(', ', $pickupAddressParts);
+                                    }
+                                }
+                            }
+                        }
+                        ?>
+                        <div style="display:flex !important; flex-direction:row !important; gap:15px; width:100%;">
+                            <div style="width:50% !important; display:inline-block !important; float:left !important;">
+                                <label for="pickup_location" class="admin__field-label"><span>Pickup Location</span></label>
+                                <div class="admin__field-control">
+                                    <textarea id="pickup_location" name="pickup_location" data-validate='{"required":true}' class="admin__control-textarea" style="width:100%; min-height:80px;" rows="3"><?= $block->escapeHtml($pickupDefault) ?></textarea>
+                                </div>
+                            </div>
+                            <div style="width:50% !important; display:inline-block !important; float:left !important;">
+                                <label for="dropoff_location" class="admin__field-label"><span>Dropoff Location</span></label>
+                                <div class="admin__field-control">
+                                    <?php
+                                    $dropoffDefault = '';
+                                    if (!empty($installerDetails['name'])) {
+                                        $dropoffDefault = $installerDetails['name'];
+                                        $addressParts = [];
+                                        if (!empty($installerDetails['address'])) {
+                                            $addressParts[] = $installerDetails['address'];
+                                        }
+                                        if (!empty($installerDetails['city'])) {
+                                            $addressParts[] = $installerDetails['city'];
+                                        }
+                                        if (!empty($country)) {
+                                            $addressParts[] = $country;
+                                        }
+                                        if (!empty($addressParts)) {
+                                            $dropoffDefault .= "\n" . implode(', ', $addressParts);
+                                        }
+                                    }
+                                    ?>
+                                    <textarea id="dropoff_location" name="dropoff_location" data-validate='{"required":true}' class="admin__control-textarea" style="width:100%; min-height:80px;" rows="3"><?= $block->escapeHtml($dropoffDefault) ?></textarea>
+                                </div>
+                            </div>
+                            <div style="clear:both;"></div>
+                        </div>
+                        <?php endif; ?>
+
+                </fieldset>
+                <fieldset id="order-totals" class="admin__fieldset order-totals">
+                  <legend class="admin__legend"><span>Order Totals</span></legend>
+                        <br>
+
+                        <table class="admin__table-secondary data-table">
+                            <tbody>
+                                <tr class="row-totals">
+                                    <td style="" class="admin__total-mark" colspan="1">
+                                        Subtotal    </td>
+                                    <td style="" class="admin__total-amount">
+                                        <span class="price subtotal"></span>    
+                                    </td>
+                                </tr>
+                    
+                                    <tr class="tax  row-totals">
+                                        <td style="" class="admin__total-mark" colspan="1">
+                                                        Tax          
+                                        </td>
+                                        <td style="" class="admin__total-amount"><span class="price vat"></span></td>
+                                    </tr>
+
+                                    <tr class="row-totals">
+                                        <td style="" class="admin__total-mark" colspan="1">
+                                            <strong>Grand Total</strong>
+                                        </td>
+                                        <td style="" class="admin__total-amount">
+                                            <strong><span class="price grandtotal"></span></strong>
+                                        </td>
+                                    </tr>
+
+                            </tbody>
+                        </table>
+
+                        <div class="order-totals-actions">
+                           
+                            <div class="actions">
+                                <button id="" title="Submit Order" type="submit" class="action-default scalable save primary" data-ui-id="widget-button-16">
+                                <span>Generate PO</span>
+                              </button>
+                            </div>
+                        </div>
+
+                  
+                </fieldset>
+            </div>
+        </section>    
+</form>
+
+<script type = 'text/javascript'>
+    require([
+            'jquery',
+            'Magento_Ui/js/modal/confirm'
+        ],
+        function ($, confirmation) {
+      
+        
+        
+        $('.removeitem').click(function (event) {
+                    
+              /*var msg=confirm("Do you wish to remove this item");
+                if (msg==true)
+                {
+                   $(this).closest('.productitem').remove();
+                }*/
+                var msg=confirm("Do you wish to remove this item");
+                if (msg==true)
+                {
+                   var hasMobileVan =  $(this).closest('.productitem').hasClass('mobilevanitems');
+                   if(hasMobileVan){
+                    $('.mobilevanitems').removeClass('productitem').hide();
+                    $('.mobilevanitems td input').prop("disabled", true);
+                    updateprice();
+                   }else{
+                    $(this).closest('.productitem').remove();
+                    updateprice(); 
+                   }
+                }
+
+            
+              return false;
+        });
+
+             jQuery('.qtyinput,.costprice').focusout(function(){      
+              updateprice();
+            });
+                      
+         function updateprice() {   
+
+            var conceptName = $('#vendor').find(":selected").val();
+            var vatApplicable = ["<?php echo $vatApplicableString ?>"];
+            if($.inArray(conceptName,vatApplicable) == -1){
+              var vat="0";
+            }else{
+              var vat="<?php echo $vat ?>";
+            }
+             
+            var subtotal=0;
+
+                          $('.hidden_vat').val("");
+                          $('.vat').html("");
+                           $('.hidden_subtotal').val("");
+                           $('.subtotal').html("");
+                           $('.hidden_grandtotal').val("");
+                           $('.grandtotal').html("");
+
+                       $('.productitem').each(function(){
+                           var costprice =$(this).find('.costprice').val();
+                           var qtyinput =$(this).find('.qtyinput').val();
+                           var rowprice=costprice  * qtyinput;
+                           subtotal=subtotal + rowprice;
+ 
+                       });
+
+                       var currencycode="<?php echo $currencycode ?>";
+
+                       if(subtotal > 0 ){
+              // alert(vat);  
+                          var percentage_amount=( subtotal * vat ) / 100;
+                          var grandtotal=subtotal  + percentage_amount;
+
+                          percentage_amount_with_code=currencycode +' '+percentage_amount.toFixed(2);  
+                          $('.hidden_vat').val(percentage_amount.toFixed(2));
+                          $('.vat').html(percentage_amount_with_code);
+
+                           var finalsubtotal=currencycode +' '+subtotal.toFixed(2);
+                           $('.hidden_subtotal').val(subtotal.toFixed(2));
+                           $('.subtotal').html(finalsubtotal);
+
+                           var grandtotal_with_code=currencycode +' '+grandtotal.toFixed(2);
+                           $('.hidden_grandtotal').val(grandtotal.toFixed(2));
+                           $('.grandtotal').html(grandtotal_with_code); 
+                       }
+                       
+                 };
+
+        /* Start on vendor change get fitment vendor charges */ 
+        jQuery(document).on('change','#vendor',function(){    
+          var vendorId = $("#vendor option:selected").val();
+          jQuery.ajax({
+            type: 'POST',
+            url: '/purchaseorder/index/povendorfitment/index/',
+            data: {vendor_id: vendorId},
+            success: function (request) {
+            jQuery.each(request, function (sku, price) {         
+              jQuery('#'+sku).val(price);
+            })
+            updateprice();
+            }
+          });
+        });
+        /* End on vendor change get fitment vendor charges */
+
+        jQuery( document ).ready(function() {
+           jQuery("#vendor").trigger("change");
+        });
+
+        $('.addmobilevan').click(function (event) {
+          $('.mobilevanitems').addClass('productitem').show();
+          $('.mobilevanitems td input').removeAttr("disabled");
+          updateprice();
+                  
+          return false;
+        });
+
+    });
+  
+</script>
+   

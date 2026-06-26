@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!-- Brand indexer handler: wired to klever_brand index -->
+    <virtualType name="kleverBrandIndexerHandler"
+                 type="Smile\ElasticsuiteCore\Indexer\GenericIndexerHandler">
+        <arguments>
+            <argument name="indexName" xsi:type="string">klever_brand</argument>
+            <argument name="typeName"  xsi:type="string">brand</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Klever\ElasticTyreSearch\Model\Indexer\Brand">
+        <arguments>
+            <argument name="indexerHandler" xsi:type="object">kleverBrandIndexerHandler</argument>
+        </arguments>
+    </type>
+
+    <!-- Blog indexer handler: wired to klever_blog index -->
+    <virtualType name="kleverBlogIndexerHandler"
+                 type="Smile\ElasticsuiteCore\Indexer\GenericIndexerHandler">
+        <arguments>
+            <argument name="indexName" xsi:type="string">klever_blog</argument>
+            <argument name="typeName"  xsi:type="string">post</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Klever\ElasticTyreSearch\Model\Indexer\Blog">
+        <arguments>
+            <argument name="indexerHandler" xsi:type="object">kleverBlogIndexerHandler</argument>
+        </arguments>
+    </type>
+
+    <!-- Vehicle indexer handler: wired to klever_vehicle index -->
+    <virtualType name="kleverVehicleIndexerHandler"
+                 type="Smile\ElasticsuiteCore\Indexer\GenericIndexerHandler">
+        <arguments>
+            <argument name="indexName" xsi:type="string">klever_vehicle</argument>
+            <argument name="typeName"  xsi:type="string">vehicle</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Klever\ElasticTyreSearch\Model\Indexer\Vehicle">
+        <arguments>
+            <argument name="indexerHandler" xsi:type="object">kleverVehicleIndexerHandler</argument>
+        </arguments>
+    </type>
+
+    <!-- CMS indexer handler: wired to klever_cms index -->
+    <virtualType name="kleverCmsIndexerHandler"
+                 type="Smile\ElasticsuiteCore\Indexer\GenericIndexerHandler">
+        <arguments>
+            <argument name="indexName" xsi:type="string">klever_cms</argument>
+            <argument name="typeName"  xsi:type="string">page</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Klever\ElasticTyreSearch\Model\Indexer\Cms">
+        <arguments>
+            <argument name="indexerHandler" xsi:type="object">kleverCmsIndexerHandler</argument>
+        </arguments>
+    </type>
+
+    <!-- Normalise tyre-size search queries (e.g. "19565" → "195/65") -->
+    <type name="Magento\Search\Model\QueryFactory">
+        <plugin name="klever_normalise_tyre_size_query"
+                type="Klever\ElasticTyreSearch\Plugin\NormalizeTyreSizeQuery" />
+    </type>
+
+    <!-- Register datasources for each custom index -->
+    <type name="Smile\ElasticsuiteCore\Api\Index\DataSourceResolverInterface">
+        <arguments>
+            <argument name="dataSources" xsi:type="array">
+                <item name="klever_brand"   xsi:type="array">
+                    <item name="brand_datasource" xsi:type="object">
+                        Klever\ElasticTyreSearch\Model\Indexer\Datasource\Brand
+                    </item>
+                </item>
+                <item name="klever_blog"    xsi:type="array">
+                    <item name="blog_datasource" xsi:type="object">
+                        Klever\ElasticTyreSearch\Model\Indexer\Datasource\Blog
+                    </item>
+                </item>
+                <item name="klever_vehicle" xsi:type="array">
+                    <item name="vehicle_datasource" xsi:type="object">
+                        Klever\ElasticTyreSearch\Model\Indexer\Datasource\Vehicle
+                    </item>
+                </item>
+                <item name="klever_cms"     xsi:type="array">
+                    <item name="cms_datasource" xsi:type="object">
+                        Klever\ElasticTyreSearch\Model\Indexer\Datasource\Cms
+                    </item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+</config>

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Hyva\Checkout\Controller\Index\Index">
+        <plugin name="hdweb_core_hyva_checkout_before_execute"
+                type="Hdweb\Core\Plugin\Hyva\Checkout\Controller\Index\BeforeExecutePlugin"
+                sortOrder="10"
+                disabled="false"/>
+    </type>
+    <type name="Hyva\Checkout\Magewire\Checkout\AddressView\AbstractMagewireAddressForm">
+        <plugin name="hdweb_core_address_form_defaults"
+                type="Hdweb\Core\Plugin\Hyva\Checkout\AddressFormDefaultsPlugin"
+                sortOrder="20"
+                disabled="false"/>
+    </type>
+    <type name="Ecomteck\StoreLocator\Controller\Ajax\SetInstaller">
+        <plugin name="hdweb_core_setinstaller_cache_clean"
+                type="Hdweb\Core\Plugin\Ecomteck\StoreLocator\SetInstallerCacheCleanPlugin"
+                sortOrder="10"
+                disabled="false"/>
+    </type>
+    <type name="Ecomteck\StoreLocator\Controller\Ajax\GetStores">
+        <plugin name="hdweb_core_getstores_cache_clean"
+                type="Hdweb\Core\Plugin\Ecomteck\StoreLocator\GetStoresCacheCleanPlugin"
+                sortOrder="10"
+                disabled="false"/>
+    </type>
+</config>

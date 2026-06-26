@@ -1,0 +1,23 @@
+<div id="pickup-info-wrapper" style="display:none;">
+    <?php if($block->getPickupStore()): ?>
+        <strong><?php echo __('Choosen Store') ?>:</strong>
+        <span class="price">
+            <?php echo $this->helper('Ecomteck\StorePickup\Helper\Data')->getStoreNameById(
+            $block->getPickupStore()); ?>
+        </span>
+    <?php endif; ?>
+    <br/>
+    <strong><?php echo __('Pickup Date') ?>:</strong>
+    <span class="price"><?php echo $block->getPickupDate() ?></span>
+    <br/>
+    <strong><?php echo __('Pickup Time') ?>:</strong>
+    <span class="price"><?php echo $block->getPickupTime() ?></span>
+</div>
+<script type="text/javascript">
+    require(
+        ['jquery'],
+        function($) {
+        	$('#pickup-info-wrapper').appendTo('.order-shipping-method div:last-child');
+        }
+    );
+</script>

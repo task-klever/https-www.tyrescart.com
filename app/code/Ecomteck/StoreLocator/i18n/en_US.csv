@@ -1,0 +1,144 @@
+Back,Back
+"Delete Store","Delete Store"
+"Are you sure you want to do this?","Are you sure you want to do this?"
+"Import file","Import file"
+Reset,Reset
+"Save Store","Save Store"
+"Save and Continue Edit","Save and Continue Edit"
+"Opening Hours","Opening Hours"
+"Special Opening Hours","Special Opening Hours"
+"Add Special Opening Hours","Add Special Opening Hours"
+ID,ID
+Name,Name
+SKU,SKU
+Price,Price
+Position,Position
+Category,Category
+"Add category","Add category"
+City,City
+"Add city","Add city"
+Country,Country
+"Add Country","Add Country"
+Distance,Distance
+"Add Distance","Add Distance"
+"Store Locator","Store Locator"
+"The stores has been deleted.","The stores has been deleted."
+"The stores no longer exists.","The stores no longer exists."
+"There was a problem deleting the stores","There was a problem deleting the stores"
+"We can't find a stores to delete.","We can't find a stores to delete."
+StoreLocator,StoreLocator
+"New Store","New Store"
+"Edit Store","Edit Store"
+"You exported the file. It can be found in var folder or in browser downloads.","You exported the file. It can be found in var folder or in browser downloads."
+"There was a problem exporting the data","There was a problem exporting the data"
+Import,Import
+"Your file has been imported successfully","Your file has been imported successfully"
+"There was an error importing the file","There was an error importing the file"
+"Please upload a file","Please upload a file"
+"Please correct the data sent.","Please correct the data sent."
+"'Something went wrong while saving the stores.' .","'Something went wrong while saving the stores.' ."
+"You saved the store","You saved the store"
+"There was a problem saving the store","There was a problem saving the store"
+Home,Home
+"Thanks for contacting us with your comments and questions. We'll respond to you very soon.","Thanks for contacting us with your comments and questions. We'll respond to you very soon."
+"We can't process your request right now. Sorry, that's all we know.","We can't process your request right now. Sorry, that's all we know."
+"All Categories","All Categories"
+"All countries","All countries"
+"All cities","All cities"
+"We can't find the image file.","We can't find the image file."
+label,label
+Close,Close
+"Something went wrong while getting the image url.","Something went wrong while getting the image url."
+"Name cannot be empty","Name cannot be empty"
+"Contact form cannot be empty","Contact form cannot be empty"
+"Contact mail cannot be empty","Contact mail cannot be empty"
+"Unable to validate form","Unable to validate form"
+"Unable to retrieve store informations","Unable to retrieve store informations"
+"Could not save the store: %1","Could not save the store: %1"
+"Requested stores doesn't exist","Requested stores doesn't exist"
+"Unable to remove stores %1","Unable to remove stores %1"
+%1,%1
+"Something went wrong while saving the file(s).","Something went wrong while saving the file(s)."
+"File can not be saved to the destination folder.","File can not be saved to the destination folder."
+"""Uploader not found for type: "" .","""Uploader not found for type: "" ."
+.,.
+"All Store Views","All Store Views"
+Edit,Edit
+Delete,Delete
+"Delete ""${ $.$data.name }""","Delete ""${ $.$data.name }"""
+"Are you sure you wan't to delete the Store ""${ $.$data.name }"" ?","Are you sure you wan't to delete the Store ""${ $.$data.name }"" ?"
+"Double-click on an opening hour range to delete it.","Double-click on an opening hour range to delete it."
+"* Required Fields","* Required Fields"
+"Write Us","Write Us"
+Email,Email
+"Phone Number","Phone Number"
+"What’s on your mind?","What’s on your mind?"
+Submit,Submit
+or,or
+"View availability in stores ...","View availability in stores ..."
+"Product not available on any store","Product not available on any store"
+Address,Address
+"Nearest Station","Nearest Station"
+"Get Directions","Get Directions"
+"View Our Other Stores","View Our Other Stores"
+"Enter Address","Enter Address"
+"Enter Store Name","Enter Store Name"
+"Search for store","Search for store"
+Filter,Filter
+Radius:,Radius:
+"STORES NEAR YOU","STORES NEAR YOU"
+"Contact Form","Contact Form"
+Phone,Phone
+Message,Message
+"A total of %1 record(s) have been deleted.","A total of %1 record(s) have been deleted."
+"An error occurred while deleting record(s).","An error occurred while deleting record(s)."
+"A total of %1 stores have been disabled.","A total of %1 stores have been disabled."
+"An error occurred while disabling stores.","An error occurred while disabling stores."
+"A total of %1 stores have been enabled.","A total of %1 stores have been enabled."
+"An error occurred while enabling stores.","An error occurred while enabling stores."
+"Distance Steps","Distance Steps"
+Countries,Countries
+Categories,Categories
+Cities,Cities
+Contact,Contact
+"Email Sender","Email Sender"
+"Email Template","Email Template"
+"Email template chosen based on theme fallback when ""Default"" option is selected.","Email template chosen based on theme fallback when ""Default"" option is selected."
+"Send Order Email Copy To","Send Order Email Copy To"
+Comma-separated,Comma-separated
+"Send Order Email Copy Method","Send Order Email Copy Method"
+Enabled,Enabled
+Disabled,Disabled
+"Store Information","Store Information"
+"Enter full store name here","Enter full store name here"
+Status,Status
+Longitude,Longitude
+"Example for Silicon Roundabout, London: -0.088302","Example for Silicon Roundabout, London: -0.088302"
+Latitude,Latitude
+"Example for Silicon Roundabout, London: 51.525127","Example for Silicon Roundabout, London: 51.525127"
+Postcode,Postcode
+Region,Region
+"External Link","External Link"
+"If your store has an individual store details page and it is on a different website, enter it here. Format: http://...","If your store has an individual store details page and it is on a different website, enter it here. Format: http://..."
+Image,Image
+"Url Key","Url Key"
+"If you want a store details page on the same website enter your url here. If the final url is www.website.com/storelocator/waterloo then you need to enter only waterloo.","If you want a store details page on the same website enter your url here. If the final url is www.website.com/storelocator/waterloo then you need to enter only waterloo."
+Description,Description
+"Store Details Image","Store Details Image"
+Intro,Intro
+"Manage Store views","Manage Store views"
+"Store View","Store View"
+"Products in Store","Products in Store"
+"Make sure your file is a correctly formatted CSV file, delimited by commas and the fields are quoted. If you are unsure, why not take a backup first via the export functionality. Your file should look like this if you open it in a text editor: https://github.com/ClaudiuCreanga/magento2-storelocator-extension/blob/master/documentation/images/csv.jpg ","Make sure your file is a correctly formatted CSV file, delimited by commas and the fields are quoted. If you are unsure, why not take a backup first via the export functionality."
+"Add New Store","Add New Store"
+Export,Export
+"Delete items","Delete items"
+"Are you sure you want to delete selected items?","Are you sure you want to delete selected items?"
+Disable,Disable
+Enable,Enable
+"Store Views","Store Views"
+Thumbnail,Thumbnail
+"Attribute Set","Attribute Set"
+AttributeSetText,AttributeSetText
+StatusText,StatusText
+Type,Type

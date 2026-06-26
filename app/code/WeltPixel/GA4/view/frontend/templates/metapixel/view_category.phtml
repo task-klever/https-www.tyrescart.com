@@ -1,0 +1,44 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \Magento\Catalog\Block\Category\View */
+
+/** @var \WeltPixel\GA4\Helper\MetaPixelTracking $metaPixelHelper */
+$metaPixelHelper = $this->helper('WeltPixel\GA4\Helper\MetaPixelTracking');
+$cspNonceProvider = $metaPixelHelper->getCspNonceProvider();
+$eventId = $metaPixelHelper->getEventUID();
+$category = $block->getCurrentCategory();
+?>
+<?php if ($category && $metaPixelHelper->isMetaPixelTrackingEnabled() && $metaPixelHelper->shouldMetaPixelEventBeTracked(\WeltPixel\GA4\Model\Config\Source\MetaPixel\TrackingEvents::EVENT_VIEW_CATEGORY)) :
+?>
+<script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+    if (window.ga4AllowServices) {
+        fbq('trackCustom', 'ViewCategory', {
+            content_category: "<?= /* @noEscape */ addslashes(str_replace('"', '&quot;', $category->getName())) ?>"
+        },{
+            eventID: '<?= /* @noEscape */ $eventId ?>'
+        });
+    }
+</script>
+<?php endif; ?>
+
+<?php if ($category && $metaPixelHelper->isServerSideTrackingEnabled() && $metaPixelHelper->shouldMetaServerSideEventBeTracked(\WeltPixel\GA4\Model\Config\Source\MetaPixel\TrackingEvents::EVENT_VIEW_CATEGORY)) : ?>
+    <script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        requirejs(['jquery'],
+            function  ($) {
+                $(document).ready(function() {
+                    var requestUrl = '<?php echo $block->escapeUrl($metaPixelHelper->getMetaSSTrackUrl()); ?>';
+                    $.post({
+                        url: requestUrl,
+                        global: false,
+                        data: {
+                            'eventID': '<?= /* @noEscape */ $eventId ?>',
+                            'eventName': 'ViewCategory',
+                            'eventIdentifier': '<?= /* @noEscape */ \WeltPixel\GA4\Model\Config\Source\MetaPixel\TrackingEvents::EVENT_VIEW_CATEGORY  ?>',
+                            'eventUrl': '<?= $block->escapeUrl($metaPixelHelper->getStoreCurrenUrl()) ?>',
+                            'contentCategory': '<?= /* @noEscape */ $category->getName() ?>'
+                        }
+                    });
+                });
+            });
+    </script>
+<?php endif; ?>

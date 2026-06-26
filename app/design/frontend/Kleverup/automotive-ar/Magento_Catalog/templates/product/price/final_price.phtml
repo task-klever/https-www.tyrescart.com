@@ -1,0 +1,73 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+?>
+
+<?php
+// @codingStandardsIgnoreFile
+/** @var \Magento\Catalog\Pricing\Render\FinalPriceBox $block */
+
+/** ex: \Magento\Catalog\Pricing\Price\RegularPrice */
+/** @var \Magento\Framework\Pricing\Price\PriceInterface $priceModel */
+$priceModel = $block->getPriceType('regular_price');
+
+/** ex: \Magento\Catalog\Pricing\Price\FinalPrice */
+/** @var \Magento\Framework\Pricing\Price\PriceInterface $finalPriceModel */
+$finalPriceModel = $block->getPriceType('final_price');
+$idSuffix = $block->getIdSuffix() ? $block->getIdSuffix() : '';
+$schema = ($block->getZone() == 'item_view') ? true : false;
+$fprice = $finalPriceModel->getAmount();
+$rprice = $priceModel->getAmount();
+$fprice = $finalPriceModel->getValue();   // ✅ float
+$rprice = $priceModel->getValue(); 
+
+/** @var \Magento\Framework\Pricing\Helper\Data $pricingHelper */
+$pricingHelper = \Magento\Framework\App\ObjectManager::getInstance()
+    ->get(\Magento\Framework\Pricing\Helper\Data::class);
+
+$renderSplitPrice = function($helper, $value, $store, $cssClass = '', $linethrowClass = '') {
+    
+    $currencySymbol = $store->getBaseCurrency()->getCurrencySymbol();
+    $priceValue = number_format((float)$value, 2, '.', '');
+
+    return '<span class="' . $cssClass . '"><span class="price-container price-final_price tax [direction:ltr]"><span data-price-amount="'.$value.'" data-price-type="oldPrice" class="price-wrapper "><span class="price flex items-center">'
+        . '<span class="currency-dirham mr-1"></span>'
+        . '<span class="price-value '.$linethrowClass.'">' . $priceValue . '</span>'
+        . '</span></span></span></span>';
+};
+
+?>
+<?php if ($fprice < $rprice) :?>
+
+    <div class="flex items-center flex-row-reverse">
+    <?= $renderSplitPrice($pricingHelper, $rprice, $block->getSaleableItem()->getStore(), 'old-price text-gray-900 opacity-60 mr-2 mt-1', 'line-through') ?>
+        <span class="special-price">
+        <?= /* @noEscape */ $block->renderAmount($finalPriceModel->getAmount(), [
+           /* 'display_label'     => __('Special Price'),*/
+            'price_id'          => $block->getPriceId('product-price-' . $idSuffix),
+            'price_type'        => 'finalPrice',
+            'include_container' => true,
+            'schema' => $schema
+        ]); ?>
+    </span>
+
+    </div>
+    
+<?php else :?>
+    <?= $renderSplitPrice($pricingHelper, $fprice, $block->getSaleableItem()->getStore(), 'final-price') ?>
+
+<?php endif; ?>
+
+<?php if ($block->showMinimalPrice()) :?>
+    <?php if ($block->getUseLinkForAsLowAs()) :?>
+        <a href="<?= $block->escapeUrl($block->getSaleableItem()->getProductUrl()) ?>" class="minimal-price-link">
+            <?= /* @noEscape */ $block->renderAmountMinimal() ?>
+        </a>
+    <?php else :?>
+        <span class="minimal-price-link">
+            <?= /* @noEscape */ $block->renderAmountMinimal() ?>
+        </span>
+    <?php endif?>
+<?php endif; ?>

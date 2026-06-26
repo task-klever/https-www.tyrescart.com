@@ -1,0 +1,15 @@
+<?php
+/**
+ * Arabic translation for shipping description in order emails
+ */
+$_order = $block->getOrder();
+
+$translations = [
+    'Mobile Van Service' => 'خدمة الفان المتنقل',
+    'Install at Outlet' => 'التركيب في المركز',
+    'Delivery - Without Fitment' => 'توصيل - بدون تركيب',
+];
+
+$shippingDesc = $_order->getShippingDescription() ?: '';
+
+echo $block->escapeHtml(isset($translations[$shippingDesc]) ? $translations[$shippingDesc] : $shippingDesc);

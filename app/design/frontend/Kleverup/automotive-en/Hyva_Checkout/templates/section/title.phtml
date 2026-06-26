@@ -1,0 +1,25 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\Escaper;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+
+$htmlTag = $block->getData('html_tag') ?? 'div';
+?>
+<?php if ($block->hasData('title')): ?>
+    <<?= /* @noEscape */ $htmlTag ?> class="fildset-title w-full">
+        <p class="text-base font-semibold px-3 text-white bg-black rounded-t-[10px] py-1.5">
+            <?= $escaper->escapeHtml($block->getData('title')) ?>
+        </p>
+    </<?= /* @noEscape */ $htmlTag ?>>
+<?php endif ?>

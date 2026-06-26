@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <ngeniusonline>
+                <active>0</active>
+                <title>N-Genius Payment Gateway</title>
+                <model>NGeniusFacade</model>
+                <environment>uat</environment>
+                <is_gateway>1</is_gateway>
+                <can_use_checkout>1</can_use_checkout>
+                <can_authorize>1</can_authorize>
+                <can_capture>1</can_capture>
+                <can_capture_partial>1</can_capture_partial>
+                <can_use_internal>1</can_use_internal>
+                <can_refund>1</can_refund>
+                <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                <can_void>1</can_void>
+                <can_cancel>1</can_cancel>
+                <can_edit>1</can_edit>
+                <order_status>payment_review</order_status>
+                <payment_action>authorize</payment_action>
+                <ngenius_initial_order_status>payment_review</ngenius_initial_order_status>
+                <success_order_state>processing</success_order_state>
+                <success_order_status>processing</success_order_status>
+                <failed_order_status>closed</failed_order_status>
+                <failed_order_state>closed</failed_order_state>
+                <refund_statuses>0</refund_statuses>
+                <order_email>0</order_email>
+                <invoice_email>1</invoice_email>
+                <allowspecific>0</allowspecific>
+                <active>1</active>
+                <title>N-Genius Online Payment Gateway</title>
+                <environment>uat</environment>
+                <uat_api_url><![CDATA[https://api-gateway.sandbox.ngenius-payments.com]]></uat_api_url>
+                <live_api_url><![CDATA[https://api-gateway.ngenius-payments.com]]></live_api_url>
+                <ngenius_payment_action>sale</ngenius_payment_action>
+                <outlet_ref_2_currencies>AED</outlet_ref_2_currencies>
+                <token_endpoint><![CDATA[/auth/realms/%s/protocol/openid-connect/token]]></token_endpoint>
+                <order_endpoint><![CDATA[/transactions/outlets/%s/orders]]></order_endpoint>
+                <fetch_endpoint><![CDATA[/transactions/outlets/%s/orders/%s]]></fetch_endpoint>
+                <capture_endpoint><![CDATA[/transactions/outlets/%s/orders/%s/payments/%s/captures]]></capture_endpoint>
+                <void_auth_endpoint><![CDATA[/transactions/outlets/%s/orders/%s/payments/%s/cancel]]></void_auth_endpoint>
+                <refund_endpoint><![CDATA[/transactions/outlets/%s/orders/%s/payments/%s/captures/%s/refund]]></refund_endpoint>
+            </ngeniusonline>
+        </payment>
+    </default>
+</config>
+

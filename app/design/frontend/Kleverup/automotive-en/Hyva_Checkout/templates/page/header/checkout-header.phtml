@@ -1,0 +1,39 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+
+/*
+ * This header template is a simplified version of Magento_Theme/templates/html/header.phtml from the hyva-default theme, optimized for the checkout.
+ */
+
+?>
+<div id="header"
+     class="relative z-30 w-full shadow bg-black"
+>
+    <div class="container flex flex-wrap items-center justify-center w-full px-6 py-3 mx-auto mt-0">
+        <!--Logo-->
+        <div class="order-1 sm:order-2 lg:order-1 w-full pb-2 sm:w-auto sm:pb-0">
+            <a class="flex items-center justify-center text-xl font-medium tracking-wide text-gray-800 no-underline hover:no-underline font-title" href="<?php echo $this->getBaseUrl(); ?>" aria-label="Go to Home page">
+                <img class="w-[250px]" src="<?php echo $this->getViewFileUrl('images/tires-logo.png'); ?>" alt="Tyrescart" width="189" height="64">
+            </a>
+        </div>
+    </div>
+
+    <!--Authentication Pop-Up-->
+    <?= $block->getChildHtml('authentication-popup'); ?>
+</div>
+

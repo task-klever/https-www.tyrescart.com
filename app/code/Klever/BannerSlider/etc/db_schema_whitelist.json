@@ -1,0 +1,16 @@
+{
+    "mageplaza_bannerslider_banner": {
+        "column": {
+            "image_mobile": true,
+            "url_key": true,
+            "meta_title": true,
+            "meta_description": true,
+            "page_content": true,
+            "display_from": true,
+            "display_to": true
+        },
+        "index": {
+            "MAGEPLAZA_BANNERSLIDER_BANNER_URL_KEY": true
+        }
+    }
+}

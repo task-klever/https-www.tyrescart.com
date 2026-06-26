@@ -1,0 +1,37 @@
+
+<?php $stores = $block->getAvailableStores();?>
+<?php if($stores && count($stores) > 0):?>
+<a href="#" id="open-store-locator"><?php echo __('View availability in stores ...')?></a>
+<div id="store-locator-popup">
+    <?php echo $this->getChildHtml('stores');?>
+</div>
+<script>
+    require(
+        [
+            'jquery',
+            'Magento_Ui/js/modal/modal'
+        ],
+        function($,modal) {
+            var options = {
+                type: 'popup',
+                responsive: true,
+                innerScroll: false,
+                title: '',
+                buttons: [{
+                    text: $.mage.__('Close'),
+                    class: '',
+                    click: function () {
+                        this.closeModal();
+                    }
+                }]
+            };
+            var popup = modal(options, $('#store-locator-popup'));
+            $("#open-store-locator").on("click",function(){
+                $('#store-locator-popup').modal('openModal');
+            });
+        }
+    );
+</script>
+<?php else:?>
+    <!--strong><i><?php echo __('Product not available on any store')?></i></strong-->
+<?php endif;?>

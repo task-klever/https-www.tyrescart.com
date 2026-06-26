@@ -1,0 +1,75 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Checkout\Model\Form\EntityField\AbstractEntityField;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
+
+/** @var AbstractEntityField $element */
+$element = $block->getData('element');
+
+// Enforce the input type attribute
+$element->setAttribute('type', 'radio');
+
+/** @var AbstractRenderer $renderer */
+$renderer = $element->getRenderer();
+
+// Additional variables
+$cssClassesFieldWrapperInner = $element->renderClass(['field'], 'field-wrapper-inner');
+?>
+<div class="<?= $escaper->escapeHtmlAttr($cssClassesFieldWrapperInner) ?>">
+    <?= /* @noEscape */ $element->getRenderer()->renderBefore($element) ?>
+
+    <div class="flex gap-4 items-center">
+        <?php if ($element->hasIcon()): ?>
+            <div class="form-input-addon inline-flex gap-2 items-center">
+                <?= /* @noEscape */ $renderer->renderIcon($element) ?>
+            </div>
+        <?php endif ?>
+
+        <label class="<?= $escaper->escapeHtmlAttr($element->renderClass(['label'], 'label')) ?> inline-flex items-center gap-x-2.5 my-0">
+            <input
+                class="<?= $escaper->escapeHtmlAttr($element->renderClass(['form-radio'])) ?>"
+                <?php if ($element->hasAttributes()): ?>
+                    <?= /* @noEscape */ $element->renderAttributes($escaper) ?>
+                <?php endif ?>
+            >
+
+            <span>
+                <?= $escaper->escapeHtml(__($element->getLabel())) ?>
+            </span>
+        </label>
+
+        <?php if (!empty($renderer->renderTooltip($element))): ?>
+            <div class="form-input-addon inline-flex gap-2 items-center">
+                <?= /* @noEscape */ $renderer->renderTooltip($element) ?>
+            </div>
+        <?php endif ?>
+    </div>
+    <?= /* @noEscape */ $renderer->renderHintText($element) ?>
+    <?= /* @noEscape */ $renderer->renderComment($element) ?>
+
+    <div class="space-y-2">
+        <?php if ($element->hasRelatives()): ?>
+            <div class="space-y-2">
+                <?php foreach ($element->getRelatives() as $relative): ?>
+                    <?= /* @noEscape */ $relative->render() ?>
+                <?php endforeach ?>
+            </div>
+        <?php endif ?>
+    </div>
+
+    <?= /* @noEscape */ $element->getRenderer()->renderAfter($element) ?>
+</div>

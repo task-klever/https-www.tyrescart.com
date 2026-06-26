@@ -1,0 +1,28 @@
+{
+    "name": "klever/module-abandoned-mail",
+    "description": "Abandoned Mail Notification Module for Magento 2",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Klever Tech Solution",
+            "email": "info@klevertech.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "magento/framework": "*",
+        "magento/module-sales": "*",
+        "magento/module-backend": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Klever\\AbandonedMail\\": ""
+        }
+    }
+}
+

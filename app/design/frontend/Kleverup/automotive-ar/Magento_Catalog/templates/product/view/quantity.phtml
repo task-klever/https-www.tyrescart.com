@@ -1,0 +1,216 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\ProductStockItem;
+use Magento\Catalog\Block\Product\View;
+use Magento\Catalog\Model\Product;
+use Magento\Framework\Escaper;
+use Magento\Catalog\Pricing\Price\RegularPrice;
+use Magento\Catalog\Pricing\Price\FinalPrice;
+use Hyva\Theme\ViewModel\ProductPrice;
+use Hdweb\Tyrefinder\Helper\Productlisting as ListingHelper;
+
+// phpcs:disable Generic.WhiteSpace.ScopeIndent.Incorrect
+
+/** @var View $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var Product $product */
+$product = $block->getProduct();
+
+/** @var ProductStockItem $stockItemViewModel */
+$stockItemViewModel = $viewModels->require(ProductStockItem::class);
+$minSalesQty = $stockItemViewModel->getMinSaleQty($product);
+$maxSalesQty = $stockItemViewModel->getMaxSaleQty($product);
+$defaultQty = $block->getProductDefaultQty() * 1;
+
+$step = $stockItemViewModel->getQtyIncrements($product)
+    ? $stockItemViewModel->getQtyIncrements($product)
+    : null;
+
+/**
+ * sets minimum and maximum values taking into account the values set in the admin,
+ * but taking into account the value of Qty Increments
+ */
+if ($step) {
+    $minSalesQty = ceil($minSalesQty / $step) * $step;
+    $maxSalesQty = floor($maxSalesQty / $step) * $step;
+    $defaultQty = ceil($defaultQty / $step) * $step;
+}
+
+$maxSalesQtyLength = ($maxSalesQty ? strlen((string) $maxSalesQty) : 4)
+    + (/* add one if decimal for separator */ (int) $stockItemViewModel->isQtyDecimal($product));
+
+
+//
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface');
+/** @var ListingHelper $listingHelper */
+$listingHelper = $this->helper(ListingHelper::class);
+$storeCode = $storeManager->getStore()->getCode();
+$StockState = $objectManager->get('\Magento\CatalogInventory\Api\StockStateInterface');
+$prod_qty =  $listingHelper->getProductAvailableQty($product->getSku());
+$stockQty = 0;
+if ($prod_qty >= 8) {
+    $stockQty = 8;
+} else {
+    $stockQty = $prod_qty;
+}
+$partsCategory = '';
+if($product->getPartsCategory()){
+    $partsCategory = $product->getAttributeText('parts_category');
+}
+if($partsCategory){
+    $partsCategoryClass = '';
+    $partsCategoryClass = strtolower(str_replace(' ', '-', $partsCategory));
+}
+$productPriceViewModel = $viewModels->require(ProductPrice::class);
+$unitRegularPrice = $productPriceViewModel->getPriceValue(RegularPrice::PRICE_CODE, $product);
+$unitFinalPrice = $productPriceViewModel->getPriceValue(FinalPrice::PRICE_CODE, $product);
+$productOfferRule = $listingHelper->isAnyRuleExist($product);
+$isOfferProduct = 'No';
+$discountAmount = '';
+$discountQty = '';
+if (isset($productOfferRule) && !empty($productOfferRule) && $productOfferRule['rule_id'] != '') {
+    if ($productOfferRule['offer_price']) {
+        $isOfferProduct = 'Yes';
+        $discountAmount = $productOfferRule['discount_amount'];
+        $discountQty = $productOfferRule['discount_qty_step'];
+    }
+}
+$productId = $product->getId();
+?>
+<?php if ($block->shouldRenderQuantity()): ?>
+    <script>
+        function initQtyField() {
+
+            function findPathParam(key) {
+                // get all path pairs after BASE_URL/front_name/action_path/action
+                const baseUrl = (BASE_URL.substring(0, 2) === '//' ? 'http:' : '') + BASE_URL;
+                const baseUrlParts = (new URL(baseUrl)).pathname.replace(/\/$/, '').split('/');
+                const pathParts = window.location.pathname.split('/').slice(baseUrlParts.length + 3);
+                for (let i = 0; i < pathParts.length; i += 2) {
+                    if (pathParts[i] === key && pathParts.length > i) {
+                        return pathParts[i + 1];
+                    }
+                }
+            }
+
+            return {
+                qty: <?= /** @noEscape */ $defaultQty ?>,
+                itemId: (new URLSearchParams(window.location.search)).get('id') || findPathParam('id'),
+                productId: '<?= (int)$product->getId() ?>',
+                <?php /* populate the qty when editing a product from the cart */ ?>
+                onGetCartData: function onGetCartData(data, $dispatch) {
+                    const cart = data && data.data && data.data.cart;
+                    if (this.itemId && cart && cart.items) {
+                        const cartItem = cart.items.find((item) => {
+                            return item.item_id === this.itemId && item.product_id === this.productId;
+                        });
+                        if (cartItem && cartItem.qty) {
+                            this.qty = cartItem.qty;
+                            $dispatch('update-qty-' + this.productId, this.qty);
+                        }
+                    }
+                }
+            };
+        }
+    </script>
+    <div x-data="initQtyField()"
+        x-init="$dispatch('update-qty-<?= (int)$product->getId() ?>', qty)"
+    >
+        <?php if ($product->isSaleable()): ?>
+            <div class="ml-2">
+                <select name="qty"
+                    @private-content-loaded.window="onGetCartData($event.detail, $dispatch)"
+                    id="qty[<?= (int)$product->getId() ?>]"
+                    form="product_addtocart_form"
+                    class="form-select w-auto cursor-pointer qty-dropdown-<?php echo $partsCategoryClass; ?>"
+                    @change="$dispatch('update-qty-<?= (int)$product->getId() ?>', qty)"
+                    onchange="changePrice(
+                                    this,
+                                    <?php echo $unitRegularPrice; ?>,
+                                    <?php echo $unitFinalPrice; ?>,
+                                    '<?php echo $partsCategory; ?>',
+                                    '<?php echo $isOfferProduct; ?>',
+                                    '<?php echo $discountAmount; ?>',
+                                    '<?php echo $discountQty; ?>',
+                                    '<?php echo $productId; ?>'
+                                    )">
+                    <?php for ($cnt = 1; $cnt <= $stockQty; $cnt++): ?>
+                        <?php if($partsCategory == 'Battery'): ?>
+                            <option value=<?php echo $cnt;?> <?php if($cnt == 1): ?> selected <?php endif ?>><?php echo $cnt;?> </option>
+                        <?php elseif($partsCategory == 'Tyres'): ?>
+                            <option value=<?php echo $cnt;?> <?php if($cnt == 4): ?> selected <?php endif ?>><?php echo $cnt;?> </option>
+                        <?php else: ?>
+                                <option value=<?php echo $cnt;?> <?php if($cnt == 1): ?> selected <?php endif ?>><?php echo $cnt;?> </option>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+                 </select>
+            </div>
+            <script type="text/javascript">
+                function changePrice(selectElement, unitRegularPrice, unitFinalPrice, partsCategory, isOfferProduct, discountAmount, discountQty, productId) {
+                    const formatter = new Intl.NumberFormat('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    });
+                    const selectedQty = parseInt(selectElement.value);
+                    if (isOfferProduct == 'No') {
+                        var price = selectedQty * unitFinalPrice;
+                        var changedPrice = formatter.format(price);
+                        var setPriceBox = document.querySelector('.set-price-box.id-' + productId);
+                        if (setPriceBox) {
+                            setPriceBox.querySelector('.set-of').textContent = '\u0645\u062C\u0645\u0648\u0639\u0629 ' + selectedQty + ':';
+                            setPriceBox.querySelector('.set-of-price').textContent = changedPrice;
+                        }
+                    } else {
+                        if (selectedQty >= discountQty) {
+                            var price = selectedQty * unitFinalPrice;
+                            var discount = (discountAmount / 100) * unitFinalPrice * discountQty;
+                            if (selectedQty % discountQty === 0) {
+                                var discountTimes = selectedQty / discountQty;
+                                discount = discount * discountTimes;
+                            } else {
+                                var discountTimes = 1;
+                                discount = discount * discountTimes;
+                            }
+                            price = price - discount;
+                        } else {
+                            var price = selectedQty * unitFinalPrice;
+                        }
+                        var changedPrice = formatter.format(price);
+                        var setPriceBox = document.querySelector('.set-price-box.id-' + productId);
+                        if (setPriceBox) {
+                            setPriceBox.querySelector('.set-of').textContent = '\u0645\u062C\u0645\u0648\u0639\u0629 ' + selectedQty + ':';
+                            setPriceBox.querySelector('.set-of-price').textContent = changedPrice;
+                        }
+                    }
+                    /* Update Add to Cart button price */
+                    var btnPrice = Math.round(price);
+                    var btnPriceEl = document.getElementById('addtocart-btn-price');
+                    if (btnPriceEl) btnPriceEl.textContent = btnPrice.toLocaleString();
+                    var btnPriceWarrantyEl = document.getElementById('addtocart-btn-price-warranty');
+                    if (btnPriceWarrantyEl) btnPriceWarrantyEl.textContent = btnPrice.toLocaleString();
+                    /* Update Set of 2 price */
+                    var setPriceBox = document.querySelector('.set-price-box.id-' + productId);
+                    if (setPriceBox) {
+                        var set2El = setPriceBox.querySelector('.set-of-2-price');
+                        if (set2El) {
+                            var set2price = formatter.format(unitFinalPrice * 2);
+                            set2El.textContent = set2price;
+                        }
+                    }
+                }
+            </script>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>

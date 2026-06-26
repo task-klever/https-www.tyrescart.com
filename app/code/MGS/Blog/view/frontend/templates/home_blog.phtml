@@ -1,0 +1,85 @@
+<?php
+   $helper = $this->helper('MGS\Blog\Helper\Data');
+   $brandhelper =  $this->helper('MGS\Brand\Helper\Data');
+   $storeManager = \Magento\Framework\App\ObjectManager::getInstance()->get(\Magento\Store\Model\StoreManagerInterface::class);
+   $mediaUrl = $storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+   ?>
+<section class="section section-padding home-blog-slider [direction:ltr]"
+    x-data="{ swiper: null }"
+    x-init="swiper = new Swiper($refs.blogSlider, {
+        speed: 1000,
+        loop: true,
+        autoplay: { delay: 3000, disableOnInteraction: true },
+        pagination: { el: $refs.blogPagination, clickable: true },
+        breakpoints: {
+            0: { slidesPerView: 1, spaceBetween: 10 },
+            575: { slidesPerView: 1, spaceBetween: 10 },
+            768: { slidesPerView: 2, spaceBetween: 10 },
+            1024: { slidesPerView: 3, spaceBetween: 10 },
+            1200: { slidesPerView: 4, spaceBetween: 15 }
+        }
+    })"
+    @mouseenter="swiper && swiper.autoplay.stop()"
+    @mouseleave="swiper && swiper.autoplay.start()"
+>
+   <div class="container-theme">
+      <div class="section-title text-center">
+         <h3><?php echo __('Automotive') ?> <span class="text-theme-blue"><?php echo __('Blog') ?></span></h3>
+      </div>
+      <div class="home-blog-slider swiper-navigation-style-1 swiper-pagination-style-3 mb-10">
+         <div class="slider swiper-container" x-ref="blogSlider">
+            <div class="swiper-wrapper">
+               <?php
+                  $collection = $block->getCollection()
+                   ->setOrder('published_at', 'DESC') ->setPageSize(4)->setCurPage(1)->load();     
+                   ?>
+               <?php $currentStoreId = $storeManager->getStore()->getId(); ?>
+               <?php foreach ($collection->getData() as $post): ?>
+               <?php
+                  $storeOverrides = $block->getPostByStore($currentStoreId, $post['post_id']);
+                  $postTitle = isset($storeOverrides['title']) ? $storeOverrides['title']['value'] : $post['title'];
+                  $postShortContent = isset($storeOverrides['short_content']) ? $storeOverrides['short_content']['value'] : $post['short_content'];
+               ?>
+               <div class="swiper-slide">
+                  <div class="flex items-end justify-center shrink-0 w-full js_slide">
+                     <div class="slide w-full overflow-hidden border bg-[#f5f5f5] border-[#e1e1e1] rounded-[10px]">
+                        <div class="blog-image relative">
+                           <div class="img_wrp w-full pb-full h-0 z-0 bg-gray-200 pb-[56%]">
+                              <figure class="absolute inset-0 ">
+                                 <picture>
+                                    <source srcset="<?php echo $mediaUrl . 'mgs_blog/'.$post['thumbnail']; ?>" loading="lazy" alt="social image" title="Blog Image" type="image/jpg">
+                                    <source srcset="<?php echo $mediaUrl . 'mgs_blog/'.$post['thumbnail']; ?>" loading="lazy" alt="Blog Image" title="Blog Image" type="image/jpg">
+                                    <img class="w-full h-full object-cover object-top overflow-hidden" src="<?php echo $mediaUrl . 'mgs_blog/'.$post['thumbnail']; ?>" alt="<?php echo $post['title']; ?>" loading="lazy">
+                                 </picture>
+                              </figure>
+                           </div>
+                           <div class="absolute top-2 left-2 z-10">
+                              <span class="inline-block bg-white/90 backdrop-blur-sm text-[#222] text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm">
+                                 <?php echo $block->formatDate($post['published_at'], \IntlDateFormatter::MEDIUM, false); ?>
+                              </span>
+                           </div>
+                        </div>
+                        <div class="blog-blog-info p-4">
+                              <h6 class="mb-2 text-sm">
+                                 <a href="<?php echo $this->getBaseUrl() .'blog/'.$post['url_key']; ?>" class="text-ellipsis line-clamp-2 text-black hover:text-theme-blue transition ease-out font-bold uppercase"><?php echo $postTitle; ?></a>
+                              </h6>
+                              <div class="flex items-center gap-2 my-2 [html[lang='ar']_&]:flex-row-reverse">
+                                 <div class="h-[2px] w-6 rounded-full bg-theme-blue"></div>
+                                 <div class="h-px flex-1 bg-gray-200"></div>
+                              </div>
+                              <?php echo $postShortContent; ?>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <?php endforeach; ?>
+            </div>
+            <?php /*
+               <div class="swiper-button-next slider-fullscreen-button-next"></div>
+               <div class="swiper-button-prev slider-fullscreen-button-prev"></div>
+               */ ?>
+         </div>
+         <div x-ref="blogPagination"></div>
+      </div>
+   </div>
+</section>

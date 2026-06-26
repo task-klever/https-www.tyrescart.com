@@ -1,0 +1,288 @@
+<?php
+/**
+ * Top Picks by Brand Segment — Alpine.js + AJAX
+ * Shows on tyres category page (page 1 only, no layered nav filters)
+ */
+
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$scopeConfig = $objectManager->get(\Magento\Framework\App\Config\ScopeConfigInterface::class);
+$enabled = $scopeConfig->isSetFlag('klever_brandsegment/general/enabled');
+if (!$enabled) { return; }
+
+// Skip non-tyre pages
+$registry = $objectManager->get(\Magento\Framework\Registry::class);
+$currentCategory = $registry->registry('current_category');
+if ($currentCategory) {
+    $urlKey = $currentCategory->getUrlKey();
+    if (in_array($urlKey, ['car-battery', 'motorcycle-tyres', 'rims-wheels', 'car-wheels'])) { return; }
+    // Hide on brand pages (/tyres/brand/pirelli etc.)
+    $categoryPath = $currentCategory->getUrlPath();
+    if ($categoryPath && strpos($categoryPath, 'tyres/brand/') !== false) { return; }
+}
+
+// Hide on page 2+
+$currentPage = (int)($_GET['p'] ?? 1);
+if ($currentPage > 1) { return; }
+
+// Hide when layered nav filters are applied (brand, price, year, etc.)
+// Allow: width, height, rim, width_rear, height_rear, rim_rear, and toolbar params
+$allowedParams = ['width', 'height', 'rim', 'width_rear', 'height_rear', 'rim_rear',
+    'p', 'product_list_order', 'product_list_dir', 'product_list_mode', 'product_list_limit',
+    'q', 'is_ajax', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+    'gclid', 'fbclid', 'msclkid', '_'];
+$hasFilterParams = false;
+foreach ($_GET as $paramKey => $paramValue) {
+    if (!in_array($paramKey, $allowedParams) && $paramValue !== '' && $paramValue !== null) {
+        $hasFilterParams = true;
+        break;
+    }
+}
+if ($hasFilterParams) { return; }
+
+// Detect size from URL
+$searchWidth = $_GET['width'] ?? null;
+$searchHeight = $_GET['height'] ?? null;
+$searchRim = $_GET['rim'] ?? null;
+$currentUri = $_SERVER['REQUEST_URI'] ?? '';
+
+// Only show when a size search is active (via params or /tyres/size/ URL)
+$hasSizeFromUrl = preg_match('#/tyres/size/#i', $currentUri);
+if (!$searchWidth && !$hasSizeFromUrl) { return; }
+$currentUri = $_SERVER['REQUEST_URI'] ?? '';
+
+// Parse /tyres/size/185-70-r14 format
+if (!$searchWidth && preg_match('#/tyres/size/(\d+)-(\d+)-r(\d+)#i', $currentUri, $m)) {
+    $searchWidth = $m[1];
+    $searchHeight = $m[2];
+    $searchRim = $m[3];
+}
+
+$limit = (int)$scopeConfig->getValue('klever_brandsegment/general/products_per_segment') ?: 3;
+$baseUrl = $block->getBaseUrl();
+?>
+
+<div x-data="topPicksSegment()" x-init="loadPicks()" x-cloak>
+    <template x-if="segments.length > 0">
+        <div class="top-picks-section">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" dir="ltr">
+                <template x-for="segment in segments" :key="segment.key">
+                    <div class="rounded-[10px] overflow-hidden border border-gray-200 shadow-sm">
+                        <div :class="segmentStyles[segment.key]?.bg || 'bg-gray-800'" class="text-white px-4 py-2.5 flex items-center justify-between">
+                            <span class="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
+                                <template x-if="segment.key === 'top_premium'">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l3.057 6.171L15 10.236l-5 4.872L11.18 22 5 18.09 -1.18 22 0 15.108l-5-4.872 6.943-1.065L5 3z" transform="translate(7, 0)"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                                </template>
+                                <template x-if="segment.key === 'top_quality'">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                </template>
+                                <template x-if="segment.key === 'top_budget'">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </template>
+                                <span x-text="segmentLabels[segment.key] || segment.label"></span>
+                            </span>
+                            <template x-if="segment.products.length > 1">
+                                <button type="button"
+                                    @click.stop="expanded[segment.key] = !expanded[segment.key]"
+                                    class="md:hidden text-xs font-semibold text-white/80 hover:text-white transition-colors"
+                                    x-text="expanded[segment.key] ? '<?= $escaper->escapeJs(__('Show Less')) ?>' : '<?= $escaper->escapeJs(__('View More')) ?>'">
+                                </button>
+                            </template>
+                        </div>
+                        <div class="bg-white divide-y divide-[#eee]">
+                            <template x-for="(product, pIdx) in segment.products" :key="product.product_id">
+                                <div :class="pIdx > 0 && !expanded[segment.key] ? 'hidden md:block' : 'block'" class="px-3 py-2.5" dir="ltr">
+                                    <a :href="product.url" class="flex items-start gap-3 hover:opacity-80 transition-opacity">
+                                        <img :src="product.image_url" :alt="product.name" class="w-14 h-14 object-contain flex-shrink-0" loading="lazy"/>
+                                        <div class="flex-1 min-w-0">
+                                            <!-- Brand Logo -->
+                                            <template x-if="product.brand_logo_url">
+                                                <img :src="product.brand_logo_url" :alt="product.brand_name" class="h-[20px] max-w-[90px] object-contain mb-1" loading="lazy"/>
+                                            </template>
+                                            <template x-if="!product.brand_logo_url">
+                                                <span class="text-xs font-bold text-gray-800 block mb-1" x-text="product.brand_name"></span>
+                                            </template>
+                                            <!-- Pattern, OEM, RunFlat, EV -->
+                                            <div class="flex flex-wrap items-center gap-1 mb-1">
+                                                <span class="text-xs font-semibold text-gray-700" x-text="product.pattern"></span>
+                                                <template x-if="product.oem_marking">
+                                                    <span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded" x-text="product.oem_marking"></span>
+                                                </template>
+                                                <template x-if="product.runflat">
+                                                    <span class="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-medium" x-text="product.runflat"></span>
+                                                </template>
+                                                <template x-if="product.ev">
+                                                    <span class="text-[10px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded font-medium">EV</span>
+                                                </template>
+                                            </div>
+                                            <!-- Size, Load, Year, Origin -->
+                                            <div class="flex flex-wrap items-center gap-x-2 text-[11px] text-gray-500" dir="ltr">
+                                                <span x-text="product.size"></span>
+                                                <template x-if="product.load_index">
+                                                    <span x-text="product.load_index"></span>
+                                                </template>
+                                                <template x-if="product.year">
+                                                    <span x-text="product.year"></span>
+                                                </template>
+                                                <template x-if="product.origin">
+                                                    <span x-text="product.origin"></span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0 pt-1 text-right">
+                                            <span class="text-sm font-bold text-black block" dir="ltr"><span class="currency-dirham">&#xe900;</span><span x-text="product.formatted_price"></span></span>
+                                            <!-- Qty + Cart icon / Contact icon -->
+                                            <template x-if="product.is_saleable">
+                                                <div class="flex items-center gap-1 mt-1 justify-end" @click.prevent.stop>
+                                                    <select :id="'tp-qty-' + product.product_id" class="border border-gray-300 rounded-[6px] text-xs h-8 w-12 px-2 cursor-pointer"
+                                                        :onchange="'topPicksChangePrice(this,' + product.regular_price + ',' + product.final_price + ',\'' + product.is_offer + '\',\'' + product.discount_amount + '\',\'' + product.discount_qty + '\',' + product.product_id + ')'">
+                                                        <template x-for="q in product.stock_qty" :key="q">
+                                                            <option :value="q" :selected="q === 4" x-text="q"></option>
+                                                        </template>
+                                                    </select>
+                                                    <button type="button"
+                                                        @click.prevent.stop="topPicksAddToCart(product.product_id)"
+                                                        class="w-8 h-8 bg-theme-blue hover:bg-black text-white rounded-[6px] flex items-center justify-center transition-colors"
+                                                        :title="'<?= $escaper->escapeJs(__('Add to Cart')) ?>'">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                            <template x-if="!product.is_saleable">
+                                                <div>
+                                                    <!-- Mobile: WhatsApp -->
+                                                    <a :href="'https://api.whatsapp.com/send/?phone=+971505069575&text=' + encodeURIComponent('I would like to enquire about ' + product.name)"
+                                                       target="_blank"
+                                                       @click.stop
+                                                       class="mt-1 w-8 h-8 bg-[#25D366] hover:bg-black text-white rounded-[6px] items-center justify-center transition-colors ml-auto flex md:hidden"
+                                                       :title="'WhatsApp'">
+                                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.097"></path></svg>
+                                                    </a>
+                                                    <!-- Desktop: Enquiry popup -->
+                                                    <button type="button"
+                                                       @click.prevent.stop="openProductEnquiryModal(product.name)"
+                                                       class="mt-1 w-8 h-8 bg-[#00843d] hover:bg-black text-white rounded-[6px] items-center justify-center transition-colors ml-auto hidden md:flex"
+                                                       :title="'<?= $escaper->escapeJs(__('Contact Us')) ?>'">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </a>
+                                    <!-- Set of 2 & Set of 4 -->
+                                    <div class="flex items-center gap-3 flex-wrap mt-1 ml-[68px] text-xs" :id="'tp-set-' + product.product_id">
+                                        <div class="flex items-center gap-1">
+                                            <span class="text-gray-500"><?= __('Set of 2 :') ?></span>
+                                            <span class="font-semibold" dir="ltr"><span class="currency-dirham">&#xe900;</span><span x-text="product.set2price"></span></span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <span class="text-gray-500 tp-set-of"><?= __('Set of 4 :') ?></span>
+                                            <span class="font-semibold" dir="ltr"><span class="currency-dirham">&#xe900;</span><span class="tp-set-of-price" x-text="product.set4price"></span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+</div>
+
+<script>
+function topPicksSegment() {
+    return {
+        segments: [],
+        expanded: { top_premium: false, top_quality: false, top_budget: false },
+        segmentStyles: {
+            top_premium: { bg: 'bg-gradient-to-r from-[#1a1a2e] to-[#16213e]' },
+            top_quality: { bg: 'bg-gradient-to-r from-[#00843D] to-[#00a64d]' },
+            top_budget:  { bg: 'bg-gradient-to-r from-[#f39c12] to-[#e67e22]' }
+        },
+        segmentLabels: {
+            top_premium: '<?= $escaper->escapeJs(__('Top Premium')) ?>',
+            top_quality: '<?= $escaper->escapeJs(__('Top Quality')) ?>',
+            top_budget:  '<?= $escaper->escapeJs(__('Top Budget')) ?>'
+        },
+        async loadPicks() {
+            try {
+                const params = new URLSearchParams({
+                    width: '<?= $escaper->escapeJs($searchWidth ?? '') ?>',
+                    height: '<?= $escaper->escapeJs($searchHeight ?? '') ?>',
+                    rim: '<?= $escaper->escapeJs($searchRim ?? '') ?>',
+                    limit: <?= (int)$limit ?>
+                });
+
+                const response = await fetch('<?= $escaper->escapeJs($baseUrl) ?>brandsegment/ajax/toppicks?' + params.toString(), {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                if (data && data.segments) {
+                    this.segments = data.segments;
+                }
+            } catch (e) {
+                console.error('TopPicks error:', e);
+            }
+        }
+    };
+}
+
+function topPicksChangePrice(selectEl, regularPrice, finalPrice, isOffer, discountAmt, discountQty, productId) {
+    var qty = parseInt(selectEl.value);
+    var formatter = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    var price;
+    if (isOffer === 'No') {
+        price = qty * finalPrice;
+    } else {
+        var da = parseFloat(discountAmt) || 0;
+        var dq = parseInt(discountQty) || 0;
+        if (qty >= dq && dq > 0) {
+            price = qty * finalPrice;
+            var discount = (da / 100) * finalPrice * dq * Math.floor(qty / dq);
+            price = price - discount;
+        } else {
+            price = qty * finalPrice;
+        }
+    }
+    var setBox = document.getElementById('tp-set-' + productId);
+    if (setBox) {
+        var setOfEl = setBox.querySelector('.tp-set-of');
+        var setOfPriceEl = setBox.querySelector('.tp-set-of-price');
+        if (setOfEl) setOfEl.textContent = '<?= $escaper->escapeJs(__('Set of')) ?> ' + qty + ' :';
+        if (setOfPriceEl) setOfPriceEl.textContent = formatter.format(price);
+    }
+    var btnEl = document.getElementById('tp-btn-price-' + productId);
+    if (btnEl) btnEl.textContent = Math.round(price).toLocaleString();
+}
+
+function topPicksAddToCart(productId) {
+    var qtySelect = document.getElementById('tp-qty-' + productId);
+    var qty = qtySelect ? parseInt(qtySelect.value) : 4;
+    var addUrl = BASE_URL + 'checkout/cart/add/uenc/' + btoa(window.location.href);
+    var formKey = typeof hyva !== 'undefined' ? hyva.getFormKey() : '';
+    var body = 'form_key=' + formKey + '&product=' + productId + '&qty=' + qty;
+
+    fetch(addUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: body,
+        credentials: 'include'
+    })
+    .then(function(r) { return r.text(); })
+    .then(function() {
+        window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
+        setTimeout(function() {
+            window.dispatchEvent(new CustomEvent('toggle-cart', { detail: { isOpen: true } }));
+        }, 500);
+    })
+    .catch(function() { alert('<?= $escaper->escapeJs(__('Error adding to cart. Please try again.')) ?>'); });
+}
+</script>

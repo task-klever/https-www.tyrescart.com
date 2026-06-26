@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+	<preference for="Hdweb\WarrantyClaim\Api\ClaimRepositoryInterface" type="Hdweb\WarrantyClaim\Model\ClaimRepository"/>
+	<preference for="Hdweb\WarrantyClaim\Api\Data\ClaimInterface" type="Hdweb\WarrantyClaim\Model\Claim"/>
+	<preference for="Hdweb\WarrantyClaim\Api\Data\ClaimSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+	<virtualType name="Hdweb\WarrantyClaim\Model\ResourceModel\Claim\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+		<arguments>
+			<argument name="mainTable" xsi:type="string">hdweb_warrantyclaim_claim</argument>
+			<argument name="resourceModel" xsi:type="string">Hdweb\WarrantyClaim\Model\ResourceModel\Claim\Collection</argument>
+		</arguments>
+	</virtualType>
+	<type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+		<arguments>
+			<argument name="collections" xsi:type="array">
+				<item name="hdweb_warrantyclaim_claim_listing_data_source" xsi:type="string">Hdweb\WarrantyClaim\Model\ResourceModel\Claim\Grid\Collection</item>
+			</argument>
+		</arguments>
+	</type>
+</config>

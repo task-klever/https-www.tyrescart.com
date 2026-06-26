@@ -1,0 +1,96 @@
+<?php
+/**
+ * FAQ Group detail page - Hyva template
+ * Shows list of question titles as links to their detail pages
+ *
+ * @var $block \Klever\Faq\Block\GroupView
+ * @var $escaper \Magento\Framework\Escaper
+ */
+$group = $block->getGroup();
+if (!$group) {
+    return;
+}
+$faqCollection = $block->getFaqCollection();
+$groupName = $escaper->escapeHtml(__($group->getGroupName()));
+$faqBaseUrl = $block->getFaqBaseUrl();
+
+// Build JSON-LD FAQPage schema
+$jsonLdQuestions = [];
+foreach ($faqCollection as $faq) {
+    $plainText = strip_tags($block->filterOutputHtml((string)__($faq->getContent())));
+    $plainText = trim(preg_replace('/\s+/', ' ', $plainText));
+    $jsonLdQuestions[] = [
+        '@type' => 'Question',
+        'name' => (string)__($faq->getTitle()),
+        'acceptedAnswer' => [
+            '@type' => 'Answer',
+            'text' => $plainText,
+        ],
+    ];
+}
+if (!empty($jsonLdQuestions)) {
+    $jsonLd = [
+        '@context' => 'https://schema.org',
+        '@type' => 'FAQPage',
+        'mainEntity' => $jsonLdQuestions,
+    ];
+}
+?>
+<?php if (!empty($jsonLdQuestions)): ?>
+<script type="application/ld+json"><?= /* @noEscape */ json_encode($jsonLd, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?></script>
+<?php endif; ?>
+<nav class="breadcrumbs mt-2 md:mt-0" aria-label="Breadcrumb">
+        <ol class="items list-reset flex flex-wrap text-grey text-sm">
+            <li class="item flex home">
+                <a class="text-sm font-medium text-center text-theme-blue hover:text-theme-dark transition-colors duration-300" href="<?= $escaper->escapeUrl($block->getBaseUrl()) ?>"><?= $escaper->escapeHtml(__('Home')) ?></a>
+            </li>
+            <li class="item flex">
+                <span aria-hidden="true" class="separator text-primary-lighter px-2">/</span>
+                <a class="text-sm font-medium text-center text-theme-blue hover:text-theme-dark transition-colors duration-300" href="<?= $escaper->escapeUrl($faqBaseUrl) ?>"><?= $escaper->escapeHtml(__('FAQ')) ?></a>
+            </li>
+            <li class="item flex current">
+                <span aria-hidden="true" class="separator text-primary-lighter px-2">/</span>
+                <span class="text-sm font-medium text-theme-dark" aria-current="page"><?= $escaper->escapeHtml($groupName) ?></span>
+            </li>
+        </ol>
+</nav>
+<section class="section py-5 mageprince-faq-hyva">
+<div class="section-title text-center">
+      <h3 class="flex items-center justify-center gap-2">
+          <?php $icon = $group->getIcon(); ?>
+          <?php if ($icon): ?>
+              <img class="w-8 h-8 md:w-9 md:h-9 object-contain flex-shrink-0"
+                   src="<?= $escaper->escapeUrl($block->getGroupImageUrl($icon)) ?>"
+                   alt="<?= $escaper->escapeHtmlAttr($group->getGroupName()) ?>">
+          <?php endif; ?>
+          <?= $groupName ?>
+      </h3>
+      <p><?= (int) $faqCollection->getSize() ?>
+        <?= $escaper->escapeHtml(__($faqCollection->getSize() === 1 ? 'question' : 'questions')) ?>
+        <?= $escaper->escapeHtml(__('in this category')) ?>
+     </p>
+   </div>
+    <?php if ($faqCollection->getSize()): ?>
+        <div class="rounded-[10px] shadow-custom-blue bg-gradient-to-br from-[#e0fff6]/60 via-white to-[#d1f7ec]/60 px-3 md:px-8 lg:px-10 py-1.5 md:py-4 lg:py-5 w-full border border-color">
+            <div class="divide-y divide-theme-blue/30">
+                <?php foreach ($faqCollection as $faq): ?>
+                    <?php $faqDetailUrl = $block->getFaqDetailUrl($faq); ?>
+                    <a
+                        href="<?= $escaper->escapeUrl($faqDetailUrl) ?>"
+                        class="flex items-center justify-between py-3 md:py-4 group cursor-pointer transition-colors"
+                    >
+                        <span class="font-medium text-sm md:text-base text-black group-hover:text-theme-blue transition-colors">
+                            <?= $escaper->escapeHtml(__($faq->getTitle())) ?>
+                        </span>
+                        <svg class="w-5 h-5 flex-shrink-0 ml-3 text-theme-blue opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all"
+                             fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    <?php else: ?>
+        <p class="text-gray-500"><?= $escaper->escapeHtml(__('No FAQs available in this category.')) ?></p>
+    <?php endif; ?>
+</section>

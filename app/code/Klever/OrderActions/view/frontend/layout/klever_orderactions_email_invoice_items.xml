@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="Magento\Sales\Block\Order\Email\Invoice\Items"
+                   name="klever.invoice.email.items"
+                   template="Klever_OrderActions::email/invoice/items.phtml">
+                <block class="Magento\Sales\Block\Order\Email\Items\DefaultItems"
+                       name="klever.invoice.email.items.default"
+                       as="default"/>
+                <block class="Magento\Sales\Block\Order\Totals"
+                       name="klever.invoice.email.invoice.totals"
+                       as="invoice_totals"
+                       template="Magento_Sales::order/totals.phtml">
+                    <arguments>
+                        <argument name="label_properties" xsi:type="string">colspan="3"</argument>
+                        <argument name="value_properties" xsi:type="string">colspan="3"</argument>
+                    </arguments>
+                </block>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

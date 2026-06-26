@@ -1,0 +1,404 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Hyva\Theme\ViewModel\Navigation;
+use Magento\Framework\View\Element\Template;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var HyvaCsp $hyvaCsp */
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+/** @var Navigation $viewModelNavigation */
+$viewModelNavigation = $viewModels->require(Navigation::class, $block);
+
+$uniqueId = '_' . uniqid();
+
+// Order is important here: 1. build the menu data, 2. then set the cache tags from the view model identities
+$menuItems = $viewModelNavigation->getNavigation(4);
+$block->setData('cache_tags', $viewModelNavigation->getIdentities());
+
+$baseUrl = $this->getBaseUrl();
+$customMenuItems = [
+    [
+        'name' => __('Tyres'),
+        'url' => $baseUrl.'tyres',
+        'childData' => [
+            [
+                'name' => __('EV Tyres'),
+                 'url' => $baseUrl.'electric-vehicle-tyres-in-uae',
+                'childData' => []
+            ],
+             [
+                'name' => __('Tyres by Size'),
+                 'url' => $baseUrl.'tyres/size',
+                'childData' => []
+            ],
+            [
+                'name' => __('Tyres by Brand'),
+                 'url' => $baseUrl.'brand',
+                'childData' => []
+            ],
+            [
+                'name' => __('Tyres by Vehicle'),
+                'url' => $baseUrl.'tyres/cars',
+                'childData' => []
+            ]
+        ]
+    ],
+    [
+        'name' => __('Car Battery'),
+        'url' => $baseUrl.'car-battery-replacement',
+        'childData' => []
+    ],
+        [
+        'name' => __('Car Insurance'),
+        'url' => $baseUrl.'car-insurance',
+        'childData' => []
+    ],
+    [
+        'name' => __('Car Services'),
+        'url' => $baseUrl.'car-services',
+        'childData' => [
+            ['name' => __('Car Tyre Service'), 'url' => $baseUrl.'car-tyre-service'],
+            ['name' => __('Car Battery Service'), 'url' => $baseUrl.'car-battery-service'],
+            ['name' => __('Car AC Service'), 'url' => $baseUrl.'car-ac-service'],
+            ['name' => __('Car Brake Service'), 'url' => $baseUrl.'car-brake-service'],
+            ['name' => __('Car Oil Change Service'), 'url' => $baseUrl.'car-oil-change-service'],
+            ['name' => __('Car Mechanical Service'), 'url' => $baseUrl.'car-mechanical-service'],
+            ['name' => __('Car Wheel Alignment Service'), 'url' => $baseUrl.'car-wheel-alignment-service'],
+            ['name' => __('Car Wheel Balancing Service'), 'url' => $baseUrl.'car-wheel-balancing-service'],
+            ['name' => __('Car Rim Repair Service'), 'url' => $baseUrl.'car-rim-repair-service'],
+        ]
+    ],
+    [
+        'name' => __('Rims/Wheels'),
+        'url' => $baseUrl.'car-wheels',
+        'childData' => []
+    ],
+    [
+        'name' => __('Motorbike Tyres'),
+        'url' => $baseUrl.'motorcycle-tyres',
+        'childData' => []
+    ],
+    [
+        'name' => __('Offers'),
+        'url' => $baseUrl.'special-offers',
+        'childData' => []
+    ],
+    [
+        'name' => __('Installer Network'),
+        'url' => $baseUrl.'storelocator',
+        'childData' => []
+    ],
+    [
+        'name' => __('FAQs'),
+        'url' => $baseUrl.'faq',
+        'childData' => []
+    ],
+    [
+        'name' => __('Contact Us'),
+        'url' => $baseUrl.'contact',
+        'childData' => []
+    ]
+];
+
+?>
+<nav
+    x-data="initMenuMobile<?= $escaper->escapeHtml($uniqueId) ?>()"
+    @load.window="setActiveMenu($root)"
+    @keydown.window.escape="closeMenu()"
+    class="z-20 order-1 md:order-1 xl:order-2 navigation xl:hidden h-12 relative top-[-2px] w-[102px] max-md:w-auto burgur-menu"
+    aria-label="<?= $escaper->escapeHtmlAttr(__('Site navigation')) ?>"
+    role="navigation"
+>
+    <!-- mobile -->
+    <button
+        x-ref="mobileMenuTrigger"
+        @click="openMenu()"
+        :class="{'overflow-x-hidden overflow-y-auto text-white fixed top-0 left-0 w-full' : open}"
+        type="button"
+        aria-label="<?= $escaper->escapeHtmlAttr(__('Open menu')) ?>"
+        aria-haspopup="menu"
+        :aria-expanded="open"
+        :hidden="open"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#fff" class="p-0 block" width="25" height="52" :class="{ 'hidden' : open, 'block': !open }" aria-hidden="true">
+           <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+    <div
+        x-ref="mobileMenuNavLinks"
+        class="
+            fixed top-0 left-0 h-full w-[447px] max-w-full bg-white shadow-lg z-60
+            transform -translate-x-full transition-transform ease-in-out duration-500 sm:duration-700
+            overflow-y-auto overflow-x-hidden
+        "
+        :class="{ 'translate-x-0': open, '-translate-x-full': !open }"
+        :aria-hidden="open ? 'false' : 'true'"
+        role="dialog"
+        aria-modal="true"
+    >
+        <!-- Sidebar Header -->
+        <div class="flex items-center justify-between py-2 border-b border-gray-200 bg-white px-4">
+            <h3 class="text-lg text-theme-dark font-bold capitalize">
+                <?php echo __('Menu') ?>
+            </h3>
+            <button 
+                type="button" 
+                @click="closeMenu()" 
+                aria-label="<?= $escaper->escapeHtmlAttr(__('Close menu')) ?>"
+                class="p-2 text-black transition-colors hover:text-theme-blue"
+            >
+                <?= $heroicons->xHtml('', 24, 24, ["aria-hidden" => "true"]) ?>
+            </button>
+        </div>
+        
+        <!-- Store Switcher -->
+        <?php
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $storeManager = $objectManager->get(\Magento\Store\Model\StoreManagerInterface::class);
+            $currentStore = $storeManager->getStore();
+            $currentStoreCode = $currentStore->getCode();
+            $isArabic = (strpos($currentStoreCode, 'ar') !== false);
+            $currentUrlStr = $currentStore->getCurrentUrl(false);
+            $mediaURL = $storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+            if ($isArabic) {
+                $altStoreUrl = preg_replace('#/ar(/|$)#', '/en$1', $currentUrlStr, 1);
+            } else {
+                $altStoreUrl = preg_replace('#/en(/|$)#', '/ar$1', $currentUrlStr, 1);
+            }
+            $altStoreUrl = preg_replace('/[?&]___store=[^&]*/', '', $altStoreUrl);
+        ?>
+        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
+            <span class="text-sm font-semibold text-gray-600"><?= $escaper->escapeHtml(__('Language')) ?></span>
+            <a href="<?= $escaper->escapeUrl($altStoreUrl) ?>"
+               class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-theme-dark hover:border-theme-blue hover:text-theme-blue transition-all no-underline"
+               title="<?= $isArabic ? $escaper->escapeHtmlAttr('English') : $escaper->escapeHtmlAttr('العربية') ?>">
+                <?php if ($isArabic): ?>
+                    <img class="w-[20px] h-auto" src="<?= $escaper->escapeUrl($mediaURL . 'images/en_US.webp') ?>" alt="English">
+                    <span>English</span>
+                <?php else: ?>
+                    <img class="w-[20px] h-auto" src="<?= $escaper->escapeUrl($mediaURL . 'images/ar_SA.webp') ?>" alt="العربية">
+                    <span>العربية</span>
+                <?php endif; ?>
+            </a>
+        </div>
+
+        <!-- Menu Content -->
+        <div class="bg-white flex-1">
+            <ul
+                class="flex flex-col gap-y-1"
+                aria-label="<?= $escaper->escapeHtmlAttr(__('Site navigation links')) ?>"
+            >
+            <?php //foreach ($menuItems as $index => $menuItem): ?>
+            <?php foreach ($customMenuItems as $index => $menuItem) : ?>
+                <?php
+                if (isset($menuItem['url'])) {
+                    $menuUrl = $menuItem['url'];
+                } else {
+                    $menuUrl = 'javascript:void(0);';
+                }
+                ?>
+                <li
+                    data-child-id="<?= $escaper->escapeHtmLAttr($index) ?>-main"
+                    class="level-0 <?= ($menuItem['name'] === 'My Account') ? 'block md:hidden' : '' ?>"
+                >
+                    <div
+                        class="flex items-center transition-transform duration-150 ease-in-out transform"
+                        :class="{
+                            'translate-x-full' : mobilePanelActiveId !== null,
+                            'translate-x-0' : mobilePanelActiveId === null
+                        }"
+                    >
+                        <a
+                            class="flex items-center w-full px-4 py-3 border-b border-gray-100 cursor-pointer
+                                bg-white text-[0.9rem] xl:text-[1.1rem] text-theme-dark font-semibold transition-colors capitalize hover:text-theme-blue
+                            "
+                            href="<?php echo $menuUrl; ?>"
+                            title="<?= $escaper->escapeHtmlAttr($menuItem['name']) ?>"
+                        >
+                            <?= $escaper->escapeHtml($menuItem['name']) ?>
+                        </a>
+                        <?php if (!empty($menuItem['childData'])): ?>
+                            <button
+                                @click="openSubcategory('<?= /* @noEscape */ $index ?>')"
+                                class="absolute left-0 flex items-center justify-center w-11 h-11 ml-4 cursor-pointer
+                                bg-white hover:bg-gray-50 transition-colors"
+                                aria-label="<?= $escaper->escapeHtmlAttr(__('Open %1 subcategories', $menuItem['name'])) ?>"
+                                aria-haspopup="true"
+                                :aria-expanded="mobilePanelActiveId === '<?= /* @noEscape */ (string) $index ?>'"
+                            >
+                                <div class="w-8 h-8 border rounded">
+                                    <!-- <?= $heroicons->chevronRightHtml('w-full h-full p-1', 24, 24, ["aria-hidden" => "true"]) ?> -->
+                                     <i class="icon icon-arrow-right text-sm relative top-[-1px]"></i>
+                                </div>
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                    <?php if (!empty($menuItem['childData'])): ?>
+                        <div
+                            data-child-id="<?= $escaper->escapeHtmLAttr($index) ?>"
+                            class="absolute top-0 left-0 z-10 flex flex-col w-full h-full bg-white"
+                            :class="{
+                                'hidden': mobilePanelActiveId !== '<?= /* @noEscape */ (string) $index ?>'
+                            }"
+                        >
+                            <!-- Subcategory Header -->
+                            <div class="flex items-center justify-between p-2 border-b border-gray-200 bg-white">
+                                <button
+                                    type="button"
+                                    class="flex items-center text-theme-dark hover:text-theme-blue transition-colors"
+                                    @click="backToMainCategories('<?= /* @noEscape */ $index ?>-main')"
+                                    aria-label="<?= $escaper->escapeHtmlAttr(__('Back to main categories')) ?>"
+                                >
+                                    <?= $heroicons->chevronRightHtml('ml-2', 20, 20, ["aria-hidden" => "true"]); ?>
+                                    <span class="text-[1.1rem] font-semibold uppercase">
+                                        <?= $escaper->escapeHtml($menuItem['name']) ?>
+                                    </span>
+                                </button>
+                                <button 
+                                    type="button" 
+                                    @click="closeMenu()" 
+                                    aria-label="<?= $escaper->escapeHtmlAttr(__('Close menu')) ?>"
+                                    class="p-2 text-black transition-colors hover:text-theme-blue"
+                                >
+                                    <?= $heroicons->xHtml('', 24, 24, ["aria-hidden" => "true"]) ?>
+                                </button>
+                            </div>
+                            
+                            <!-- Subcategory Content -->
+                            <div class="bg-white flex-1">
+                                <ul
+                                    class="transition-transform duration-200 ease-in-out -translate-x-full transform"
+                                    :class="{
+                                        '-translate-x-full' : mobilePanelActiveId !== '<?= /* @noEscape */ (string) $index ?>',
+                                        'translate-x-0' : mobilePanelActiveId === '<?= /* @noEscape */ (string) $index ?>',
+                                    }"
+                                    aria-label="<?= $escaper->escapeHtmlAttr(__('Subcategories')) ?>"
+                                >
+                           
+                                <?php foreach ($menuItem['childData'] as $subMenuItem): ?>
+                                    <?php
+                                    if (isset($subMenuItem['url'])) {
+                                        $menuUrl = $subMenuItem['url'];
+                                    } else {
+                                        $menuUrl = 'javascript:void(0);';
+                                    }
+                                    ?>
+                                    <li>
+                                        <a
+                                            href="<?php echo $menuUrl; ?>"
+                                            title="<?= $escaper->escapeHtmlAttr($subMenuItem['name']) ?>"
+                                            class="flex items-center w-full px-4 py-3 border-b border-gray-100 cursor-pointer
+                                                bg-white text-theme-dark font-medium transition-colors capitalize hover:text-theme-blue aria-[current=page]:text-theme-blue
+                                            "
+                                        >
+                                            <span class="text-[0.9rem] xl:text-[1.1rem] transition-colors capitalize">
+                                                <?= $escaper->escapeHtml($subMenuItem['name']) ?>
+                                            </span>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </li>
+            <?php endforeach; ?>
+            </ul>
+        </div>
+    </div>
+    <!-- Modal Overlay -->
+    <div
+        x-show="open"
+        @click="closeMenu()"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 transition-all ease-in-out duration-500 sm:duration-700"
+        x-transition:enter="transition-opacity ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    ></div>
+</nav>
+<script>
+    'use strict';
+
+    const initMenuMobile<?= $escaper->escapeHtml($uniqueId) ?> = () => {
+        return {
+            mobilePanelActiveId: null,
+            open: false,
+            setActiveMenu(menuNode) {
+                Array.from(menuNode.querySelectorAll('a')).filter(link => {
+                    return link.href === window.location.href.split('?')[0];
+                }).map(item => {
+                    item.classList.add('underline');
+                    item.closest('li.level-0') &&
+                    item.closest('li.level-0').querySelector('a.level-0')?.classList.add('underline');
+                });
+            },
+            openMenu() {
+                this.open = true
+                this.$nextTick(() => hyva.trapFocus(this.$refs['mobileMenuNavLinks']));
+                // Prevent from body scrolling while mobile menu opened
+                document.body.classList.add('overflow-hidden');
+            },
+            closeMenu() {
+                document.body.classList.remove('overflow-hidden');
+
+                if (this.open) {
+                    this.$nextTick(() => this.$refs['mobileMenuTrigger'].focus() || hyva.releaseFocus());
+                }
+
+                this.open = false
+                this.mobilePanelActiveId = null
+            },
+            openSubcategory(index) {
+                const menuNodeRef = document.querySelector('[data-child-id="' + index + '"]')
+                this.mobilePanelActiveId = this.mobilePanelActiveId === index ? null : index
+                this.$nextTick(() => {
+                    if (this.mobilePanelActiveId === index && menuNodeRef) {
+                        hyva.trapFocus(menuNodeRef)
+                    }
+                })
+            },
+            backToMainCategories(index) {
+                const menuNodeRef = document.querySelector('[data-child-id="' + index + '"]')
+                this.mobilePanelActiveId = null
+                this.$nextTick(() => {
+                    hyva.trapFocus(this.$refs['mobileMenuNavLinks'])
+                    if (menuNodeRef && menuNodeRef.querySelector('a')) {
+                        menuNodeRef.querySelector('a').focus()
+                    }
+                })
+            }
+        }
+    }
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+
+
+
+
+
+
+
+
+
+

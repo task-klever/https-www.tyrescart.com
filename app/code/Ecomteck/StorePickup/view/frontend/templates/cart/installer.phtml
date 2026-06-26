@@ -1,0 +1,162 @@
+<?php
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$nofitmentInstallerId = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface')->getValue('ecomteck_storelocator/installer/mobile_van_installer');
+$mobileVanfittingInstallerId = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface')->getValue('ecomteck_storelocator/installer/no_fitment_installer');
+$installerList = [];
+$installerList = $objectManager->get('Ecomteck\StoreLocator\Model\ResourceModel\Stores\Collection')
+        ->addFieldToFilter('status', ['eq' => '1'])
+        ->addFieldToFilter('stores_id', ['neq' => $nofitmentInstallerId])
+        ->addFieldToFilter('stores_id', ['neq' => $mobileVanfittingInstallerId]);
+$installerList->getSelect()->order('installer_sort_order DESC');
+
+$allStoreOpeningHours = [];
+$storeSkipDays = [];
+$storeCutoffTime = [];
+$storeSkipHours = [];
+
+$storeCollectionFactory = $objectManager->get('Ecomteck\StoreLocator\Model\ResourceModel\Stores\CollectionFactory');
+$storeCollection = $storeCollectionFactory->create();
+$storeCollection->addActiveFilter();
+
+$timezone = $objectManager->get('Magento\Framework\Stdlib\DateTime\TimezoneInterface');
+$storeTimezone = $timezone->getConfigTimezone();
+
+foreach ($storeCollection as $key => $store) {
+    $opening_hours = $store->getOpeningHoursFormated();
+    $allStoreOpeningHours[$store->getStoresId()] = $opening_hours;
+    $storeSkipDays[$store->getStoresId()] = $store->getSkipDays() ? (int)$store->getSkipDays() : 0;
+    $storeCutoffTime[$store->getStoresId()] = $store->getCutoffTime() ?: '';
+    $storeSkipHours[$store->getStoresId()] = $store->getSkipHours() ? (int)$store->getSkipHours() : 0;
+}
+
+
+
+?>
+
+    <div class="form bg-white rounded-[10px] border-b-[6px] border-b-theme-blue border border-[#D9D9D9] shadow-lg w-full lg:h-auto my-0 md:my-10 overflow-hidden">
+        <h2 class="text-lg md:text-xl font-semibold title-font text-left pt-3 px-4 md:px-7 pb-3 text-white bg-theme-blue text-white">Select Installer</h2>
+        <form method="post" id="installerSelectForm" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 md:px-7 py-4 md:py-7" 
+            x-data="hyva.formValidation($el)"
+            x-init="initInstallerFormLogic($el)">
+                <?= $block->getBlockHtml('formkey') ?>
+            <div class="field required">
+                <label class="block text-base font-medium text-gray-700 leading-none"><?php echo __('Mode of Delivery') ?></label>
+                <select id="installer-type" name="installer_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" data-validate='{"required":true}'>
+                        <option value=""><?php echo __('Select Mode') ?></option>
+                        <option value="normal" data-installer-type="normal"><?php echo __('Install at Outlet') ?></option>
+                        <option value="mobile_van" data-installer-type="mobile_van"><?php echo __('Mobile Van Service') ?></option>
+                        <option value="without_fitting" data-installer-type="without_fitting"><?php echo __('Delivery - Without Fitment') ?></option>
+                </select>
+            </div>
+            <div class="field required">
+                <label class="installer-locations-heading block text-base font-medium text-gray-700 leading-none"><?php echo __('Select Service Location') ?></label>
+                <select id="installer-locations" name="installer_location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" data-validate='{"required":true}'>
+                
+                    <option value=""><?php echo __('Select Location') ?></option>
+
+                    <?php /* foreach ($installerList as $installer): ?>
+                        <?php
+                            $installerId = $installer->getStoresId();
+                            $installerCity = $installer->getCity() ?: __("TBD if no city is set");
+                            $shipping_amount = $installer->getShippingAmount();
+
+                            // Build label text
+                            $label = $installerCity;
+                            if ($shipping_amount > 0) {
+                               // $label .= ' - ' . $shipping_amount;
+                                $label .= ' - AED ' . number_format($shipping_amount, 2);
+                                
+                            }
+                        ?>
+                        <option value="<?php echo $installerId; ?>" data-store-id="<?php echo $installerId; ?>">
+                            <?php echo $label; ?>
+                        </option>
+                    <?php endforeach; */ ?>
+                </select>
+                <a id="see-on-map-link" href="javascript:void(0)" onclick="openInstallerMapModal()" class="hidden mt-1 inline-flex items-center text-sm text-blue-700 hover:text-blue-900 font-medium cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="#1e40af" viewBox="0 0 576 512">
+                        <path d="M264 112C264 98.75 274.7 88 288 88C301.3 88 312 98.75 312 112C312 125.3 301.3 136 288 136C274.7 136 264 125.3 264 112zM273.2 311.1C241.1 271.9 168 174.6 168 120C168 53.73 221.7 0 288 0C354.3 0 408 53.73 408 120C408 174.6 334.9 271.9 302.8 311.1C295.1 321.6 280.9 321.6 273.2 311.1V311.1zM366.6 154.1C373.3 139 376 127.4 376 120C376 71.4 336.6 32 288 32C239.4 32 200 71.4 200 120C200 127.4 202.7 139 209.4 154.1C215.9 170.4 225.1 187.4 235.8 204.7C252.9 232.5 272.7 259.4 288 279.1C303.3 259.4 323.1 232.5 340.2 204.7C350.9 187.4 360.1 170.4 366.6 154.1V154.1zM405.9 222.9C405.1 223.2 404.3 223.4 403.4 223.6C411.6 209.5 419.1 194.9 425.2 180.7L543.1 133.5C558.9 127.2 576 138.8 576 155.8V426.6C576 436.4 570 445.2 560.9 448.9L405.9 510.9C402.6 512.2 399 512.4 395.6 511.4L176.9 448.9L32.91 506.5C17.15 512.8 0 501.2 0 484.2V213.4C0 203.6 5.975 194.8 15.09 191.1L138.3 141.9C140.4 152.3 143.6 162.7 147.5 172.6L32 218.8V472.4L160 421.2V303.1C160 295.2 167.2 287.1 176 287.1C184.8 287.1 192 295.2 192 303.1V419.9L384 474.8V303.1C384 295.2 391.2 287.1 400 287.1C408.8 287.1 416 295.2 416 303.1V472.4L544 421.2V167.6L405.9 222.9z"/>
+                    </svg>
+                    <span><?php echo __('See On Map') ?></span>
+                </a>
+            </div>
+            <div class="field required">
+                <label class="cart-installer-date-select-heading block text-base font-medium text-gray-700 leading-none"><?php echo __('Preferred Date') ?></label>
+                <select id="cart-installer-date-select" name="installer_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" data-validate='{"required":true}'>
+                    <option value=""><?php echo __('Select a Date') ?></option>
+                </select>
+            </div>
+            <div class="field required">
+                <label class="cart-installer-time-select-heading block text-base font-medium text-gray-700 leading-none"><?php echo __('Time') ?></label>
+                <select id="cart-installer-time-select" name="installer_time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" data-validate='{"required":true}'>
+                    <option value=""><?php echo __('Select Time Slot') ?></option>
+                </select>
+            </div>
+            <div class="field required col-span-1 md:col-span-2 xl:col-span-4" id="pickup-location-field" style="display:none;">
+                <label class="block text-base font-medium text-gray-700 leading-none"><?php echo __('Pickup Location') ?></label>
+                <input type="text" id="cart-pickup-location" name="pickup_location" placeholder="<?php echo __('Enter your address for mobile van service...') ?>"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pac-target-input" autocomplete="off">
+                <span id="pickup-location-error" class="text-red-500 text-xs mt-1 hidden"><?php echo __('This location is outside the service area of the selected installer.') ?></span>
+            </div>
+        </form>
+        <?php
+        $requestUri = $objectManager->get('Magento\Framework\App\RequestInterface')->getRequestUri();
+        $isRefCartPage = (strpos($requestUri, 'storelocator/refcart') !== false || strpos($requestUri, 'ref=cart') !== false);
+        if ($isRefCartPage): ?>
+        <div class="px-4 md:px-7 pb-4 md:pb-7">
+            <button id="refcart-proceed-checkout"
+                    type="button"
+                    class="checkout btn btn-primary btn-size-lg justify-center w-full hidden"
+                    onclick="window.location.href = BASE_URL + 'checkout?_=' + Date.now();">
+                <?php echo __('Proceed to Checkout') ?>
+            </button>
+        </div>
+        <?php endif; ?>
+    </div>
+
+<!-- See On Map Sidebar Modal -->
+<div id="installer-map-sidebar" class="fixed top-0 right-0 h-full w-full md:w-[670px] max-w-full bg-white shadow-lg z-60 transform translate-x-full transition-transform ease-in-out duration-500 sm:duration-700" style="z-index:9999;">
+    <div class="h-full">
+        <div class="flex items-center justify-between p-4 border-b border-gray-200">
+            <h3 class="text-lg font-bold text-theme-blue uppercase"><?php echo __('Store Location') ?></h3>
+            <button type="button" onclick="closeInstallerMapModal()" class="w-7 h-7 rounded-full flex items-center justify-center bg-theme-blue hover:bg-theme-yellow text-white cursor-pointer transition duration-300 ease-out">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="white" viewBox="0 0 320 512">
+                    <path d="M315.3 411.3c-6.253 6.253-16.37 6.253-22.63 0L160 278.6l-132.7 132.7c-6.253 6.253-16.37 6.253-22.63 0c-6.253-6.253-6.253-16.37 0-22.63L137.4 256L4.69 123.3c-6.253-6.253-6.253-16.37 0-22.63c6.253-6.253 16.37-6.253 22.63 0L160 233.4l132.7-132.7c6.253-6.253 16.37-6.253 22.63 0c6.253 6.253 6.253 16.37 0 22.63L182.6 256l132.7 132.7C321.6 394.9 321.6 405.1 315.3 411.3z"/>
+                </svg>
+            </button>
+        </div>
+        <div id="installer-map-content" class="h-[calc(100%-60px)] p-1 md:p-2">
+            <p><?php echo __('Map not available') ?></p>
+        </div>
+    </div>
+</div>
+<div id="installer-map-overlay" onclick="closeInstallerMapModal()" class="fixed inset-0 bg-black bg-opacity-50 hidden transition-all ease-in-out duration-500 sm:duration-700" style="z-index:9998;"></div>
+
+<script>
+    var storeGoogleMaps = {};
+    var storeCities = {};
+
+    function openInstallerMapModal() {
+        var select = document.getElementById('installer-locations');
+        var storeId = select.value;
+        var mapContent = document.getElementById('installer-map-content');
+
+        if (storeId && storeGoogleMaps[storeId]) {
+            mapContent.innerHTML = storeGoogleMaps[storeId];
+        } else {
+            mapContent.innerHTML = '<p><?php echo __("Map not available for this store") ?></p>';
+        }
+
+        document.getElementById('installer-map-sidebar').classList.remove('translate-x-full');
+        document.getElementById('installer-map-overlay').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeInstallerMapModal() {
+        document.getElementById('installer-map-sidebar').classList.add('translate-x-full');
+        document.getElementById('installer-map-overlay').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+</script>
+
+<div id="store-opening-hours-data" data-opening-hours='<?php echo json_encode($allStoreOpeningHours) ?>' data-skip-days='<?php echo json_encode($storeSkipDays) ?>' data-cutoff-time='<?php echo json_encode($storeCutoffTime) ?>' data-skip-hours='<?php echo json_encode($storeSkipHours) ?>' data-store-timezone='<?php echo $storeTimezone ?>' class="hidden"></div>

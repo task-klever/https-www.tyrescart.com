@@ -1,0 +1,23 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+/**  @var $block \Magento\Checkout\Block\Cart */
+?>
+<div class="cart-empty text-center">
+    <?= $block->getChildHtml('checkout_cart_empty_widget') ?>
+    <p><?= $block->escapeHtml(__('You have no items in your shopping cart.')) ?></p>
+    <p>
+        <a href="<?= $block->escapeUrl($block->getContinueShoppingUrl()) ?>" class="text-theme-blue font-semibold cursor-pointer hover:text-theme-dark transition-all duration-300 ease-in-out"><?= $block->escapeHtml(__('Click here')) ?></a> <?= $block->escapeHtml(__('to continue shopping.')) ?>
+    </p>
+    <?= $block->getChildHtml('shopping.cart.table.after') ?>
+</div>
+<script type="text/x-magento-init">
+{
+    "*": {
+        "Magento_Checkout/js/empty-cart": {}
+    }
+}
+</script>

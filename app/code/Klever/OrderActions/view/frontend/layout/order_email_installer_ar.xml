@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Arabic version of order_email_installer layout
+ * Shows installer/vehicle info with Arabic labels
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <block class="Magento\Sales\Block\Order\Email\Items" name="order.email.installer.ar" template="Magento_Sales::email/order_email_installer_ar.phtml" cacheable="false"/>
+    </body>
+</page>

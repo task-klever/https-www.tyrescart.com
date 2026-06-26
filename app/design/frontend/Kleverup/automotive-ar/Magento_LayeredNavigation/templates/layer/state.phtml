@@ -1,0 +1,133 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+declare(strict_types=1);
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Framework\Escaper;
+use Magento\LayeredNavigation\Block\Navigation\State;
+/** @var State $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+$filters = $block->getActiveFilters();
+// Rear params directly from URL
+$widthRear  = $_GET['width_rear']  ?? null;
+$heightRear = $_GET['height_rear'] ?? null;
+$rimRear    = $_GET['rim_rear']    ?? null;
+if (!empty($filters) || $widthRear || $heightRear || $rimRear):
+    $width = $height = $rim = null;
+    $otherFilters = [];
+    // Collect layered (front) filters and other filters
+    foreach ($filters as $filter) {
+        $filterName  = $filter->getName();
+        $filterLabel = $block->stripTags($filter->getLabel());
+        if ($filterName == 'Width' || $filterName == __('Width')) {
+            $width = $filterLabel;
+        } elseif ($filterName == 'Height' || $filterName == __('Height')) {
+            $height = $filterLabel;
+        } elseif ($filterName == 'Rim' || $filterName == __('Rim')) {
+            $rim = $filterLabel;
+        } else {
+            // keep name+label+url for other filters (removable)
+            $otherFilters[] = [
+                'name' => $filterName,
+                'label' => $filterLabel,
+                'url' => $filter->getRemoveUrl()
+            ];
+        }
+    }
+    // Build searchedBy array (front + rear)
+    $searchedBy = [];
+    if ($width || $height || $rim) {
+        $searchedBy[] = trim(
+            ($width ? $width : '') .
+            ($height ? '/' . $height : '') .
+            ($rim ? ' R' . $rim : '')
+        );
+    }
+    if ($widthRear || $heightRear || $rimRear) {
+        $searchedBy[] = trim(
+            ($widthRear ? $widthRear : '') .
+            ($heightRear ? '/' . $heightRear : '') .
+            ($rimRear ? ' R' . $rimRear : '')
+        );
+    }
+    // ---------------------------
+    // Build Clear All URL (NO query string)
+    // ---------------------------
+    // Use current URL and rebuild without query part so all params are removed.
+    $currentUrl = $block->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true]);
+    $parsed = parse_url($currentUrl);
+    if (!empty($parsed['scheme']) && !empty($parsed['host'])) {
+        $clearAllUrl = $parsed['scheme'] . '://' . $parsed['host']
+            . (!empty($parsed['port']) ? ':' . $parsed['port'] : '')
+            . ($parsed['path'] ?? '/');
+    } else {
+        // relative URL fallback
+        $clearAllUrl = $parsed['path'] ?? '/';
+    }
+    // Ensure we have a trailing slash or path as needed by your routing (optional)
+    // $clearAllUrl = rtrim($clearAllUrl, '/'); // if you prefer no trailing slash
+    ?>
+    <div x-data="{ open: true }"
+         class="filter-current flex flex-wrap justify-between items-center p-0 md:p-3 bg-[#fff] md:bg-[#f5f5f5] md:border border-[#D9D9D9] shadow-none rounded-[10px] md:shadow-md mt-3">
+        <div id="active-filtering-content" class="items flex gap-2 overflow-x-auto" x-show="open">
+            <?php if (!empty($searchedBy)): ?>
+                <div class="item btn group bg-theme-blue text-black text-[0.9rem] md:text-[1rem] text-white hover:bg-black rounded transition-all duration-300 ease-in-out flex items-center gap-1">
+                    <span class="text-sm whitespace-nowrap">
+                        <?= $escaper->escapeHtml(__('Search By')) ?> -
+                    </span>
+                    <span class="filter-value text-sm whitespace-nowrap" dir="ltr">
+                        <?= $escaper->escapeHtml(implode(' - ', $searchedBy)) ?>
+                    </span>
+                    <a class="flex items-center action remove"
+                       href="<?= $escaper->escapeUrl($clearAllUrl) ?>"
+                       title="<?= $escaper->escapeHtmlAttr(__('Clear size search')) ?>">
+                        <?= $heroicons->trashHtml('', 20, 20, ["aria-hidden" => "true"]); ?>
+                    </a>
+                </div>
+                <a href="javascript:void(0);"
+                   onclick="(function(){ if(document.referrer && document.referrer.indexOf('/tyres/cars') !== -1){ history.back(); return; } var br = document.querySelector('div[x-data=\'fitmentBarDrawer()\']'); if(!br){ openFitmentDrawer('mode'); return; } var c = Alpine.$data(br); var isWheels = window.location.pathname.indexOf('car-wheels') !== -1; var isMotorbike = window.location.pathname.indexOf('motorcycle') !== -1; c.isCarWheelsSearch = isWheels; c.isVehicleOnlyTabs = isWheels || isMotorbike; c.isSizeOnlyTab = isMotorbike; var keys = ['bySize','byEv','byBrand','byWheelSize','byMotorbikeSize','byVehicle','byWheelVehicle']; var modes = {'bySize':'size','byEv':'ev','byBrand':'brand','byWheelSize':'size-wheels','byMotorbikeSize':'size-motorbike','byVehicle':'vehicle','byWheelVehicle':'vehicle-wheels'}; var latest = null; var latestTime = 0; for(var i=0;i<keys.length;i++){ var s = localStorage.getItem('fitmentLastSearch_'+keys[i]); if(s){ try { var p = JSON.parse(s); if(p.timestamp && p.timestamp > latestTime){ latestTime = p.timestamp; latest = {data:p, mode:modes[keys[i]]}; } } catch(e){} } } if(latest){ c.lastSearch = latest.data; c.restoreLastSearch(); openFitmentDrawer(latest.mode); setTimeout(function(){ var br2 = document.querySelector('div[x-data=\'fitmentBarDrawer()\']'); if(br2){ var c2 = Alpine.$data(br2); var d = latest.data; var cv = d.rimValue || d.rim || d.offsetValue || d.offset || ''; if(cv) c2.drawerCurrentValue = cv; } }, 500); } else { openFitmentDrawer('mode'); } })()"
+                   class="item btn group bg-white text-theme-blue border border-theme-blue text-[0.9rem] md:text-[1rem] hover:bg-theme-blue hover:text-white rounded transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap flex items-center gap-1"
+                   title="<?= $escaper->escapeHtmlAttr(__('Change Size')) ?>">
+                    <span class="filter-value text-sm whitespace-nowrap">
+                        <?= $escaper->escapeHtml(__('Change Size')) ?>
+                    </span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                </a>
+            <?php endif; ?>
+            <!-- Other filters (removable individually) -->
+            <?php foreach ($otherFilters as $filter): ?>
+                <div class="item btn group bg-theme-blue text-black text-[0.9rem] md:text-[1rem] hover:bg-black rounded text-white transition-all duration-300 ease-in-out">
+                    <span class="filter-value text-sm block whitespace-nowrap [direction:ltr]">
+                        <?= $escaper->escapeHtml(__($filter['label'])) ?>
+                    </span>
+                    <span>
+                        <a class="text-center block action remove"
+                           href="<?= $escaper->escapeUrl($filter['url']) ?>"
+                           title="<?= $escaper->escapeHtmlAttr(__('Remove active %1 filter: %2', $filter['name'], $filter['label'])) ?>">
+                            <?= $heroicons->trashHtml('', 20, 20, ["aria-hidden" => "true"]); ?>
+                        </a>
+                    </span>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <?php
+        // Show Clear All if there are ANY active filters (layered or rear)
+        $hasAnyActive = (!empty($filters) || $widthRear || $heightRear || $rimRear);
+        if ($hasAnyActive): ?>
+            <div class="block-actions filter-actions mr-auto">
+                <a href="<?= $escaper->escapeUrl($clearAllUrl) ?>"
+                   class="text-sm text-black hover:text-theme-blue font-semibold uppercase transition-all duration-300 ease-in-out">
+                    <span><?= $escaper->escapeHtml(__('Clear All')) ?></span>
+                </a>
+            </div>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>

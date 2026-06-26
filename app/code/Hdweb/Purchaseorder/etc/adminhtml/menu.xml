@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../Magento/Backend/etc/menu.xsd">
+    <menu>
+        
+		<add id="Hdweb_Purchaseorder::parent" title="Purchase Order" module="Hdweb_Purchaseorder" sortOrder="10" resource="Hdweb_Purchaseorder::parent"/>
+		<add id="Hdweb_Purchaseorder::podetail" title="Purchase Order Summary" module="Hdweb_Purchaseorder" sortOrder="2" parent="Hdweb_Purchaseorder::parent" action="purchaseorder/create/grid" resource="Hdweb_Purchaseorder::podetail"/>
+		<add id="Hdweb_Purchaseorder::poitem" title="Purchase Order Item Detail" module="Hdweb_Purchaseorder" sortOrder="3" parent="Hdweb_Purchaseorder::parent" action="purchaseorder/create/itemgrid" resource="Hdweb_Purchaseorder::poitem"/>
+		<add id="Hdweb_Purchaseorder::vendor" title="Vendor Detail" module="Hdweb_Purchaseorder" sortOrder="4" parent="Hdweb_Purchaseorder::parent" action="purchaseorder/vendor/index" resource="Hdweb_Purchaseorder::vendor"/>
+    </menu>
+</config>

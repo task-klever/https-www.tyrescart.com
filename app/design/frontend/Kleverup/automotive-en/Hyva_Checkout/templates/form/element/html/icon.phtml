@@ -1,0 +1,33 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Checkout\Model\Form\AbstractEntityFormElement;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\SvgIcons;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var AbstractEntityFormElement $element */
+$element = $block->getData('element');
+
+/** @var SvgIcons $iconsRenderer */
+$iconsRenderer = $viewModels->require(SvgIcons::class);
+?>
+<?php if ($element->hasIcon()): ?>
+    <?= $iconsRenderer->renderHtml(
+        $element->getIcon(),
+        'shrink-0 text-slate-500',
+        20,
+        20,
+        ['aria-hidden' => 'true']
+    ) ?>
+<?php endif ?>

@@ -1,0 +1,90 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Customer\Block\Account\Dashboard\Address;
+use Magento\Framework\Escaper;
+
+/** @var Address $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+?>
+<div class="block block-dashboard-addresses">
+    <h2 class="block-title my-6 flex justify-between items-center bg-white rounded-[10px] border-b-[6px] border-b-black border border-[#D9D9D9] shadow-lg p-[1rem] md:p-[1.7rem] lg:p-[2.2rem] xl:p-[2.5rem]">
+        <span class="text-[1rem] md:text-[1.3rem] lg:text-[1.5] block"><?= $escaper->escapeHtml(__('Address Book')) ?></span>
+        <a class="action edit inline-block underline text-[1rem] md:text-[1.3rem] lg:text-[1.5] text-theme-blue hover:text-black transition-all duration-300 ease-in-out"
+           href="<?= $escaper->escapeUrl($block->getAddressBookUrl()) ?>"
+        >
+            <span><?= $escaper->escapeHtml(__('Manage Addresses')) ?></span>
+        </a>
+    </h2>
+    <div class="block-content mb-5">
+        <div class="flex flex-wrap justify-between -m-4">
+            <div class="lg:w-1/2 w-full py-2 px-4 md:p-4">
+                <div class="flex sm:flex-row flex-col h-full bg-white rounded-[10px] border-b-[6px] border-b-black border border-[#D9D9D9] shadow-lg p-[1rem] md:p-[1.7rem] lg:p-[2.2rem] xl:p-[2.5rem]">
+                    <div class="inline-flex items-center justify-center shrink-0 w-16 h-16 mb-4
+                    rounded-full sm:mr-8 sm:mb-0 bg-container-darker text-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="32" height="32" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"></path>
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"></path>
+</svg>
+            </div>
+                    <div class="grow">
+                        <h3 class="mb-3 text-lg font-semibold text-gray-900 title-font">
+                            <span><?= $escaper->escapeHtml(__('Default Billing Address')) ?></span>
+                        </h3>
+                        <address>
+                            <?= $block->getPrimaryBillingAddressHtml() ?>
+                        </address>
+                        <a
+                            class="mt-3 w-full inline-flex items-center md:text-sm text-secondary hover:text-theme-blue transition-all duration-300 ease-in-out"
+                            href="<?= $escaper->escapeUrl($block->getPrimaryBillingAddressEditUrl()) ?>"
+                            data-ui-id="default-billing-edit-link"
+                            aria-label="<?= $escaper->escapeHtmlAttr(__('Edit Address - billing default')) ?>"
+                        >
+                            <span><?= $escaper->escapeHtml(__('Edit Address')) ?></span>
+                            <?= $heroicons->arrowRightHtml('ml-2', 16, 16, ['aria-hidden' => 'true']); ?>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:w-1/2 w-full pb-0 py-2 px-4 md:p-4">
+                <div class="flex sm:flex-row flex-col h-full bg-white rounded-[10px] border-b-[6px] border-b-black border border-[#D9D9D9] shadow-lg p-[1rem] md:p-[1.7rem] lg:p-[2.2rem] xl:p-[2.5rem]">
+                      <div class="inline-flex items-center justify-center shrink-0 w-16 h-16 mb-4
+                    rounded-full sm:mr-8 sm:mb-0 bg-container-darker text-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="32" height="32" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"></path>
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"></path>
+</svg>
+            </div>
+                    <div class="grow">
+                        <h3 class="mb-3 text-lg font-semibold text-gray-900 title-font">
+                            <span><?= $escaper->escapeHtml(__('Default Shipping Address')) ?></span>
+                        </h3>
+                        <address>
+                            <?= $block->getPrimaryShippingAddressHtml() ?>
+                        </address>
+                        <a
+                            class="mt-3 w-full inline-flex items-center md:text-sm text-secondary hover:text-theme-blue transition-all duration-300 ease-in-out"
+                            href="<?= $escaper->escapeUrl($block->getPrimaryShippingAddressEditUrl()) ?>"
+                            data-ui-id="default-billing-edit-link"
+                            aria-label="<?= $escaper->escapeHtmlAttr(__('Edit Address - shipping default')) ?>"
+                        >
+                            <span><?= $escaper->escapeHtml(__('Edit Address')) ?></span>
+                            <?= $heroicons->arrowRightHtml('ml-2', 16, 16, ['aria-hidden' => 'true']); ?>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

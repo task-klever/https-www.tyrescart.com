@@ -1,0 +1,183 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="checkout.shipping-details.title">
+            <action method="setTitle">
+                <argument name="title" translate="true" xsi:type="string">Customer Details</argument>
+            </action>
+        </referenceBlock>
+
+        <referenceBlock name="checkout.payment.methods">
+            <!-- Tamara Payment Methods -->
+            <block name="checkout.payment.method.tamara_pay_by_instalments" as="tamara_pay_by_instalments">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="src" xsi:type="string">Tamara_Checkout::images/tamara-icon-img.png</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="class" xsi:type="string">mt-1</item>
+                                <item name="width" xsi:type="string">80</item>
+                                <item name="height" xsi:type="string">24</item>
+                                <item name="alt" xsi:type="string">Tamara</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="checkout.payment.method.tamara_pay_by_instalments_2" as="tamara_pay_by_instalments_2">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="src" xsi:type="string">Tamara_Checkout::images/tamara-icon-img.png</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="class" xsi:type="string">mt-1</item>
+                                <item name="width" xsi:type="string">80</item>
+                                <item name="height" xsi:type="string">24</item>
+                                <item name="alt" xsi:type="string">Tamara</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="checkout.payment.method.tamara_pay_by_instalments_3" as="tamara_pay_by_instalments_3">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="src" xsi:type="string">Tamara_Checkout::images/tamara-icon-img.png</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="class" xsi:type="string">mt-1</item>
+                                <item name="width" xsi:type="string">80</item>
+                                <item name="height" xsi:type="string">24</item>
+                                <item name="alt" xsi:type="string">Tamara</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="checkout.payment.method.tamara_pay_by_instalments_4" as="tamara_pay_by_instalments_4">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="src" xsi:type="string">Tamara_Checkout::images/tamara-icon-img.png</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="class" xsi:type="string">mt-1</item>
+                                <item name="width" xsi:type="string">80</item>
+                                <item name="height" xsi:type="string">24</item>
+                                <item name="alt" xsi:type="string">Tamara</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="checkout.payment.method.tamara_pay_now" as="tamara_pay_now">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="src" xsi:type="string">Tamara_Checkout::images/tamara-icon-img.png</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="class" xsi:type="string">mt-1</item>
+                                <item name="width" xsi:type="string">80</item>
+                                <item name="height" xsi:type="string">24</item>
+                                <item name="alt" xsi:type="string">Tamara</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="checkout.payment.method.tamara_pay_later" as="tamara_pay_later">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="src" xsi:type="string">Tamara_Checkout::images/tamara-icon-img.png</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="class" xsi:type="string">mt-1</item>
+                                <item name="width" xsi:type="string">80</item>
+                                <item name="height" xsi:type="string">24</item>
+                                <item name="alt" xsi:type="string">Tamara</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="checkout.payment.method.tamara_pay_next_month" as="tamara_pay_next_month">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="src" xsi:type="string">Tamara_Checkout::images/tamara-icon-img.png</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="class" xsi:type="string">mt-1</item>
+                                <item name="width" xsi:type="string">80</item>
+                                <item name="height" xsi:type="string">24</item>
+                                <item name="alt" xsi:type="string">Tamara</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+
+            <!-- Tabby Payment Methods -->
+            <block name="checkout.payment.method.tabby_checkout" as="tabby_checkout">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="src" xsi:type="string">Tabby_Checkout::images/logo_green.png</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="class" xsi:type="string">mt-1</item>
+                                <item name="width" xsi:type="string">80</item>
+                                <item name="height" xsi:type="string">24</item>
+                                <item name="alt" xsi:type="string">Tabby</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="checkout.payment.method.tabby_installments" as="tabby_installments">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="src" xsi:type="string">Tabby_Checkout::images/logo_green.png</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="class" xsi:type="string">mt-1</item>
+                                <item name="width" xsi:type="string">80</item>
+                                <item name="height" xsi:type="string">24</item>
+                                <item name="alt" xsi:type="string">Tabby</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="checkout.payment.method.tabby_cc_installments" as="tabby_cc_installments">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="src" xsi:type="string">Tabby_Checkout::images/logo_green.png</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="class" xsi:type="string">mt-1</item>
+                                <item name="width" xsi:type="string">80</item>
+                                <item name="height" xsi:type="string">24</item>
+                                <item name="alt" xsi:type="string">Tabby</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <!-- TotalPay Payment Method -->
+            <block name="checkout.payment.method.totalpay_checkout" as="totalpay_checkout">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="src" xsi:type="string">TotalPay_Gateway::images/logo_totalpay.png</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="class" xsi:type="string">mt-1</item>
+                                <item name="width" xsi:type="string">80</item>
+                                <item name="height" xsi:type="string">24</item>
+                                <item name="alt" xsi:type="string">TotalPay</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+    </body>
+</page>

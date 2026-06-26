@@ -1,0 +1,89 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Checkout\Model\MethodMetaDataInterface;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Checkout\ViewModel\Checkout\Payment\MethodList as ViewModel;
+use Hyva\Checkout\Magewire\Checkout\Payment\MethodList as Magewire;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Magento\Quote\Api\Data\PaymentMethodInterface;
+
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var ViewModel $viewModel */
+/** @var PaymentMethodInterface $method */
+/** @var Magewire $magewire */
+/** @var Escaper $escaper */
+/** @var MethodMetaDataInterface $methodMetaData */
+
+$viewModel = $viewModels->require(ViewModel::class);
+$methods = $viewModel->getList();
+?>
+<div id="payment-methods">
+    <?php if ($methods): ?>
+        <div
+            id="payment-method-list"
+            class="space-y-2"
+            data-method="<?= $escaper->escapeHtmlAttr($magewire->method) ?>">
+            <?php foreach ($methods as $method): ?>
+                <?php $methodCodeAttr = $escaper->escapeHtmlAttr($method->getCode()) ?>
+                <?php $methodMetaData = $viewModel->getMethodMetaData($block, $method) ?>
+
+                <div
+                    id="payment-method-option-<?= /* @noEscape */ $methodCodeAttr ?>"
+                    class="border-2 rounded-md <?= $magewire->method === $method->getCode() ? 'active bg-primary bg-opacity-10 border-theme-blue' : 'inactive bg-white' ?>"
+                    wire:key="<?= /* @noEscape */ $methodCodeAttr ?>"
+                >
+                    <label class="flex items-center gap-x-2.5 mb-0 px-4 py-2 cursor-pointer">
+                        <input
+                            type="radio"
+                            id="payment-method-<?= /* @noEscape */ $methodCodeAttr ?>"
+                            name="payment-method-option"
+                            class="form-radio"
+                            value="<?= /* @noEscape */ $methodCodeAttr ?>"
+                            wire:model="method"
+                        >
+
+                        <span class="flex flex-1 justify-between items-center gap-4">
+                            <span class="text-gray-700 font-medium break-words hyphens-auto">
+                                <?= $escaper->escapeHtml($method->getTitle()) ?>
+
+                                <?php if ($methodMetaData->hasSubTitle()): ?>
+                                    <br>
+                                    <?= $escaper->escapeHtml($methodMetaData->getSubTitle()) ?>
+                                <?php endif ?>
+                            </span>
+
+                            <?php if ($methodMetaData->canRenderIcon() && $iconHtml = $methodMetaData->renderIcon()): ?>
+                                <span class="shrink-0">
+                                    <?= /* @noEscape */ $iconHtml; ?>
+                                </span>
+                            <?php endif ?>
+                        </span>
+                    </label>
+                    <?php if ($viewModel->canShowMethod($block, $method, $magewire->method)): ?>
+                        <?php $html = $viewModel->getMethodBlock($block, $method)->toHtml() ?>
+
+                        <?php if (! empty($html)): ?>
+                            <div id="<?= 'payment-method-view-' . /* @noEscape */ $methodCodeAttr ?>" class="p-4 pt-0">
+                                <?= /* @noEscape */ $html ?>
+                            </div>
+                        <?php endif ?>
+                    <?php endif ?>
+                </div>
+            <?php endforeach ?>
+        </div>
+    <?php else: ?>
+        <div class="message warning">
+            <?= $escaper->escapeHtml(__('No Payment method available.')) ?>
+        </div>
+    <?php endif ?>
+</div>

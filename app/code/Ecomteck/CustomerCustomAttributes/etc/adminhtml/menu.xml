@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ecomteck
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Ecomteck.com license that is
+ * available through the world-wide-web at this URL:
+ * https://ecomteck.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Ecomteck
+ * @package     Ecomteck_CustomerCustomAttributes
+ * @copyright   Copyright (c) 2018 Ecomteck (https://ecomteck.com/)
+ * @license     https://ecomteck.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Ecomteck_CustomerCustomAttributes::customer_attributes_customer_attributes" title="Customer" translate="title" module="Ecomteck_CustomerCustomAttributes" sortOrder="10" parent="Ecomteck_CustomAttributeManagement::menu" action="adminhtml/customer_attribute" resource="Ecomteck_CustomerCustomAttributes::customer_attributes"/>
+        <add id="Ecomteck_CustomerCustomAttributes::customer_attributes_customer_address_attributes" title="Customer Address" translate="title" module="Ecomteck_CustomerCustomAttributes" sortOrder="20" parent="Ecomteck_CustomAttributeManagement::menu" action="adminhtml/customer_address_attribute" resource="Ecomteck_CustomerCustomAttributes::customer_address_attributes"/>
+    </menu>
+</config>

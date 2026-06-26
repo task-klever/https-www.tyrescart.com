@@ -1,0 +1,1727 @@
+<?php
+use Hyva\Theme\ViewModel\HyvaCsp;
+
+/** @var HyvaCsp $hyvaCsp */
+?>
+
+<div class="finder-box w-full border border-[#cccccc6b] rounded-[10px] relative mt-6 md:mt-8 overflow-hidden">
+<div class="w-full" x-data="{...hyva.modal(), initialized: false, init() {
+    if (this.initialized) return;
+    this.initialized = true;
+    //console.log('init called');
+    const origShow = this.show;
+    this.show = (value,event,data) => {
+        if(value == 'tyre-finder-size-modal'){
+            var allWidthOptionsLength = document.querySelectorAll('#allWidthOptions li').length;
+            var allRearWidthOptionsLength = document.querySelectorAll('#allRearWidthOptions li').length;
+            if (allWidthOptionsLength <= 0 || allRearWidthOptionsLength <= 0) {
+                document.getElementById('klever-loader').classList.remove('hidden');
+                fetch('<?php echo $this->getBaseUrl() . 'tyrefinder/ajax/getwidth'; ?>', {
+                headers: {
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                },
+                body: new URLSearchParams({
+                    form_key: hyva.getFormKey(),
+                    uenc: btoa(window.location.href)
+                }),
+                method: 'POST',
+                mode: 'cors',
+                credentials: 'include',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('allWidthOptions').innerHTML = data.fronthtml;
+                    document.getElementById('allRearWidthOptions').innerHTML = data.rearhtml;
+                    document.getElementById('klever-loader').classList.add('hidden');
+                })
+                .catch(error => {
+                    // Handle error here
+                    document.getElementById('klever-loader').classList.add('hidden');
+                });
+            }
+
+            
+            if (!document.getElementById('search-full-tyre-by-sizeUL').innerHTML.trim()) {
+                document.getElementById('klever-loader').classList.remove('hidden');
+                fetch('<?php echo $this->getBaseUrl() . 'tyrefinder/ajax/gettyresize'; ?>', {
+                headers: {
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                },
+                body: new URLSearchParams({
+                    form_key: hyva.getFormKey(),
+                    uenc: btoa(window.location.href)
+                }),
+                method: 'POST',
+                mode: 'cors',
+                credentials: 'include',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('search-full-tyre-by-sizeUL').innerHTML = data.response;
+                    // Event listener for selecting items in the list
+                    var dropdownList = document.getElementById('search-full-tyre-by-sizeUL');
+                    const listItems = dropdownList.getElementsByTagName('li');
+                    for (let i = 0; i < listItems.length; i++) {
+                        const listItem = listItems[i];
+                        listItem.addEventListener('click', () => toggleSelection(listItem));
+                    }
+                    document.getElementById('klever-loader').classList.add('hidden');
+                })
+                .catch(error => {
+                    // Handle error here
+                    document.getElementById('klever-loader').classList.add('hidden');
+                });
+            }
+        }
+        if(value == 'tyre-finder-vehicle-modal'){
+            var allBrandOptionsLength = document.querySelectorAll('#allBrands li').length;
+            if (allBrandOptionsLength <= 0) {
+                document.getElementById('klever-loader2').classList.remove('hidden');
+                fetch('<?php echo $this->getBaseUrl() . 'tyrefinder/ajax/getallbrands'; ?>', {
+                        headers: {
+                            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                        },
+                        body: new URLSearchParams({
+                            form_key: hyva.getFormKey(),
+                            uenc: btoa(window.location.href)
+                        }),
+                        method: 'POST',
+                        mode: 'cors',
+                        credentials: 'include',
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('allBrands').innerHTML = data.response;
+                        document.getElementById('klever-loader2').classList.add('hidden');
+                    })
+                    .catch(error => {
+                        // Handle error here
+                        document.getElementById('klever-loader2').classList.add('hidden');
+                    });
+            }
+        }
+        return origShow.call(this, value);
+    }
+}}" x-init="init">
+    <div x-data="{ activeTab: 'tab1' }">
+        <div class="inline-block overflow-x-auto overflow-y-hidden border-b border-border-color w-full tab-buttons bg-[#cbd9ef] flex justify-evenly">
+            <button 
+                @click="activeTab = 'tab1'" 
+                :class="activeTab === 'tab1' ? 'text-black bg-white'
+                : 'text-black hover:border-b-theme-blue'"
+                class="font-medium py-2 px-2 text-[10px] md:text-sm focus:ring-0 outline-none flex-1">
+                <i class="icon icon-tyre-size ml-1 text-base tab-icon hidden md:inline-block"></i> <span><?php echo __('Car Tires'); ?></span>
+            </button>
+            <button 
+                @click="activeTab = 'tab2'" 
+                :class="activeTab === 'tab2' ? 'text-black bg-white' 
+                : 'text-black hover:border-b-theme-blue'"
+                class="font-medium py-2 border-r border-[#ddd] px-2 text-[10px] md:text-sm focus:ring-0 outline-none flex-1">
+                <i class="icon icon-vehicel ml-1 text-base tab-icon hidden md:inline-block"></i> <span><?php echo __('Car Wheels'); ?></span>
+            </button>
+            <button
+                @click="activeTab = 'tab3'"
+                :class="activeTab === 'tab3' ? 'text-black bg-white'
+                : 'text-black hover:border-b-theme-blue'"
+                class="font-medium py-2 border-r border-[#ddd] px-2 text-[10px] md:text-sm focus:ring-0 outline-none flex-1">
+                <i class="icon icon-tyre-size ml-1 text-base tab-icon hidden md:inline-block"></i> <span><?php echo __('Motorbike Tires'); ?></span>
+            </button>
+        </div>
+        <div class="block bg-white p-1 md:p-2">
+        <div class="border border-border-color rounded-[10px]">
+            <div x-show="activeTab === 'tab1'">
+                <div class="tab-info grid grid-cols-4">
+                    <div onclick="openFitmentDrawer('size')" class="info-box py-1 md:py-2 px-1 md:px-3 border-l border-l-[#e5e5e5] flex items-center justify-center md:justify-between gap-4 cursor-pointer">
+                        <div class="flex-col md:flex-row flex items-center gap-1 md:gap-4">
+                            <i class="icon icon-tyre-brand text-lg text-black"></i>
+                            <div>
+                                <p class="text-[0.500rem] md:text-[0.688rem] text-gray-500 uppercase tracking-wide"><?php echo __('Search by'); ?></p>
+                                <p class="text-black font-bold text-[0.750rem] leading-tight"><?php echo __('Size'); ?></p>
+                            </div>
+                        </div>
+                        <div class="hidden md:flex bg-theme-blue hover:bg-black rounded-full w-[1.6rem] h-[1.6rem] items-center justify-center shrink-0 transition cursor-pointer">
+                            <i class="icon icon-down rotate-90 text-[6px] text-white left-icon"></i>
+                        </div>
+                    </div>
+                    <div onclick="openFitmentDrawer('vehicle')" class="info-box py-1 md:py-2 px-1 md:px-3 border-l border-l-[#e5e5e5] flex items-center justify-center md:justify-between gap-4 cursor-pointer">
+                        <div class="flex-col md:flex-row flex items-center gap-1 md:gap-4">
+                            <i class="icon icon-tyre-size text-lg text-black"></i>
+                            <div>
+                                <p class="text-[0.500rem] md:text-[0.688rem] text-gray-500 uppercase tracking-wide"><?php echo __('Search by'); ?></p>
+                                <p class="text-black font-bold text-[0.750rem] leading-tight"><?php echo __('Vehicle'); ?></p>
+                            </div>
+                        </div>
+                        <div class="hidden md:flex bg-theme-blue hover:bg-black rounded-full w-[1.6rem] h-[1.6rem] items-center justify-center shrink-0 transition cursor-pointer">
+                            <i class="icon icon-down rotate-90 text-[6px] text-white left-icon"></i>
+                        </div>
+                    </div>
+                    <div onclick="openFitmentDrawer('brand')" class="info-box py-1 md:py-2 px-1 md:px-3 border-l border-l-[#e5e5e5] flex items-center justify-center md:justify-between gap-4 cursor-pointer">
+                        <div class="flex-col md:flex-row flex items-center gap-1 md:gap-4">
+                            <i class="icon icon-tyre-brand text-lg text-black"></i>
+                            <div>
+                                <p class="text-[0.500rem] md:text-[0.688rem] text-gray-500 uppercase tracking-wide"><?php echo __('Browse by'); ?></p>
+                                <p class="text-black font-bold text-[0.750rem] leading-tight"><?php echo __('Brands'); ?></p>
+                            </div>
+                        </div>
+                        <div class="hidden md:flex bg-theme-blue hover:bg-black rounded-full w-[1.6rem] h-[1.6rem] items-center justify-center shrink-0 transition cursor-pointer">
+                            <i class="icon icon-down rotate-90 text-[6px] text-white left-icon"></i>
+                        </div>
+                    </div>
+                    <div onclick="openFitmentDrawer('ev')" class="info-box py-1 md:py-2 px-1 md:px-3 flex items-center justify-center md:justify-between gap-4 cursor-pointer">
+                        <div class="flex-col md:flex-row flex items-center gap-1 md:gap-4">
+                            <i class="icon icon-ev text-lg text-black"></i>
+                            <div>
+                                <p class="text-[0.500rem] md:text-[0.688rem] text-gray-500 uppercase tracking-wide"><?php echo __('Browse by'); ?></p>
+                                <p class="text-black font-bold text-[0.750rem] leading-tight"><?php echo __('EV Tires'); ?></p>
+                            </div>
+                        </div>
+                        <div class="hidden md:flex bg-theme-blue hover:bg-black rounded-full w-[1.6rem] h-[1.6rem] items-center justify-center shrink-0 transition cursor-pointer">
+                            <i class="icon icon-down rotate-90 text-[6px] text-white left-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div x-cloak x-show="activeTab === 'tab2'">
+               <div class="tab-info grid grid-cols-2 rounded-xl bg-white h-auto">
+                    <div onclick="openFitmentDrawer('size-wheels')" class="info-box py-1 md:py-2 px-1 md:px-3 border-l border-l-[#e5e5e5] flex items-center justify-center md:justify-between gap-4 cursor-pointer">
+                        <div class="flex-col md:flex-row flex items-center gap-1 md:gap-4">
+                            <i class="icon icon-tyre-size text-lg text-black"></i>
+                            <div>
+                                <p class="text-[0.500rem] md:text-[0.688rem] text-gray-500 uppercase tracking-wide"><?php echo __('Search by'); ?></p>
+                                <p class="text-black font-bold text-[0.750rem] leading-tight"><?php echo __('Size'); ?></p>
+                            </div>
+                        </div>
+                        <div class="hidden md:flex bg-theme-blue hover:bg-black rounded-full w-[1.6rem] h-[1.6rem] items-center justify-center shrink-0 transition cursor-pointer">
+                            <i class="icon icon-down rotate-90 text-[6px] text-white left-icon"></i>
+                        </div>
+                    </div>
+                    <div onclick="openFitmentDrawer('vehicle-wheels')" class="info-box py-1 md:py-2 px-1 md:px-3 flex items-center justify-center md:justify-between gap-4 cursor-pointer">
+                        <div class="flex-col md:flex-row flex items-center gap-1 md:gap-4">
+                            <i class="icon icon-vehicel text-lg text-black"></i>
+                            <div>
+                                <p class="text-[0.500rem] md:text-[0.688rem] text-gray-500 uppercase tracking-wide"><?php echo __('Search by'); ?></p>
+                                <p class="text-black font-bold text-[0.750rem] leading-tight"><?php echo __('Vehicle'); ?></p>
+                            </div>
+                        </div>
+                        <div class="hidden md:flex bg-theme-blue hover:bg-black rounded-full w-[1.6rem] h-[1.6rem] items-center justify-center shrink-0 transition cursor-pointer">
+                            <i class="icon icon-down rotate-90 text-[6px] text-white left-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div x-cloak x-show="activeTab === 'tab3'">
+                <div class="tab-info grid grid-cols-2 md:grid-cols-2 rounded-xl bg-white h-auto ">
+                    <div onclick="openFitmentDrawer('size-motorbike')" class="info-box py-1 md:py-2 px-1 md:px-3 flex items-center justify-center md:justify-between gap-4 cursor-pointer border-l border-l-[#e5e5e5]">
+                        <div class="flex-col md:flex-row flex items-center gap-1 md:gap-4">
+                            <i class="icon icon-tyre-size text-lg text-black"></i>
+                            <div>
+                                <p class="text-[0.500rem] md:text-[0.688rem] text-gray-500 uppercase tracking-wide"><?php echo __('Search by'); ?></p>
+                                <p class="text-black font-bold text-[0.750rem] leading-tight"><?php echo __('Size'); ?></p>
+                            </div>
+                        </div>
+                        <div class="hidden md:flex bg-theme-blue hover:bg-black rounded-full w-[1.6rem] h-[1.6rem] items-center justify-center shrink-0 transition cursor-pointer">
+                            <i class="icon icon-down rotate-90 text-[6px] text-white left-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div x-cloak x-show="activeTab === 'tab4'">
+                <div class="tab-info grid grid-cols-1 rounded-xl bg-white h-auto">
+                    <div onclick="openFitmentDrawer('ev')" class="info-box py-1 md:py-2 px-1 md:px-3 flex items-center justify-center md:justify-between gap-4 cursor-pointer">
+                        <div class="flex-col md:flex-row flex items-center gap-1 md:gap-4">
+                            <i class="icon icon-ev text-lg text-black"></i>
+                            <div>
+                                <p class="text-[0.500rem] md:text-[0.688rem] text-gray-500 uppercase tracking-wide"><?php echo __('Browse by'); ?></p>
+                                <p class="text-black font-bold text-[0.750rem] leading-tight"><?php echo __('EV Tire Brand'); ?></p>
+                            </div>
+                        </div>
+                        <div class="hidden md:flex bg-theme-blue hover:bg-black rounded-full w-[1.6rem] h-[1.6rem] items-center justify-center shrink-0 transition cursor-pointer">
+                            <i class="icon icon-down rotate-90 text-[6px] text-white left-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    
+
+
+<div class="sliebar tyre-finder-size-modal-sidebar">
+    <div id="tyre-finder-model"
+        class="fixed top-0 right-0 h-full w-full md:w-[670px] max-w-full bg-white shadow-lg z-60 transform translate-x-full transition-transform ease-in-out duration-500 sm:duration-700">
+        <div class="tyre-sidebar-content">
+            
+             <div class="z-50 fixed inset-0 grid place-items-center bg-white/70 text-primary hidden" id="klever-loader">
+                    <div class="flex gap-10 items-center p-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57 57" width="57" height="57" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="5" cy="50" r="5" style="animation: spinner-ball-triangle1 2.2s linear infinite"></circle>
+                            <circle cx="27" cy="5" r="5" style="animation: spinner-ball-triangle2 2.2s linear infinite"></circle>
+                            <circle cx="49" cy="50" r="5" style="animation: spinner-ball-triangle3 2.2s linear infinite"></circle>
+                        </svg>
+                        <span class="text-xl select-none">
+                            Loading...                        </span>
+                    </div>
+                </div>
+           
+            <div class="">
+
+               <div x-cloak x-bind="overlay('tyre-finder-size-modal')" x-spread="overlay('tyre-finder-size-modal')" class="tyre-finder-size-modal flex w-full items-center justify-end bg-black/20 backdrop-blur-md z-50" x-on:click.self="modalIsOpen = false" role="dialog">
+        <div x-ref="tyre-finder-size-modal" role="dialog" aria-labelledby="tyre-finder-size-modal-label" class="inline-block h-screen overflow-auto bg-white text-gray-700 w-full relative" >
+             <div class="flex items-center justify-between p-4 border-b border-border-color relative">
+                <h3 class="h4 uppercase text-left w-full"><?php echo __('Current'); ?> <span class="text-theme-blue"><?php echo __('Size'); ?></span> <?php echo __('Selection'); ?></h3>
+                <button type="button" onclick="TyreFinderModelClose()" aria-label="Close minicart"
+                    class="absolute top-0 right-2 p-4 mt-1 text-black transition-colors hover:text-theme-blue">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" width="24" height="24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        <div class="modal-body bg-white rounded-lg px-4 sm:px-4 pb-4 sm:pb-5">
+                <div class="front-selected for-tire-finder">
+                    <div class="flex flex-wrap pt-2 font-medium">
+                        <span class="front-tyre-selection-plus-rear-label hidden"><?php echo __('Front Size Selection'); ?>:</span>
+                        <span class="width"></span>
+                        <span class="height"></span>
+                        <span class="rim"></span>
+                        <a href="javascript:void(0);" class="edit hidden text-theme-blue ml-2" onclick="reselectFront()"><span><?php echo __('Edit'); ?></span></a>
+                    </div>
+                </div>
+                <div class="rear-selected hidden flex flex-wrap pt-2 font-mediumf or-tire-finder">
+                    <span class="selected-label"><?php echo __('Rear Size Selection'); ?>:</span>
+                    <span class="width"></span>
+                    <span class="height"></span>
+                    <span class="rim"></span>
+                    <a href="javascript:void(0);" class="edit hidden text-theme-blue ml-2" onclick="reselectRear()"><span><?php echo __('Edit'); ?></span></a>
+                    <a href="javascript:void(0);" class="delete text-theme-blue ml-2" onclick="removeRear()"><span><?php echo __('Delete'); ?></span></a>
+                </div>
+                <div class="">
+                    <?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Hdweb_Tyrefinder::tyre-size-search.phtml")->toHtml(); ?>
+                </div>
+                <div class="front-tyre-selection">
+                    <div class="tyrefinder-front-width">
+                        <div class="w-full flex flex-wrap mb-3 relative">
+                            <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-0 outline-none focus:outline-none focus:ring-0 focus:border-theme-blue shadow-md px-4" placeholder="<?php echo __('Search Width...'); ?>" oninput="filterFinderList(this.value, 'allWidthOptions')">
+                            <button type="button" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+                        </div>
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto mb-3">
+                            <ul id="allWidthOptions" class="front-searchUL finderlist grid grid-cols-4 md:grid-cols-6 gap-4 md:gap-4"></ul>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-front-height hidden">
+                        <div class="w-full flex flex-wrap mb-3 relative">
+                            <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-0 outline-none focus:outline-none focus:ring-0 focus:border-theme-blue shadow-md px-4" placeholder="<?php echo __('Search Height...'); ?>" oninput="filterFinderList(this.value, 'allHeightOptions')">
+                            <button type="button" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+                        </div>
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allHeightOptions" class="front-searchUL finderlist grid grid-cols-4 md:grid-cols-6 gap-4 md:gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('frontwidth')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetTyreSizePopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-front-rim hidden">
+                        <div class="w-full flex flex-wrap mb-3 relative">
+                            <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-0 outline-none focus:outline-none focus:ring-0 focus:border-theme-blue shadow-md px-4" placeholder="<?php echo __('Search Rim...'); ?>" oninput="filterFinderList(this.value, 'allRimOptions')">
+                            <button type="button" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+                        </div>
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allRimOptions" class="front-searchUL finderlist grid grid-cols-4 md:grid-cols-6 gap-4 md:gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('frontheight')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetTyreSizePopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="rear-tyre-selection hidden">
+                    <div class="tyrefinder-rear-width">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allRearWidthOptions" class="rear-searchUL finderlist grid grid-cols-3 md:grid-cols-5 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('finalstep_fromrear')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetTyreSizePopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-rear-height hidden">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allRearHeightOptions" class="rear-searchUL finderlist grid grid-cols-3 md:grid-cols-5 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('rearwidth')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetTyreSizePopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-rear-rim hidden">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allRearRimOptions" class="rear-searchUL finderlist grid grid-cols-3 md:grid-cols-5 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('rearheight')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetTyreSizePopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="search-final-step hidden mt-2">
+                    <div class="search-button">
+                        <button onclick="submitTyreSelection()" class="btn-yellow"><span><?php echo __('Search Tyres'); ?></span></button>
+                    </div>
+                     <div class="diff-rear-size mt-3">
+                        <a href="javascript:void(0);" class="text-theme-blue font-medium" onclick="diffRearSize()"><span><?php echo __('Click Here for different rear size'); ?></span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+            </div>
+        </div>
+    </div>
+    <div id="tyre-finder-model-overlay" onclick="TyreFinderModelClose()"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-all ease-in-out duration-500 sm:duration-700">
+    </div>
+</div>
+
+
+
+    
+   
+
+<div class="sliebar vehicle-finder-size-modal-sidebar">
+    <div id="vehicle-finder-model"
+        class="fixed top-0 right-0 h-full w-full md:w-[670px] max-w-full bg-white shadow-lg z-60 transform translate-x-full transition-transform ease-in-out duration-500 sm:duration-700">
+        <div class="tyre-sidebar-content">
+
+ <div class="z-50 fixed inset-0 grid place-items-center bg-white/70 text-primary hidden" id="klever-loader2">
+                    <div class="flex gap-10 items-center p-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57 57" width="57" height="57" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="5" cy="50" r="5" style="animation: spinner-ball-triangle1 2.2s linear infinite"></circle>
+                            <circle cx="27" cy="5" r="5" style="animation: spinner-ball-triangle2 2.2s linear infinite"></circle>
+                            <circle cx="49" cy="50" r="5" style="animation: spinner-ball-triangle3 2.2s linear infinite"></circle>
+                        </svg>
+                        <span class="text-xl select-none">
+                            Loading...                        </span>
+                    </div>
+                </div>
+                
+            
+            <div class="">
+    <div x-cloak x-bind="overlay('tyre-finder-vehicle-modal')" x-spread="overlay('tyre-finder-vehicle-modal')" class="tyre-finder-vehicle-modal flex w-full items-center justify-end bg-black/20 backdrop-blur-md z-50">
+        <div x-ref="tyre-finder-vehicle-modal" role="dialog" aria-labelledby="tyre-finder-vehicle-modal-label" class="inline-block h-screen overflow-auto bg-white text-gray-700 w-full relative">
+           <div class="flex items-center justify-between p-4 border-b border-border-color relative">
+                <h3 class="h4 uppercase text-left w-full"><?php echo __('Current'); ?> <span class="text-theme-blue"><?php echo __('Vehicle'); ?></span> <?php echo __('Selection'); ?></h3>
+                <button type="button" onclick="VehicleFinderModelClose()" aria-label="Close minicart"
+                    class="absolute top-0 right-2 p-4 mt-1 text-black transition-colors hover:text-theme-blue">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" width="24" height="24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        <div class="modal-body bg-white rounded-lg px-4 sm:px-4 pb-4 sm:pb-5">
+                <div class="tyrefinder-vehicle-selected flex flex-wrap py-2 font-medium">
+                    <span class="make"></span>
+                    <span class="model"></span>
+                    <span class="year"></span>
+                    <span class="modification"></span>
+                </div>
+                <div class="w-full flex flex-wrap mb-5 relative">
+                    <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-o outline-none focus:outline-none focus:ring-0 before-selected focus:border-theme-blue shadow-md" id="vehicle-search" placeholder="Search" title="Search here">
+                    <button type="submit" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+                </div>
+                <div class="vehicle-selction">
+                    <div class="tyrefinder-brand searchable-list active">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allBrands" class="border-style grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 group"></ul>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-model searchable-list hidden">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allModels" class="finderlist grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('allbrands')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetVehiclesPopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-year searchable-list hidden">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allYears" class="allYears finderlist custom-scroll-y grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('allmodels')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetVehiclesPopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-modifications searchable-list hidden">
+                         <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allModifications" class="allModifications finderlist grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('allyears')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetVehiclesPopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="tyrefinder-tyre-size searchable-list hidden">
+                        <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                            <ul id="allTyreSizes" class="allTyreSizes finderlist grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></ul>
+                        </div>
+                        <div class="back-reset flex mt-5">
+                            <button class="btn btn-blue" onclick="goback('allmodifications')"><?php echo __('Back'); ?></button>
+                            <button class="btn btn-yellow ml-3" onclick="resetVehiclesPopup()"><?php echo __('Reset'); ?></button>
+                        </div>
+                    </div>
+                    <div class="search-final-step hidden">
+                        <div class="search-button">
+                            <button onclick="submitVehicleSelection()" class=""><span><?php echo __('Search Tyres'); ?></span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+            </div>
+        </div>
+    </div>
+    <div id="vehicle-finder-model-overlay" onclick="VehicleFinderModelClose()"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-all ease-in-out duration-500 sm:duration-700">
+    </div>
+</div>
+
+
+<!-- ============ TIRE BRANDS SIDEBAR (Matches Tab 2 Vehicle + Tab 1 Size pattern) ============ -->
+<div class="sliebar brand-finder-size-modal-sidebar">
+    <div id="brand-finder-model"
+        class="fixed top-0 right-0 h-full w-full md:w-[670px] max-w-full bg-white shadow-lg z-60 transform translate-x-full transition-transform ease-in-out duration-500 sm:duration-700">
+        <div class="tyre-sidebar-content">
+
+            <div class="z-50 fixed inset-0 grid place-items-center bg-white/70 text-primary hidden" id="klever-loader-brand">
+                <div class="flex gap-10 items-center p-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57 57" width="57" height="57" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+
+                        <circle cx="5" cy="50" r="5" style="animation: spinner-ball-triangle1 2.2s linear infinite"></circle>
+                        <circle cx="27" cy="5" r="5" style="animation: spinner-ball-triangle2 2.2s linear infinite"></circle>
+                        <circle cx="49" cy="50" r="5" style="animation: spinner-ball-triangle3 2.2s linear infinite"></circle>
+                    </svg>
+                    <span class="text-xl select-none">
+                        Loading...                        </span>
+                </div>
+            </div>
+
+            <div class="">
+                <div class="inline-block h-screen overflow-auto bg-white text-gray-700 w-full relative">
+                    <div class="flex items-center justify-between p-4 border-b border-border-color relative">
+                        <h3 class="h4 uppercase text-left w-full" id="brand-sidebar-title"><?php echo __('Current'); ?> <span class="text-theme-blue"><?php echo __('Brand'); ?></span> <?php echo __('Selection'); ?></h3>
+                        <button type="button" onclick="BrandFinderModelClose()" aria-label="Close minicart"
+                            class="absolute top-0 right-2 p-4 mt-1 text-black transition-colors hover:text-theme-blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" width="24" height="24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                <div class="modal-body bg-white rounded-lg px-4 sm:px-4 pb-4 sm:pb-5">
+
+                    <!-- ======= VIEW 1: Brand Listing (same as Tab 2 Vehicle brand list) ======= -->
+                    <div class="brand-view-brands">
+                        <div class="tyrefinder-brand-selected flex flex-wrap py-2 font-medium">
+                            <span class="brand-selected-name"></span>
+                        </div>
+                        <div class="w-full flex flex-wrap mb-5 relative">
+                            <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-o outline-none focus:outline-none focus:ring-0 before-selected focus:border-theme-blue shadow-md" id="brand-finder-search" placeholder="<?php echo __('Search'); ?>" title="<?php echo __('Search here'); ?>" oninput="filterBrandList(this.value)">
+                            <button type="button" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+                        </div>
+                        <div class="brand-selection">
+                            <div class="tyrefinder-tire-brand searchable-list active">
+                                <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                                    <ul id="allTireBrands" class="border-style grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 group"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ======= VIEW 2: Size Selection (same as Tab 1 Tire Size) ======= -->
+                    <div class="brand-view-sizes hidden">
+                        <div class="brand-size-front-selected front-selected for-tire-finder">
+                            <div class="flex flex-wrap pt-2 font-medium">
+                                <span class="brand-front-tyre-label hidden"><?php echo __('Front Size Selection'); ?>:</span>
+                                <span class="brand-width"></span>
+                                <span class="brand-height"></span>
+                                <span class="brand-rim"></span>
+                                <a href="javascript:void(0);" class="brand-edit-front hidden text-theme-blue ml-2" onclick="brandReselectFront()"><span><?php echo __('Edit'); ?></span></a>
+                            </div>
+                        </div>
+                        <div class="brand-size-rear-selected hidden flex flex-wrap pt-2 font-medium for-tire-finder">
+                            <span class="brand-selected-label"><?php echo __('Rear Size Selection'); ?>:</span>
+                            <span class="brand-rear-width"></span>
+                            <span class="brand-rear-height"></span>
+                            <span class="brand-rear-rim"></span>
+                            <a href="javascript:void(0);" class="brand-edit-rear hidden text-theme-blue ml-2" onclick="brandReselectRear()"><span><?php echo __('Edit'); ?></span></a>
+                            <a href="javascript:void(0);" class="brand-delete-rear text-theme-blue ml-2" onclick="brandRemoveRear()"><span><?php echo __('Delete'); ?></span></a>
+                        </div>
+                        <div class="brand-size-selected-info py-2 mb-2 border-b border-gray-200">
+                            <div class="flex items-center gap-3">
+                                <span class="font-semibold text-gray-600"><?php echo __('Brand'); ?>:</span>
+                                <span class="font-bold text-theme-blue" id="brand-size-brand-name"></span>
+                                <div class="ml-auto flex items-center gap-3">
+                                    <a href="javascript:void(0);" class="text-theme-blue text-sm font-medium" onclick="brandGoBackToBrands()"><span><?php echo __('Change Brand'); ?></span></a>
+                                    <span class="text-gray-300">|</span>
+                                    <a href="javascript:void(0);" class="text-theme-blue text-sm font-medium" onclick="viewAllBrandProducts()"><span><?php echo __('View All Products'); ?></span></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="brand-front-tyre-selection">
+                            <div class="brand-tyrefinder-front-width">
+                                <div class="w-full flex flex-wrap mb-3 relative">
+                                    <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-0 outline-none focus:outline-none focus:ring-0 focus:border-theme-blue shadow-md px-4" placeholder="<?php echo __('Search Width...'); ?>" oninput="filterFinderList(this.value, 'brandAllWidthOptions')">
+                                    <button type="button" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+                                </div>
+                                <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto mb-3">
+                                    <div id="brandAllWidthOptions" class="grid grid-cols-1 gap-2"></div>
+                                </div>
+                            </div>
+                            <div class="brand-tyrefinder-front-height hidden">
+                                <div class="w-full flex flex-wrap mb-3 relative">
+                                    <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-0 outline-none focus:outline-none focus:ring-0 focus:border-theme-blue shadow-md px-4" placeholder="<?php echo __('Search Height...'); ?>" oninput="filterFinderList(this.value, 'brandAllHeightOptions')">
+                                    <button type="button" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+                                </div>
+                                <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                                    <ul id="brandAllHeightOptions" class="front-searchUL finderlist grid grid-cols-4 md:grid-cols-6 gap-4 md:gap-4"></ul>
+                                </div>
+                                <div class="back-reset flex mt-5">
+                                    <button class="btn btn-blue" onclick="brandGoback('frontwidth')"><?php echo __('Back'); ?></button>
+                                    <button class="btn btn-yellow ml-3" onclick="brandResetSizePopup()"><?php echo __('Reset'); ?></button>
+                                </div>
+                            </div>
+                            <div class="brand-tyrefinder-front-rim hidden">
+                                <div class="w-full flex flex-wrap mb-3 relative">
+                                    <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-0 outline-none focus:outline-none focus:ring-0 focus:border-theme-blue shadow-md px-4" placeholder="<?php echo __('Search Rim...'); ?>" oninput="filterFinderList(this.value, 'brandAllRimOptions')">
+                                    <button type="button" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+                                </div>
+                                <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                                    <ul id="brandAllRimOptions" class="front-searchUL finderlist grid grid-cols-4 md:grid-cols-6 gap-4 md:gap-4"></ul>
+                                </div>
+                                <div class="back-reset flex mt-5">
+                                    <button class="btn btn-blue" onclick="brandGoback('frontheight')"><?php echo __('Back'); ?></button>
+                                    <button class="btn btn-yellow ml-3" onclick="brandResetSizePopup()"><?php echo __('Reset'); ?></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="brand-rear-tyre-selection hidden">
+                            <div class="brand-tyrefinder-rear-width">
+                                <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                                    <ul id="brandAllRearWidthOptions" class="rear-searchUL finderlist grid grid-cols-3 md:grid-cols-5 gap-4"></ul>
+                                </div>
+                                <div class="back-reset flex mt-5">
+                                    <button class="btn btn-blue" onclick="brandGoback('finalstep_fromrear')"><?php echo __('Back'); ?></button>
+                                    <button class="btn btn-yellow ml-3" onclick="brandResetSizePopup()"><?php echo __('Reset'); ?></button>
+                                </div>
+                            </div>
+                            <div class="brand-tyrefinder-rear-height hidden">
+                                <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                                    <ul id="brandAllRearHeightOptions" class="rear-searchUL finderlist grid grid-cols-3 md:grid-cols-5 gap-4"></ul>
+                                </div>
+                                <div class="back-reset flex mt-5">
+                                    <button class="btn btn-blue" onclick="brandGoback('rearwidth')"><?php echo __('Back'); ?></button>
+                                    <button class="btn btn-yellow ml-3" onclick="brandResetSizePopup()"><?php echo __('Reset'); ?></button>
+                                </div>
+                            </div>
+                            <div class="brand-tyrefinder-rear-rim hidden">
+                                <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                                    <ul id="brandAllRearRimOptions" class="rear-searchUL finderlist grid grid-cols-3 md:grid-cols-5 gap-4"></ul>
+                                </div>
+                                <div class="back-reset flex mt-5">
+                                    <button class="btn btn-blue" onclick="brandGoback('rearheight')"><?php echo __('Back'); ?></button>
+                                    <button class="btn btn-yellow ml-3" onclick="brandResetSizePopup()"><?php echo __('Reset'); ?></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="brand-search-final-step hidden mt-2">
+                            <div class="search-button">
+                                <button onclick="submitBrandTyreSelection()" class="btn-yellow"><span><?php echo __('Search Tyres'); ?></span></button>
+                            </div>
+                            <div class="brand-diff-rear-size mt-3">
+                                <a href="javascript:void(0);" class="text-theme-blue font-medium" onclick="brandDiffRearSize()"><span><?php echo __('Click Here for different rear size'); ?></span></a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="brand-finder-model-overlay" onclick="BrandFinderModelClose()"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-all ease-in-out duration-500 sm:duration-700">
+    </div>
+</div>
+
+<!-- ============ EV TIRES SIDEBAR (Matches Tab 1 Tire Size pattern exactly) ============ -->
+<div class="sliebar ev-finder-size-modal-sidebar">
+    <div id="ev-finder-model"
+        class="fixed top-0 right-0 h-full w-full md:w-[670px] max-w-full bg-white shadow-lg z-60 transform translate-x-full transition-transform ease-in-out duration-500 sm:duration-700">
+        <div class="tyre-sidebar-content">
+
+            <div class="z-50 fixed inset-0 grid place-items-center bg-white/70 text-primary hidden" id="klever-loader-ev">
+                <div class="flex gap-10 items-center p-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57 57" width="57" height="57" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+
+                        <circle cx="5" cy="50" r="5" style="animation: spinner-ball-triangle1 2.2s linear infinite"></circle>
+                        <circle cx="27" cy="5" r="5" style="animation: spinner-ball-triangle2 2.2s linear infinite"></circle>
+                        <circle cx="49" cy="50" r="5" style="animation: spinner-ball-triangle3 2.2s linear infinite"></circle>
+                    </svg>
+                    <span class="text-xl select-none">
+                        Loading...                        </span>
+                </div>
+            </div>
+
+            <div class="">
+                <div class="inline-block h-screen overflow-auto bg-white text-gray-700 w-full relative">
+                    <div class="flex items-center justify-between p-4 border-b border-border-color relative">
+                        <h3 class="h4 uppercase text-left w-full"><?php echo __('Current'); ?> <span class="text-theme-blue"><?php echo __('EV Size'); ?></span> <?php echo __('Selection'); ?></h3>
+                        <button type="button" onclick="EvFinderModelClose()" aria-label="Close minicart"
+                            class="absolute top-0 right-2 p-4 mt-1 text-black transition-colors hover:text-theme-blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" width="24" height="24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                <div class="modal-body bg-white rounded-lg px-4 sm:px-4 pb-4 sm:pb-5">
+                    <div class="ev-size-front-selected front-selected for-tire-finder">
+                        <div class="flex flex-wrap pt-2 font-medium">
+                            <span class="ev-front-tyre-label hidden"><?php echo __('Front Size Selection'); ?>:</span>
+                            <span class="ev-width"></span>
+                            <span class="ev-height"></span>
+                            <span class="ev-rim"></span>
+                            <a href="javascript:void(0);" class="ev-edit-front hidden text-theme-blue ml-2" onclick="evReselectFront()"><span><?php echo __('Edit'); ?></span></a>
+                        </div>
+                    </div>
+                    <div class="ev-size-rear-selected hidden flex flex-wrap pt-2 font-medium for-tire-finder">
+                        <span class="ev-selected-label"><?php echo __('Rear Size Selection'); ?>:</span>
+                        <span class="ev-rear-width"></span>
+                        <span class="ev-rear-height"></span>
+                        <span class="ev-rear-rim"></span>
+                        <a href="javascript:void(0);" class="ev-edit-rear hidden text-theme-blue ml-2" onclick="evReselectRear()"><span><?php echo __('Edit'); ?></span></a>
+                        <a href="javascript:void(0);" class="ev-delete-rear text-theme-blue ml-2" onclick="evRemoveRear()"><span><?php echo __('Delete'); ?></span></a>
+                    </div>
+                    <div class="ev-front-tyre-selection">
+                        <div class="ev-tyrefinder-front-width">
+                            <div class="w-full flex flex-wrap mb-3 relative">
+                                <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-0 outline-none focus:outline-none focus:ring-0 focus:border-theme-blue shadow-md px-4" placeholder="<?php echo __('Search Width...'); ?>" oninput="filterFinderList(this.value, 'evAllWidthOptions')">
+                                <button type="button" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+                            </div>
+                            <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto mb-3">
+                                <ul id="evAllWidthOptions" class="front-searchUL finderlist grid grid-cols-4 md:grid-cols-6 gap-4 md:gap-4"></ul>
+                            </div>
+                        </div>
+                        <div class="ev-tyrefinder-front-height hidden">
+                            <div class="w-full flex flex-wrap mb-3 relative">
+                                <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-0 outline-none focus:outline-none focus:ring-0 focus:border-theme-blue shadow-md px-4" placeholder="<?php echo __('Search Height...'); ?>" oninput="filterFinderList(this.value, 'evAllHeightOptions')">
+                                <button type="button" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+                            </div>
+                            <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                                <ul id="evAllHeightOptions" class="front-searchUL finderlist grid grid-cols-4 md:grid-cols-6 gap-4 md:gap-4"></ul>
+                            </div>
+                            <div class="back-reset flex mt-5">
+                                <button class="btn btn-blue" onclick="evGoback('frontwidth')"><?php echo __('Back'); ?></button>
+                                <button class="btn btn-yellow ml-3" onclick="evResetSizePopup()"><?php echo __('Reset'); ?></button>
+                            </div>
+                        </div>
+                        <div class="ev-tyrefinder-front-rim hidden">
+                            <div class="w-full flex flex-wrap mb-3 relative">
+                                <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-0 outline-none focus:outline-none focus:ring-0 focus:border-theme-blue shadow-md px-4" placeholder="<?php echo __('Search Rim...'); ?>" oninput="filterFinderList(this.value, 'evAllRimOptions')">
+                                <button type="button" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+                            </div>
+                            <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                                <ul id="evAllRimOptions" class="front-searchUL finderlist grid grid-cols-4 md:grid-cols-6 gap-4 md:gap-4"></ul>
+                            </div>
+                            <div class="back-reset flex mt-5">
+                                <button class="btn btn-blue" onclick="evGoback('frontheight')"><?php echo __('Back'); ?></button>
+                                <button class="btn btn-yellow ml-3" onclick="evResetSizePopup()"><?php echo __('Reset'); ?></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ev-rear-tyre-selection hidden">
+                        <div class="ev-tyrefinder-rear-width">
+                            <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                                <ul id="evAllRearWidthOptions" class="rear-searchUL finderlist grid grid-cols-3 md:grid-cols-5 gap-4"></ul>
+                            </div>
+                            <div class="back-reset flex mt-5">
+                                <button class="btn btn-blue" onclick="evGoback('finalstep_fromrear')"><?php echo __('Back'); ?></button>
+                                <button class="btn btn-yellow ml-3" onclick="evResetSizePopup()"><?php echo __('Reset'); ?></button>
+                            </div>
+                        </div>
+                        <div class="ev-tyrefinder-rear-height hidden">
+                            <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                                <ul id="evAllRearHeightOptions" class="rear-searchUL finderlist grid grid-cols-3 md:grid-cols-5 gap-4"></ul>
+                            </div>
+                            <div class="back-reset flex mt-5">
+                                <button class="btn btn-blue" onclick="evGoback('rearwidth')"><?php echo __('Back'); ?></button>
+                                <button class="btn btn-yellow ml-3" onclick="evResetSizePopup()"><?php echo __('Reset'); ?></button>
+                            </div>
+                        </div>
+                        <div class="ev-tyrefinder-rear-rim hidden">
+                            <div class="max-h-[70vh] md:max-h-[75vh] overflow-auto">
+                                <ul id="evAllRearRimOptions" class="rear-searchUL finderlist grid grid-cols-3 md:grid-cols-5 gap-4"></ul>
+                            </div>
+                            <div class="back-reset flex mt-5">
+                                <button class="btn btn-blue" onclick="evGoback('rearheight')"><?php echo __('Back'); ?></button>
+                                <button class="btn btn-yellow ml-3" onclick="evResetSizePopup()"><?php echo __('Reset'); ?></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ev-search-final-step hidden mt-2">
+                        <div class="search-button">
+                            <button onclick="submitEvTyreSelection()" class="btn-yellow"><span><?php echo __('Search Tyres'); ?></span></button>
+                        </div>
+                        <div class="ev-diff-rear-size mt-3">
+                            <a href="javascript:void(0);" class="text-theme-blue font-medium" onclick="evDiffRearSize()"><span><?php echo __('Click Here for different rear size'); ?></span></a>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="ev-finder-model-overlay" onclick="EvFinderModelClose()"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-all ease-in-out duration-500 sm:duration-700">
+    </div>
+</div>
+
+<?php
+ /*
+    <div x-show="finder" id="finder-open" x-data="initCartDrawer()" @private-content-loaded.window="getData($event.detail.data)" @toggle-cart.window="toggleCartDrawer($event)" @keydown.escape="closeCartDrawer">
+        <div role="dialog"></div>
+    </div>
+ */
+?>
+    
+</div>
+
+</div>
+
+<form id="finder-size-form" method="get" action="<?php echo $this->getBaseUrl().'tyres?'; ?>" name="finder-size-form">
+    <input type="hidden" id="frontWidthLabel-hidden" name="width" required value="">
+    <input type="hidden" id="frontWidthValue-hidden" value="">
+    <input type="hidden" id="frontHeightLabel-hidden" name="height" required value="">
+    <input type="hidden" id="frontHeightValue-hidden" value="">
+    <input type="hidden" id="frontRimLabel-hidden" name="rim" required value="">
+    <input type="hidden" id="frontRimValue-hidden" value="">
+    <input type="hidden" id="rearWidthLabel-hidden" name="width_rear" value="">
+    <input type="hidden" id="rearWidthValue-hidden" value="">
+    <input type="hidden" id="rearHeightLabel-hidden" name="height_rear" value="">
+    <input type="hidden" id="rearHeightValue-hidden" value="">
+    <input type="hidden" id="rearRimLabel-hidden" name="rim_rear" value="">
+    <input type="hidden" id="rearRimValue-hidden" value="">
+</form>
+<form id="finder-vehicle-form" action="" method="post">
+    <input type="hidden" id="vehicle_make_hidden" name="vehicle_make" value="">
+    <input type="hidden" id="vehicle_model_hidden" name="vehicle_model" value="">
+    <input type="hidden" id="vehicle_year_hidden" name="vehicle_year" value="">
+    <input type="hidden" id="vehicle_engine_hidden" name="vehicle_engine" value="">
+</form>
+<form id="finder-wheel-form" method="get" action="<?php echo $this->getBaseUrl().'car-wheels?'; ?>" name="finder-wheel-form">
+    <input type="hidden" id="wheelWidthLabel-hidden" name="width" value="">
+    <input type="hidden" id="wheelRimLabel-hidden" name="rim" value="">
+    <input type="hidden" id="wheelOffsetLabel-hidden" name="offset" value="">
+    <input type="hidden" id="rearWheelWidthLabel-hidden" name="width_rear" value="">
+    <input type="hidden" id="rearWheelRimLabel-hidden" name="rim_rear" value="">
+    <input type="hidden" id="rearWheelOffsetLabel-hidden" name="offset_rear" value="">
+</form>
+
+<form id="finder-brand-size-form" method="get" action="<?php echo $this->getBaseUrl().'tyres?'; ?>" name="finder-brand-size-form">
+    <input type="hidden" id="brandFrontWidthLabel-hidden" name="width" required value="">
+    <input type="hidden" id="brandFrontWidthValue-hidden" value="">
+    <input type="hidden" id="brandFrontHeightLabel-hidden" name="height" required value="">
+    <input type="hidden" id="brandFrontHeightValue-hidden" value="">
+    <input type="hidden" id="brandFrontRimLabel-hidden" name="rim" required value="">
+    <input type="hidden" id="brandFrontRimValue-hidden" value="">
+    <input type="hidden" id="brandRearWidthLabel-hidden" name="width_rear" value="">
+    <input type="hidden" id="brandRearWidthValue-hidden" value="">
+    <input type="hidden" id="brandRearHeightLabel-hidden" name="height_rear" value="">
+    <input type="hidden" id="brandRearHeightValue-hidden" value="">
+    <input type="hidden" id="brandRearRimLabel-hidden" name="rim_rear" value="">
+    <input type="hidden" id="brandRearRimValue-hidden" value="">
+    <input type="hidden" id="brandNameForUrl-hidden" name="brand" value="">
+    <input type="hidden" id="brandOptionId-hidden" value="">
+    <input type="hidden" id="brandUrlKey-hidden" value="">
+</form>
+
+<form id="finder-ev-size-form" method="get" action="<?php echo $this->getBaseUrl().'tyres?'; ?>" name="finder-ev-size-form">
+    <input type="hidden" id="evFrontWidthLabel-hidden" name="width" required value="">
+    <input type="hidden" id="evFrontWidthValue-hidden" value="">
+    <input type="hidden" id="evFrontHeightLabel-hidden" name="height" required value="">
+    <input type="hidden" id="evFrontHeightValue-hidden" value="">
+    <input type="hidden" id="evFrontRimLabel-hidden" name="rim" required value="">
+    <input type="hidden" id="evFrontRimValue-hidden" value="">
+    <input type="hidden" id="evRearWidthLabel-hidden" name="width_rear" value="">
+    <input type="hidden" id="evRearWidthValue-hidden" value="">
+    <input type="hidden" id="evRearHeightLabel-hidden" name="height_rear" value="">
+    <input type="hidden" id="evRearHeightValue-hidden" value="">
+    <input type="hidden" id="evRearRimLabel-hidden" name="rim_rear" value="">
+    <input type="hidden" id="evRearRimValue-hidden" value="">
+    <input type="hidden" name="ev" value="EV">
+</form>
+
+<script>
+function openFitmentDrawer(mode) {
+    if (!window.Alpine) return;
+    const barRoot = document.querySelector('div[x-data="fitmentBarDrawer()"]');
+    if (!barRoot) return;
+    const barComponent = Alpine.$data(barRoot);
+    if (!barComponent || typeof barComponent.openDrawer !== 'function') return;
+    if (mode === 'vehicle-wheels') {
+        barComponent.isCarWheelsSearch = true;
+        barComponent.isVehicleOnlyTabs = true;
+        barComponent.isSizeOnlyTab = false;
+        barComponent.activeTab = 'byVehicle';
+        barComponent.openDrawer('vehicle');
+    } else if (mode === 'size-wheels') {
+        barComponent.isCarWheelsSearch = true;
+        barComponent.isVehicleOnlyTabs = true;
+        barComponent.isSizeOnlyTab = false;
+        barComponent.activeTab = 'bySize';
+        barComponent.openDrawer('size');
+    } else if (mode === 'size-motorbike') {
+        barComponent.isCarWheelsSearch = false;
+        barComponent.isVehicleOnlyTabs = true;
+        barComponent.isSizeOnlyTab = true;
+        barComponent.activeTab = 'bySize';
+        barComponent.openDrawer('size');
+    } else {
+        barComponent.isCarWheelsSearch = false;
+        barComponent.isVehicleOnlyTabs = false;
+        barComponent.isSizeOnlyTab = false;
+        if (mode === 'vehicle') barComponent.activeTab = 'byVehicle';
+        else if (mode === 'size') barComponent.activeTab = 'bySize';
+        barComponent.openDrawer(mode);
+    }
+}
+
+function TyreFinderModel() {
+    document.getElementById("tyre-finder-model").classList.remove("translate-x-full");
+    document.getElementById("tyre-finder-model-overlay").classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+    // Add Escape key listener
+    document.addEventListener('keydown', tyreFinderEscHandler);
+
+    
+
+}
+function TyreFinderModelClose() {
+    document.getElementById("tyre-finder-model").classList.add("translate-x-full");
+    document.getElementById("tyre-finder-model-overlay").classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+    // Remove Escape key listener
+    document.removeEventListener('keydown', tyreFinderEscHandler);
+
+    
+}
+function VehicleFinderModel() {
+    
+
+     // Run only if the functions don't hit missing elements
+    if (typeof removeRear === "function") {
+        try { removeRear(); } catch(e) { console.warn("removeRear skipped:", e); }
+    }
+
+    if (typeof reselectFront === "function") {
+        try { reselectFront(); } catch(e) { console.warn("reselectFront skipped:", e); }
+    }
+
+    //  Reset form values when closing
+    document.getElementById('finder-size-form').reset();
+
+    // Also clear hidden input values
+    document.querySelectorAll('#finder-size-form input[type="hidden"]').forEach(el => {
+        el.value = '';
+    });
+
+
+    document.getElementById("vehicle-finder-model").classList.remove("translate-x-full");
+    document.getElementById("vehicle-finder-model-overlay").classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+    // Add Escape key listener
+    document.addEventListener('keydown', vehicleFinderEscHandler);
+}
+function VehicleFinderModelClose() {
+    document.getElementById("vehicle-finder-model").classList.add("translate-x-full");
+    document.getElementById("vehicle-finder-model-overlay").classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+    // Remove Escape key listener
+    document.removeEventListener('keydown', vehicleFinderEscHandler);
+}
+function vehicleFinderEscHandler(e) {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+        VehicleFinderModelClose();
+    }
+}
+function tyreFinderEscHandler(e) {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+        TyreFinderModelClose();
+    }
+}
+
+// ============ BRAND FINDER FUNCTIONS (Single Sidebar) ============
+
+var brandFinderBrandsLoaded = false;
+
+function BrandFinderModel() {
+    document.getElementById("brand-finder-model").classList.remove("translate-x-full");
+    document.getElementById("brand-finder-model-overlay").classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+    document.addEventListener('keydown', brandFinderEscHandler);
+
+    // Always show brands view when opening
+    document.querySelector('.brand-view-brands').classList.remove('hidden');
+    document.querySelector('.brand-view-sizes').classList.add('hidden');
+    document.getElementById('brand-sidebar-title').innerHTML = '<?php echo __("Select"); ?> <span class="text-theme-blue"><?php echo __("Tire Brand"); ?></span>';
+
+    // Load brands if not loaded yet
+    if (!brandFinderBrandsLoaded) {
+        document.getElementById('klever-loader-brand').classList.remove('hidden');
+        fetch('<?php echo $this->getBaseUrl(); ?>tyrefinder/ajax/gettirebrands', {
+            headers: { contentType: 'application/x-www-form-urlencoded; charset=UTF-8' },
+            body: new URLSearchParams({
+                form_key: hyva.getFormKey(),
+                uenc: btoa(window.location.href)
+            }),
+            method: 'POST',
+            mode: 'cors',
+            credentials: 'include',
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('allTireBrands').innerHTML = data.response;
+            brandFinderBrandsLoaded = true;
+            document.getElementById('klever-loader-brand').classList.add('hidden');
+        })
+        .catch(error => {
+            console.error('Error loading tire brands:', error);
+            document.getElementById('klever-loader-brand').classList.add('hidden');
+        });
+    }
+}
+
+function BrandFinderModelClose() {
+    document.getElementById("brand-finder-model").classList.add("translate-x-full");
+    document.getElementById("brand-finder-model-overlay").classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+    document.removeEventListener('keydown', brandFinderEscHandler);
+}
+
+function brandFinderEscHandler(e) {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+        BrandFinderModelClose();
+    }
+}
+
+function filterBrandList(searchTerm) {
+    var items = document.querySelectorAll('#allTireBrands .search');
+    var term = searchTerm.toLowerCase().trim();
+    items.forEach(function(item) {
+        var name = item.getAttribute('data-name') || '';
+        if (term === '' || name.indexOf(term) !== -1) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function filterFinderList(searchTerm, listId) {
+    var container = document.getElementById(listId);
+    if (!container) return;
+    var items = container.children;
+    var term = searchTerm.toLowerCase().trim();
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        var text = (item.textContent || item.innerText || '').toLowerCase();
+        var dataName = (item.getAttribute('data-name') || '').toLowerCase();
+        var dataValue = (item.getAttribute('data-value') || '').toLowerCase();
+        if (term === '' || text.indexOf(term) !== -1 || dataName.indexOf(term) !== -1 || dataValue.indexOf(term) !== -1) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    }
+}
+
+// Switch from brands view to size selection view (within same sidebar)
+function selectTireBrand(optionId, brandName, urlKey) {
+    // Store brand info - name for URL param, optionId for AJAX calls
+    document.getElementById('brandNameForUrl-hidden').value = brandName;
+    document.getElementById('brandOptionId-hidden').value = optionId;
+    document.getElementById('brandUrlKey-hidden').value = urlKey;
+    document.getElementById('brand-size-brand-name').textContent = brandName;
+
+    // Update sidebar header
+    document.getElementById('brand-sidebar-title').innerHTML = '<?php echo __("Select"); ?> <span class="text-theme-blue">' + brandName + '</span> <?php echo __("Size"); ?>';
+
+    // Reset size selections
+    brandResetSizePopup();
+
+    // Switch view: hide brands, show sizes
+    document.querySelector('.brand-view-brands').classList.add('hidden');
+    document.querySelector('.brand-view-sizes').classList.remove('hidden');
+
+    // Load widths for this brand
+    document.getElementById('klever-loader-brand').classList.remove('hidden');
+    fetch('<?php echo $this->getBaseUrl(); ?>tyrefinder/ajax/getbrandwidths', {
+        headers: { contentType: 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: new URLSearchParams({
+            form_key: hyva.getFormKey(),
+            brand_id: optionId,
+            uenc: btoa(window.location.href)
+        }),
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('brandAllWidthOptions').innerHTML = data.fronthtml;
+        document.getElementById('brandAllRearWidthOptions').innerHTML = data.rearhtml;
+        document.getElementById('klever-loader-brand').classList.add('hidden');
+    })
+    .catch(error => {
+        console.error('Error loading brand widths:', error);
+        document.getElementById('klever-loader-brand').classList.add('hidden');
+    });
+}
+
+// Navigate to brand listing page to view all products
+function viewAllBrandProducts() {
+    var urlKey = document.getElementById('brandUrlKey-hidden').value;
+    window.location.href = '<?php echo $this->getBaseUrl(); ?>tyres/brand/' + urlKey;
+}
+
+// Go back from size view to brand list view
+function brandGoBackToBrands() {
+    document.querySelector('.brand-view-sizes').classList.add('hidden');
+    document.querySelector('.brand-view-brands').classList.remove('hidden');
+    document.getElementById('brand-sidebar-title').innerHTML = '<?php echo __("Select"); ?> <span class="text-theme-blue"><?php echo __("Tire Brand"); ?></span>';
+}
+
+// ---- Brand Front Tyre: Width → Height → Rim ----
+
+function brandGetheight(widthValue, label, type) {
+    document.getElementById('brandFrontWidthLabel-hidden').value = label;
+    document.getElementById('brandFrontWidthValue-hidden').value = widthValue;
+    var brandId = document.getElementById('brandOptionId-hidden').value;
+    document.getElementById('klever-loader-brand').classList.remove('hidden');
+
+    fetch('<?php echo $this->getBaseUrl(); ?>tyrefinder/ajax/getbrandheights', {
+        headers: { contentType: 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: new URLSearchParams({
+            form_key: hyva.getFormKey(),
+            type: type,
+            width: widthValue,
+            brand_id: brandId,
+            uenc: btoa(window.location.href)
+        }),
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('brandAllHeightOptions').innerHTML = data.response;
+        document.querySelector('.brand-tyrefinder-front-width').classList.add('hidden');
+        document.querySelector('.brand-tyrefinder-front-height').classList.remove('hidden');
+        document.querySelector('.brand-size-front-selected .brand-width').textContent = label;
+        document.getElementById('klever-loader-brand').classList.add('hidden');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('klever-loader-brand').classList.add('hidden');
+    });
+}
+
+function brandGetrim(heightValue, label, type) {
+    document.getElementById('brandFrontHeightLabel-hidden').value = label;
+    document.getElementById('brandFrontHeightValue-hidden').value = heightValue;
+    var widthValue = document.getElementById('brandFrontWidthValue-hidden').value;
+    var brandId = document.getElementById('brandOptionId-hidden').value;
+    document.getElementById('klever-loader-brand').classList.remove('hidden');
+
+    fetch('<?php echo $this->getBaseUrl(); ?>tyrefinder/ajax/getbrandrims', {
+        headers: { contentType: 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: new URLSearchParams({
+            form_key: hyva.getFormKey(),
+            type: type,
+            width: widthValue,
+            height: heightValue,
+            brand_id: brandId,
+            uenc: btoa(window.location.href)
+        }),
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('brandAllRimOptions').innerHTML = data.response;
+        document.querySelector('.brand-tyrefinder-front-height').classList.add('hidden');
+        document.querySelector('.brand-tyrefinder-front-rim').classList.remove('hidden');
+        document.querySelector('.brand-size-front-selected .brand-height').textContent = ' /' + label;
+        document.getElementById('klever-loader-brand').classList.add('hidden');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('klever-loader-brand').classList.add('hidden');
+    });
+}
+
+function brandSelectRim(rimValue, label) {
+    document.getElementById('brandFrontRimValue-hidden').value = rimValue;
+    document.getElementById('brandFrontRimLabel-hidden').value = label;
+    document.querySelector('.brand-tyrefinder-front-rim').classList.add('hidden');
+    document.querySelector('.brand-search-final-step').classList.remove('hidden');
+
+    var frontSelected = document.querySelector('.brand-size-front-selected');
+    frontSelected.querySelector('.brand-rim').textContent = ' R' + label;
+    frontSelected.querySelector('.brand-edit-front').classList.remove('hidden');
+    frontSelected.querySelector('.brand-front-tyre-label').classList.remove('hidden');
+
+    if (brandIsRearSizeSelected()) {
+        document.querySelector('.brand-size-rear-selected .brand-edit-rear').classList.remove('hidden');
+    } else {
+        document.querySelector('.brand-diff-rear-size').classList.remove('hidden');
+    }
+}
+
+// ---- Brand Rear Tyre: Width → Height → Rim ----
+
+function brandDiffRearSize() {
+    document.querySelector('.brand-search-final-step').classList.add('hidden');
+    document.querySelector('.brand-diff-rear-size').classList.add('hidden');
+    document.querySelector('.brand-front-tyre-selection').classList.add('hidden');
+    document.querySelector('.brand-rear-tyre-selection').classList.remove('hidden');
+    document.querySelector('.brand-size-rear-selected').classList.remove('hidden');
+}
+
+function brandGetRearheight(widthValue, label, type) {
+    document.getElementById('brandRearWidthLabel-hidden').value = label;
+    document.getElementById('brandRearWidthValue-hidden').value = widthValue;
+    var brandId = document.getElementById('brandOptionId-hidden').value;
+    document.getElementById('klever-loader-brand').classList.remove('hidden');
+
+    fetch('<?php echo $this->getBaseUrl(); ?>tyrefinder/ajax/getbrandheights', {
+        headers: { contentType: 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: new URLSearchParams({
+            form_key: hyva.getFormKey(),
+            type: type,
+            width: widthValue,
+            brand_id: brandId,
+            uenc: btoa(window.location.href)
+        }),
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('brandAllRearHeightOptions').innerHTML = data.response;
+        document.querySelector('.brand-tyrefinder-rear-width').classList.add('hidden');
+        document.querySelector('.brand-tyrefinder-rear-height').classList.remove('hidden');
+        document.querySelector('.brand-size-rear-selected .brand-rear-width').textContent = label;
+        document.getElementById('klever-loader-brand').classList.add('hidden');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('klever-loader-brand').classList.add('hidden');
+    });
+}
+
+function brandGetRearrim(heightValue, label, type) {
+    document.getElementById('brandRearHeightLabel-hidden').value = label;
+    document.getElementById('brandRearHeightValue-hidden').value = heightValue;
+    var widthValue = document.getElementById('brandRearWidthValue-hidden').value;
+    var brandId = document.getElementById('brandOptionId-hidden').value;
+    document.getElementById('klever-loader-brand').classList.remove('hidden');
+
+    fetch('<?php echo $this->getBaseUrl(); ?>tyrefinder/ajax/getbrandrims', {
+        headers: { contentType: 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: new URLSearchParams({
+            form_key: hyva.getFormKey(),
+            type: type,
+            width: widthValue,
+            height: heightValue,
+            brand_id: brandId,
+            uenc: btoa(window.location.href)
+        }),
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('brandAllRearRimOptions').innerHTML = data.response;
+        document.querySelector('.brand-tyrefinder-rear-height').classList.add('hidden');
+        document.querySelector('.brand-tyrefinder-rear-rim').classList.remove('hidden');
+        document.querySelector('.brand-size-rear-selected .brand-rear-height').textContent = ' /' + label;
+        document.getElementById('klever-loader-brand').classList.add('hidden');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('klever-loader-brand').classList.add('hidden');
+    });
+}
+
+function brandSelectRearRim(rimValue, label) {
+    document.getElementById('brandRearRimValue-hidden').value = rimValue;
+    document.getElementById('brandRearRimLabel-hidden').value = label;
+    document.querySelector('.brand-tyrefinder-rear-rim').classList.add('hidden');
+    document.querySelector('.brand-rear-tyre-selection').classList.add('hidden');
+    document.querySelector('.brand-search-final-step').classList.remove('hidden');
+    document.querySelector('.brand-diff-rear-size').classList.add('hidden');
+
+    var rearSelected = document.querySelector('.brand-size-rear-selected');
+    rearSelected.querySelector('.brand-rear-rim').textContent = ' R' + label;
+    rearSelected.querySelector('.brand-edit-rear').classList.remove('hidden');
+}
+
+// ---- Brand Navigation / Reset ----
+
+function brandIsRearSizeSelected() {
+    return document.getElementById('brandRearRimValue-hidden').value !== '';
+}
+
+function brandGoback(step) {
+    if (step === 'frontwidth') {
+        document.querySelector('.brand-tyrefinder-front-height').classList.add('hidden');
+        document.querySelector('.brand-tyrefinder-front-width').classList.remove('hidden');
+        document.querySelector('.brand-size-front-selected .brand-width').textContent = '';
+        document.getElementById('brandFrontWidthLabel-hidden').value = '';
+        document.getElementById('brandFrontWidthValue-hidden').value = '';
+    } else if (step === 'frontheight') {
+        document.querySelector('.brand-tyrefinder-front-rim').classList.add('hidden');
+        document.querySelector('.brand-tyrefinder-front-height').classList.remove('hidden');
+        document.querySelector('.brand-size-front-selected .brand-height').textContent = '';
+        document.getElementById('brandFrontHeightLabel-hidden').value = '';
+        document.getElementById('brandFrontHeightValue-hidden').value = '';
+    } else if (step === 'rearwidth') {
+        document.querySelector('.brand-tyrefinder-rear-height').classList.add('hidden');
+        document.querySelector('.brand-tyrefinder-rear-width').classList.remove('hidden');
+        document.querySelector('.brand-size-rear-selected .brand-rear-width').textContent = '';
+        document.getElementById('brandRearWidthLabel-hidden').value = '';
+        document.getElementById('brandRearWidthValue-hidden').value = '';
+    } else if (step === 'rearheight') {
+        document.querySelector('.brand-tyrefinder-rear-rim').classList.add('hidden');
+        document.querySelector('.brand-tyrefinder-rear-height').classList.remove('hidden');
+        document.querySelector('.brand-size-rear-selected .brand-rear-height').textContent = '';
+        document.getElementById('brandRearHeightLabel-hidden').value = '';
+        document.getElementById('brandRearHeightValue-hidden').value = '';
+    } else if (step === 'finalstep_fromrear') {
+        document.querySelector('.brand-rear-tyre-selection').classList.add('hidden');
+        document.querySelector('.brand-front-tyre-selection').classList.remove('hidden');
+        document.querySelector('.brand-search-final-step').classList.remove('hidden');
+        document.querySelector('.brand-diff-rear-size').classList.remove('hidden');
+    }
+}
+
+function brandResetSizePopup() {
+    // Reset all hidden fields
+    document.getElementById('brandFrontWidthLabel-hidden').value = '';
+    document.getElementById('brandFrontWidthValue-hidden').value = '';
+    document.getElementById('brandFrontHeightLabel-hidden').value = '';
+    document.getElementById('brandFrontHeightValue-hidden').value = '';
+    document.getElementById('brandFrontRimLabel-hidden').value = '';
+    document.getElementById('brandFrontRimValue-hidden').value = '';
+    document.getElementById('brandRearWidthLabel-hidden').value = '';
+    document.getElementById('brandRearWidthValue-hidden').value = '';
+    document.getElementById('brandRearHeightLabel-hidden').value = '';
+    document.getElementById('brandRearHeightValue-hidden').value = '';
+    document.getElementById('brandRearRimLabel-hidden').value = '';
+    document.getElementById('brandRearRimValue-hidden').value = '';
+
+    // Reset front display
+    document.querySelector('.brand-size-front-selected .brand-width').textContent = '';
+    document.querySelector('.brand-size-front-selected .brand-height').textContent = '';
+    document.querySelector('.brand-size-front-selected .brand-rim').textContent = '';
+    document.querySelector('.brand-size-front-selected .brand-edit-front').classList.add('hidden');
+    document.querySelector('.brand-size-front-selected .brand-front-tyre-label').classList.add('hidden');
+
+    // Reset rear display
+    document.querySelector('.brand-size-rear-selected').classList.add('hidden');
+    var rearSel = document.querySelector('.brand-size-rear-selected');
+    rearSel.querySelector('.brand-rear-width').textContent = '';
+    rearSel.querySelector('.brand-rear-height').textContent = '';
+    rearSel.querySelector('.brand-rear-rim').textContent = '';
+    rearSel.querySelector('.brand-edit-rear').classList.add('hidden');
+
+    // Show front width, hide everything else
+    document.querySelector('.brand-front-tyre-selection').classList.remove('hidden');
+    document.querySelector('.brand-tyrefinder-front-width').classList.remove('hidden');
+    document.querySelector('.brand-tyrefinder-front-height').classList.add('hidden');
+    document.querySelector('.brand-tyrefinder-front-rim').classList.add('hidden');
+    document.querySelector('.brand-rear-tyre-selection').classList.add('hidden');
+    document.querySelector('.brand-tyrefinder-rear-width').classList.remove('hidden');
+    document.querySelector('.brand-tyrefinder-rear-height').classList.add('hidden');
+    document.querySelector('.brand-tyrefinder-rear-rim').classList.add('hidden');
+    document.querySelector('.brand-search-final-step').classList.add('hidden');
+}
+
+function brandReselectFront() {
+    document.querySelector('.brand-search-final-step').classList.add('hidden');
+    document.querySelector('.brand-rear-tyre-selection').classList.add('hidden');
+
+    document.getElementById('brandFrontWidthLabel-hidden').value = '';
+    document.getElementById('brandFrontWidthValue-hidden').value = '';
+    document.getElementById('brandFrontHeightLabel-hidden').value = '';
+    document.getElementById('brandFrontHeightValue-hidden').value = '';
+    document.getElementById('brandFrontRimLabel-hidden').value = '';
+    document.getElementById('brandFrontRimValue-hidden').value = '';
+
+    document.querySelector('.brand-size-front-selected .brand-width').textContent = '';
+    document.querySelector('.brand-size-front-selected .brand-height').textContent = '';
+    document.querySelector('.brand-size-front-selected .brand-rim').textContent = '';
+    document.querySelector('.brand-size-front-selected .brand-edit-front').classList.add('hidden');
+    document.querySelector('.brand-size-front-selected .brand-front-tyre-label').classList.add('hidden');
+
+    document.querySelector('.brand-front-tyre-selection').classList.remove('hidden');
+    document.querySelector('.brand-tyrefinder-front-width').classList.remove('hidden');
+    document.querySelector('.brand-tyrefinder-front-height').classList.add('hidden');
+    document.querySelector('.brand-tyrefinder-front-rim').classList.add('hidden');
+}
+
+function brandReselectRear() {
+    document.querySelector('.brand-search-final-step').classList.add('hidden');
+
+    document.getElementById('brandRearWidthLabel-hidden').value = '';
+    document.getElementById('brandRearWidthValue-hidden').value = '';
+    document.getElementById('brandRearHeightLabel-hidden').value = '';
+    document.getElementById('brandRearHeightValue-hidden').value = '';
+    document.getElementById('brandRearRimLabel-hidden').value = '';
+    document.getElementById('brandRearRimValue-hidden').value = '';
+
+    var rearSel = document.querySelector('.brand-size-rear-selected');
+    rearSel.querySelector('.brand-rear-width').textContent = '';
+    rearSel.querySelector('.brand-rear-height').textContent = '';
+    rearSel.querySelector('.brand-rear-rim').textContent = '';
+    rearSel.querySelector('.brand-edit-rear').classList.add('hidden');
+
+    document.querySelector('.brand-front-tyre-selection').classList.add('hidden');
+    document.querySelector('.brand-rear-tyre-selection').classList.remove('hidden');
+    document.querySelector('.brand-tyrefinder-rear-width').classList.remove('hidden');
+    document.querySelector('.brand-tyrefinder-rear-height').classList.add('hidden');
+    document.querySelector('.brand-tyrefinder-rear-rim').classList.add('hidden');
+}
+
+function brandRemoveRear() {
+    document.getElementById('brandRearWidthLabel-hidden').value = '';
+    document.getElementById('brandRearWidthValue-hidden').value = '';
+    document.getElementById('brandRearHeightLabel-hidden').value = '';
+    document.getElementById('brandRearHeightValue-hidden').value = '';
+    document.getElementById('brandRearRimLabel-hidden').value = '';
+    document.getElementById('brandRearRimValue-hidden').value = '';
+
+    document.querySelector('.brand-size-rear-selected').classList.add('hidden');
+    var rearSel = document.querySelector('.brand-size-rear-selected');
+    rearSel.querySelector('.brand-rear-width').textContent = '';
+    rearSel.querySelector('.brand-rear-height').textContent = '';
+    rearSel.querySelector('.brand-rear-rim').textContent = '';
+
+    document.querySelector('.brand-rear-tyre-selection').classList.add('hidden');
+    document.querySelector('.brand-front-tyre-selection').classList.remove('hidden');
+    document.querySelector('.brand-search-final-step').classList.remove('hidden');
+    document.querySelector('.brand-diff-rear-size').classList.remove('hidden');
+}
+
+function submitBrandTyreSelection() {
+    var width = document.getElementById('brandFrontWidthLabel-hidden').value;
+    var height = document.getElementById('brandFrontHeightLabel-hidden').value;
+    var rim = document.getElementById('brandFrontRimLabel-hidden').value;
+    var rearWidth = document.getElementById('brandRearWidthLabel-hidden').value;
+    var rearHeight = document.getElementById('brandRearHeightLabel-hidden').value;
+    var rearRim = document.getElementById('brandRearRimLabel-hidden').value;
+    var brandName = document.getElementById('brandNameForUrl-hidden').value;
+    var brandId = document.getElementById('brandOptionId-hidden').value;
+    var brandUrlKey = document.getElementById('brandUrlKey-hidden').value;
+    if (typeof window._saveFitmentLastSearch === 'function') {
+        window._saveFitmentLastSearch('byBrand', {
+            brandId: brandId, brandName: brandName, brandUrlKey: brandUrlKey,
+            width: width, height: height, rim: rim,
+            rearWidth: rearWidth || '', rearHeight: rearHeight || '', rearRim: rearRim || ''
+        });
+    }
+    document.getElementById('finder-brand-size-form').submit();
+}
+
+// ============ EV FINDER FUNCTIONS (Direct Size Selection) ============
+
+var evWidthsLoaded = false;
+
+function EvFinderModel() {
+    document.getElementById("ev-finder-model").classList.remove("translate-x-full");
+    document.getElementById("ev-finder-model-overlay").classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+    document.addEventListener('keydown', evFinderEscHandler);
+
+    // Load EV widths directly if not loaded yet
+    if (!evWidthsLoaded) {
+        document.getElementById('klever-loader-ev').classList.remove('hidden');
+        fetch('<?php echo $this->getBaseUrl(); ?>tyrefinder/ajax/getevwidths', {
+            headers: { contentType: 'application/x-www-form-urlencoded; charset=UTF-8' },
+            body: new URLSearchParams({ form_key: hyva.getFormKey(), uenc: btoa(window.location.href) }),
+            method: 'POST', mode: 'cors', credentials: 'include',
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('evAllWidthOptions').innerHTML = data.fronthtml;
+            document.getElementById('evAllRearWidthOptions').innerHTML = data.rearhtml;
+            evWidthsLoaded = true;
+            document.getElementById('klever-loader-ev').classList.add('hidden');
+        })
+        .catch(error => { console.error('Error:', error); document.getElementById('klever-loader-ev').classList.add('hidden'); });
+    }
+}
+function EvFinderModelClose() {
+    document.getElementById("ev-finder-model").classList.add("translate-x-full");
+    document.getElementById("ev-finder-model-overlay").classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+    document.removeEventListener('keydown', evFinderEscHandler);
+}
+function evFinderEscHandler(e) { if (e.key === 'Escape' || e.key === 'Esc') { EvFinderModelClose(); } }
+
+// EV Front: Width → Height → Rim
+function evGetheight(widthValue, label, type) {
+    document.getElementById('evFrontWidthLabel-hidden').value = label;
+    document.getElementById('evFrontWidthValue-hidden').value = widthValue;
+    document.getElementById('klever-loader-ev').classList.remove('hidden');
+    fetch('<?php echo $this->getBaseUrl(); ?>tyrefinder/ajax/getevheights', {
+        headers: { contentType: 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: new URLSearchParams({ form_key: hyva.getFormKey(), type: type, width: widthValue, uenc: btoa(window.location.href) }),
+        method: 'POST', mode: 'cors', credentials: 'include',
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('evAllHeightOptions').innerHTML = data.response;
+        document.querySelector('.ev-tyrefinder-front-width').classList.add('hidden');
+        document.querySelector('.ev-tyrefinder-front-height').classList.remove('hidden');
+        document.querySelector('.ev-size-front-selected .ev-width').textContent = label;
+        document.getElementById('klever-loader-ev').classList.add('hidden');
+    })
+    .catch(error => { console.error('Error:', error); document.getElementById('klever-loader-ev').classList.add('hidden'); });
+}
+function evGetrim(heightValue, label, type) {
+    document.getElementById('evFrontHeightLabel-hidden').value = label;
+    document.getElementById('evFrontHeightValue-hidden').value = heightValue;
+    var widthValue = document.getElementById('evFrontWidthValue-hidden').value;
+    document.getElementById('klever-loader-ev').classList.remove('hidden');
+    fetch('<?php echo $this->getBaseUrl(); ?>tyrefinder/ajax/getevrims', {
+        headers: { contentType: 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: new URLSearchParams({ form_key: hyva.getFormKey(), type: type, width: widthValue, height: heightValue, uenc: btoa(window.location.href) }),
+        method: 'POST', mode: 'cors', credentials: 'include',
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('evAllRimOptions').innerHTML = data.response;
+        document.querySelector('.ev-tyrefinder-front-height').classList.add('hidden');
+        document.querySelector('.ev-tyrefinder-front-rim').classList.remove('hidden');
+        document.querySelector('.ev-size-front-selected .ev-height').textContent = ' /' + label;
+        document.getElementById('klever-loader-ev').classList.add('hidden');
+    })
+    .catch(error => { console.error('Error:', error); document.getElementById('klever-loader-ev').classList.add('hidden'); });
+}
+function evSelectRim(rimValue, label) {
+    document.getElementById('evFrontRimValue-hidden').value = rimValue;
+    document.getElementById('evFrontRimLabel-hidden').value = label;
+    document.querySelector('.ev-tyrefinder-front-rim').classList.add('hidden');
+    document.querySelector('.ev-search-final-step').classList.remove('hidden');
+    var frontSelected = document.querySelector('.ev-size-front-selected');
+    frontSelected.querySelector('.ev-rim').textContent = ' R' + label;
+    frontSelected.querySelector('.ev-edit-front').classList.remove('hidden');
+    frontSelected.querySelector('.ev-front-tyre-label').classList.remove('hidden');
+    if (evIsRearSizeSelected()) {
+        document.querySelector('.ev-size-rear-selected .ev-edit-rear').classList.remove('hidden');
+    } else {
+        document.querySelector('.ev-diff-rear-size').classList.remove('hidden');
+    }
+}
+
+// EV Rear: Width → Height → Rim
+function evDiffRearSize() {
+    document.querySelector('.ev-search-final-step').classList.add('hidden');
+    document.querySelector('.ev-diff-rear-size').classList.add('hidden');
+    document.querySelector('.ev-front-tyre-selection').classList.add('hidden');
+    document.querySelector('.ev-rear-tyre-selection').classList.remove('hidden');
+    document.querySelector('.ev-size-rear-selected').classList.remove('hidden');
+}
+function evGetRearheight(widthValue, label, type) {
+    document.getElementById('evRearWidthLabel-hidden').value = label;
+    document.getElementById('evRearWidthValue-hidden').value = widthValue;
+    document.getElementById('klever-loader-ev').classList.remove('hidden');
+    fetch('<?php echo $this->getBaseUrl(); ?>tyrefinder/ajax/getevheights', {
+        headers: { contentType: 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: new URLSearchParams({ form_key: hyva.getFormKey(), type: type, width: widthValue, uenc: btoa(window.location.href) }),
+        method: 'POST', mode: 'cors', credentials: 'include',
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('evAllRearHeightOptions').innerHTML = data.response;
+        document.querySelector('.ev-tyrefinder-rear-width').classList.add('hidden');
+        document.querySelector('.ev-tyrefinder-rear-height').classList.remove('hidden');
+        document.querySelector('.ev-size-rear-selected .ev-rear-width').textContent = label;
+        document.getElementById('klever-loader-ev').classList.add('hidden');
+    })
+    .catch(error => { console.error('Error:', error); document.getElementById('klever-loader-ev').classList.add('hidden'); });
+}
+function evGetRearrim(heightValue, label, type) {
+    document.getElementById('evRearHeightLabel-hidden').value = label;
+    document.getElementById('evRearHeightValue-hidden').value = heightValue;
+    var widthValue = document.getElementById('evRearWidthValue-hidden').value;
+    document.getElementById('klever-loader-ev').classList.remove('hidden');
+    fetch('<?php echo $this->getBaseUrl(); ?>tyrefinder/ajax/getevrims', {
+        headers: { contentType: 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: new URLSearchParams({ form_key: hyva.getFormKey(), type: type, width: widthValue, height: heightValue, uenc: btoa(window.location.href) }),
+        method: 'POST', mode: 'cors', credentials: 'include',
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('evAllRearRimOptions').innerHTML = data.response;
+        document.querySelector('.ev-tyrefinder-rear-height').classList.add('hidden');
+        document.querySelector('.ev-tyrefinder-rear-rim').classList.remove('hidden');
+        document.querySelector('.ev-size-rear-selected .ev-rear-height').textContent = ' /' + label;
+        document.getElementById('klever-loader-ev').classList.add('hidden');
+    })
+    .catch(error => { console.error('Error:', error); document.getElementById('klever-loader-ev').classList.add('hidden'); });
+}
+function evSelectRearRim(rimValue, label) {
+    document.getElementById('evRearRimValue-hidden').value = rimValue;
+    document.getElementById('evRearRimLabel-hidden').value = label;
+    document.querySelector('.ev-tyrefinder-rear-rim').classList.add('hidden');
+    document.querySelector('.ev-rear-tyre-selection').classList.add('hidden');
+    document.querySelector('.ev-search-final-step').classList.remove('hidden');
+    document.querySelector('.ev-diff-rear-size').classList.add('hidden');
+    var rearSelected = document.querySelector('.ev-size-rear-selected');
+    rearSelected.querySelector('.ev-rear-rim').textContent = ' R' + label;
+    rearSelected.querySelector('.ev-edit-rear').classList.remove('hidden');
+}
+
+// EV Navigation / Reset
+function evIsRearSizeSelected() { return document.getElementById('evRearRimValue-hidden').value !== ''; }
+
+function evGoback(step) {
+    if (step === 'frontwidth') {
+        document.querySelector('.ev-tyrefinder-front-height').classList.add('hidden');
+        document.querySelector('.ev-tyrefinder-front-width').classList.remove('hidden');
+        document.querySelector('.ev-size-front-selected .ev-width').textContent = '';
+        document.getElementById('evFrontWidthLabel-hidden').value = '';
+        document.getElementById('evFrontWidthValue-hidden').value = '';
+    } else if (step === 'frontheight') {
+        document.querySelector('.ev-tyrefinder-front-rim').classList.add('hidden');
+        document.querySelector('.ev-tyrefinder-front-height').classList.remove('hidden');
+        document.querySelector('.ev-size-front-selected .ev-height').textContent = '';
+        document.getElementById('evFrontHeightLabel-hidden').value = '';
+        document.getElementById('evFrontHeightValue-hidden').value = '';
+    } else if (step === 'rearwidth') {
+        document.querySelector('.ev-tyrefinder-rear-height').classList.add('hidden');
+        document.querySelector('.ev-tyrefinder-rear-width').classList.remove('hidden');
+        document.querySelector('.ev-size-rear-selected .ev-rear-width').textContent = '';
+        document.getElementById('evRearWidthLabel-hidden').value = '';
+        document.getElementById('evRearWidthValue-hidden').value = '';
+    } else if (step === 'rearheight') {
+        document.querySelector('.ev-tyrefinder-rear-rim').classList.add('hidden');
+        document.querySelector('.ev-tyrefinder-rear-height').classList.remove('hidden');
+        document.querySelector('.ev-size-rear-selected .ev-rear-height').textContent = '';
+        document.getElementById('evRearHeightLabel-hidden').value = '';
+        document.getElementById('evRearHeightValue-hidden').value = '';
+    } else if (step === 'finalstep_fromrear') {
+        document.querySelector('.ev-rear-tyre-selection').classList.add('hidden');
+        document.querySelector('.ev-front-tyre-selection').classList.remove('hidden');
+        document.querySelector('.ev-search-final-step').classList.remove('hidden');
+        document.querySelector('.ev-diff-rear-size').classList.remove('hidden');
+    }
+}
+
+function evResetSizePopup() {
+    ['evFrontWidthLabel-hidden','evFrontWidthValue-hidden','evFrontHeightLabel-hidden','evFrontHeightValue-hidden','evFrontRimLabel-hidden','evFrontRimValue-hidden','evRearWidthLabel-hidden','evRearWidthValue-hidden','evRearHeightLabel-hidden','evRearHeightValue-hidden','evRearRimLabel-hidden','evRearRimValue-hidden'].forEach(function(id) { document.getElementById(id).value = ''; });
+
+    document.querySelector('.ev-size-front-selected .ev-width').textContent = '';
+    document.querySelector('.ev-size-front-selected .ev-height').textContent = '';
+    document.querySelector('.ev-size-front-selected .ev-rim').textContent = '';
+    document.querySelector('.ev-size-front-selected .ev-edit-front').classList.add('hidden');
+    document.querySelector('.ev-size-front-selected .ev-front-tyre-label').classList.add('hidden');
+    document.querySelector('.ev-size-rear-selected').classList.add('hidden');
+    var rearSel = document.querySelector('.ev-size-rear-selected');
+    rearSel.querySelector('.ev-rear-width').textContent = '';
+    rearSel.querySelector('.ev-rear-height').textContent = '';
+    rearSel.querySelector('.ev-rear-rim').textContent = '';
+    rearSel.querySelector('.ev-edit-rear').classList.add('hidden');
+
+    document.querySelector('.ev-front-tyre-selection').classList.remove('hidden');
+    document.querySelector('.ev-tyrefinder-front-width').classList.remove('hidden');
+    document.querySelector('.ev-tyrefinder-front-height').classList.add('hidden');
+    document.querySelector('.ev-tyrefinder-front-rim').classList.add('hidden');
+    document.querySelector('.ev-rear-tyre-selection').classList.add('hidden');
+    document.querySelector('.ev-tyrefinder-rear-width').classList.remove('hidden');
+    document.querySelector('.ev-tyrefinder-rear-height').classList.add('hidden');
+    document.querySelector('.ev-tyrefinder-rear-rim').classList.add('hidden');
+    document.querySelector('.ev-search-final-step').classList.add('hidden');
+}
+
+function evReselectFront() {
+    document.querySelector('.ev-search-final-step').classList.add('hidden');
+    document.querySelector('.ev-rear-tyre-selection').classList.add('hidden');
+    ['evFrontWidthLabel-hidden','evFrontWidthValue-hidden','evFrontHeightLabel-hidden','evFrontHeightValue-hidden','evFrontRimLabel-hidden','evFrontRimValue-hidden'].forEach(function(id) { document.getElementById(id).value = ''; });
+    document.querySelector('.ev-size-front-selected .ev-width').textContent = '';
+    document.querySelector('.ev-size-front-selected .ev-height').textContent = '';
+    document.querySelector('.ev-size-front-selected .ev-rim').textContent = '';
+    document.querySelector('.ev-size-front-selected .ev-edit-front').classList.add('hidden');
+    document.querySelector('.ev-size-front-selected .ev-front-tyre-label').classList.add('hidden');
+    document.querySelector('.ev-front-tyre-selection').classList.remove('hidden');
+    document.querySelector('.ev-tyrefinder-front-width').classList.remove('hidden');
+    document.querySelector('.ev-tyrefinder-front-height').classList.add('hidden');
+    document.querySelector('.ev-tyrefinder-front-rim').classList.add('hidden');
+}
+
+function evReselectRear() {
+    document.querySelector('.ev-search-final-step').classList.add('hidden');
+    ['evRearWidthLabel-hidden','evRearWidthValue-hidden','evRearHeightLabel-hidden','evRearHeightValue-hidden','evRearRimLabel-hidden','evRearRimValue-hidden'].forEach(function(id) { document.getElementById(id).value = ''; });
+    var rearSel = document.querySelector('.ev-size-rear-selected');
+    rearSel.querySelector('.ev-rear-width').textContent = '';
+    rearSel.querySelector('.ev-rear-height').textContent = '';
+    rearSel.querySelector('.ev-rear-rim').textContent = '';
+    rearSel.querySelector('.ev-edit-rear').classList.add('hidden');
+    document.querySelector('.ev-front-tyre-selection').classList.add('hidden');
+    document.querySelector('.ev-rear-tyre-selection').classList.remove('hidden');
+    document.querySelector('.ev-tyrefinder-rear-width').classList.remove('hidden');
+    document.querySelector('.ev-tyrefinder-rear-height').classList.add('hidden');
+    document.querySelector('.ev-tyrefinder-rear-rim').classList.add('hidden');
+}
+
+function evRemoveRear() {
+    ['evRearWidthLabel-hidden','evRearWidthValue-hidden','evRearHeightLabel-hidden','evRearHeightValue-hidden','evRearRimLabel-hidden','evRearRimValue-hidden'].forEach(function(id) { document.getElementById(id).value = ''; });
+    document.querySelector('.ev-size-rear-selected').classList.add('hidden');
+    var rearSel = document.querySelector('.ev-size-rear-selected');
+    rearSel.querySelector('.ev-rear-width').textContent = '';
+    rearSel.querySelector('.ev-rear-height').textContent = '';
+    rearSel.querySelector('.ev-rear-rim').textContent = '';
+    document.querySelector('.ev-rear-tyre-selection').classList.add('hidden');
+    document.querySelector('.ev-front-tyre-selection').classList.remove('hidden');
+    document.querySelector('.ev-search-final-step').classList.remove('hidden');
+    document.querySelector('.ev-diff-rear-size').classList.remove('hidden');
+}
+
+function submitEvTyreSelection() {
+    var width = document.getElementById('evFrontWidthLabel-hidden').value;
+    var height = document.getElementById('evFrontHeightLabel-hidden').value;
+    var rim = document.getElementById('evFrontRimLabel-hidden').value;
+    var rearWidth = document.getElementById('evRearWidthLabel-hidden').value;
+    var rearHeight = document.getElementById('evRearHeightLabel-hidden').value;
+    var rearRim = document.getElementById('evRearRimLabel-hidden').value;
+    if (typeof window._saveFitmentLastSearch === 'function') {
+        window._saveFitmentLastSearch('byEv', {
+            width: width, height: height, rim: rim,
+            rearWidth: rearWidth || '', rearHeight: rearHeight || '', rearRim: rearRim || ''
+        });
+    }
+    document.getElementById('finder-ev-size-form').submit();
+}
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

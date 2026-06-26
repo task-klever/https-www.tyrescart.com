@@ -1,0 +1,29 @@
+type Query {
+    topPicksBySegment(
+        width: String!
+        height: String
+        rim: String!
+        limit: Int
+    ): TopPicksOutput @resolver(class: "Klever\\BrandSegment\\Model\\Resolver\\TopPicksBySegment") @doc(description: "Top picks by brand segment")
+}
+
+type TopPicksOutput {
+    segments: [SegmentGroup]
+}
+
+type SegmentGroup {
+    key: String
+    label: String
+    products: [SegmentProduct]
+}
+
+type SegmentProduct {
+    name: String
+    url: String
+    image_url: String
+    price: Float
+    formatted_price: String
+    brand_name: String
+    brand_logo_url: String
+    size: String
+}

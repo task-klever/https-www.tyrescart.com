@@ -1,0 +1,53 @@
+<?php
+/**
+ * Convert Arabic-Indic digits (٠١٢٣٤٥٦٧٨٩) to Western digits (0123456789)
+ * across the entire page for the Arabic store view.
+ */
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+/** @var \Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp */
+$hyvaCsp = $objectManager->get(\Hyva\Theme\ViewModel\HyvaCsp::class);
+?>
+<script>
+(function() {
+    var arabicMap = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
+    var arabicRegex = /[٠-٩]/g;
+
+    function replaceDigits(text) {
+        return text.replace(arabicRegex, function(d) { return arabicMap[d]; });
+    }
+
+    function walkNode(node) {
+        if (node.nodeType === 3) {
+            var replaced = replaceDigits(node.nodeValue);
+            if (replaced !== node.nodeValue) {
+                node.nodeValue = replaced;
+            }
+        } else if (node.nodeType === 1 && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') {
+            for (var i = 0; i < node.childNodes.length; i++) {
+                walkNode(node.childNodes[i]);
+            }
+        }
+    }
+
+    function processPage() {
+        walkNode(document.body);
+    }
+
+    // Run on initial load
+    document.addEventListener('DOMContentLoaded', processPage);
+
+    // Observe dynamic content changes (AJAX, Alpine.js, etc.)
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                walkNode(node);
+            });
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        observer.observe(document.body, { childList: true, subtree: true });
+    });
+})();
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

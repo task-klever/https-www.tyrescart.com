@@ -1,0 +1,41 @@
+=========================================================================
+Date                Version     Description
+=========================================================================
+
+2023-09-15: v1.1.1 : Align code with Magento code standards (phpcs).
+                     Fix duplicate mails notification when re-loading the order success page.
+                     Fix store credit reverting twice on certain order status settings.
+
+2023-08-15: v1.1.0 : Fix order status not changing to 'Complete' when shipped using 'Capture Offline'.
+                     Fix cron query timing out.
+                     Allow N-Genius Refund Statuses to be configurable.
+                     Add merchant defined data for plugin name and version.
+
+2023-08-05: v1.0.9 : Add option "Send Email on Order Creation".
+                     Force Magento payment action to 'authorize'.
+                     Fix order email not sending for COD payment method.
+
+2023-08-04: v1.0.8 : Add support for custom failed order statuses and states.
+                     Add option to disable sending the invoice email.
+                     Fix issues with the order status history for the initial order state.
+                     Improve reliability of payment actions on different servers.
+                     Fix issues with multi-store website scopes for settings.
+
+2023-07-31: v1.0.7 : Add support for custom success and pending order statuses and states.
+
+2023-07-24: v1.0.6 : Add type check for commands before attempting to run.
+
+2023-07-20: v1.0.5 : Handle deprecated functionality str_replace() passing null to parameter.
+                     Don't allow order email for invalid order indexes.
+
+2023-07-14: v1.0.4 : Fix 'command doesn't exist' error when Magento payment_action does not save.
+
+2023-07-13: v1.0.3 : Refactor to use common classes and composer.
+                     Bugs fixes and improvements.
+
+2022-09-30: v1.0.2 : Add support for Magento 2.4.5 and PHP 8.1
+                     Bugs fixes and code quality improvements.
+                     Add Outlet 2 Reference ID and Currencies override feature.
+                     Add / update default configuration values
+
+2021-08-16: v1.0.1 : Initial version.

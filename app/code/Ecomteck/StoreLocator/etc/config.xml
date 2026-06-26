@@ -1,0 +1,211 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ecomteck_StoreLocator extension
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the MIT License
+ * that is bundled with this package in the file LICENSE
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/mit-license.php
+ *
+ * @category  Ecomteck
+ * @package   Ecomteck_StoreLocator
+ * @copyright 2016 Ecomteck
+ * @license   http://opensource.org/licenses/mit-license.php MIT License
+ * @author    Ecomteck
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <ecomteck_storelocator>
+            <products>
+                <is_available_stores>1</is_available_stores>
+            </products>
+            <seo>
+                <breadcrumbs>1</breadcrumbs>
+                <meta_title>Store Locator</meta_title>
+                <meta_description>Store Locator Description Here</meta_description>
+                <meta_keywords>Store Locator Keywords Here</meta_keywords>
+                <url>storelocator</url>
+            </seo>
+            <template>
+                <infowindow_description>
+                    <![CDATA[
+                        {{#location}}
+                            <div class="marker-popup">
+                                {{#if details_image}}
+                                    <div class="loc-image">
+                                        <img src="{{details_image}}"/>
+                                    </div>
+                                {{/if}}
+                                <div class="loc-details">
+                                    <div class="loc-name">{{name}}</div>
+                                    <div class="loc-addr"><b>Address: </b>{{address}} {{city}}{{#if city}},{{/if}} {{state}} {{postal}}</div>
+                                    {{#if phone}}
+                                        <div class="loc-phone">
+                                            <b>Phone: </b>
+                                            <a href="tel:{{phone}}" target="_blank">{{phone}}</a>
+                                        </div>
+                                    {{/if}}
+                                    {{#if email}}
+                                        <div class="loc-email"><b>E-Mail: </b><a href="mailto:{{email}}" target="_blank">{{email}}</a></div>
+                                    {{/if}}
+                                    {{#if external_link}}
+                                        <div class="loc-web"><b>Homepage: </b><a href="{{external_link}}" target="_blank">{{niceURL external_link}}</a></div>
+                                    {{/if}}
+                                    {{#if details_link}}
+                                        <div class="loc-web"><a href="{{details_link}}" target="_blank">Details</a></div>
+                                    {{/if}}
+                                    {{#if distance}}
+                                        <div class="loc-dist loc-default-dist">{{distance}} {{length}}</div>
+                                        {{#if altdistance}}<div class="loc-dist loc-alt-dist">{{altdistance}} {{altlength}}</div>{{/if}}
+                                        <div class="loc-directions"><a href="https://maps.google.com/maps?saddr={{origin}}&amp;daddr={{address}} {{address2}} {{city}}, {{state}} {{postal}}" target="_blank">Directions</a></div>
+                                    {{/if}}
+                                </div>
+                                <div class="loc-open-time">
+                                    {{#if opening_hours_formated}}
+                                        <div class="opening-hours">
+                                            <b>Opening hours</b>
+                                            {{{opening_hours_formated}}}
+                                        </div>
+                                    {{/if}}
+                                    {{#if special_opening_hours_formated}}
+                                        <div class="special-opening-hours">
+                                            <b>Special opening hours</b>
+                                            {{{special_opening_hours_formated}}}
+                                        </div>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        {{/location}}
+                    ]]>
+                </infowindow_description>
+                <kml_infowindow_description>
+                    <![CDATA[
+                        {{#location}}
+                            <div class="loc-name">{{name}}</div>
+                            {{#if description}}
+                                <div>{{{description}}}</div>
+                            {{/if}}
+                        {{/location}}
+                    ]]>
+                </kml_infowindow_description>
+                <kml_location_list_description>
+                    <![CDATA[
+                        {{#location}}
+                            <li data-markerid="{{markerid}}">
+                                <div class="list-label">{{marker}}</div>
+                                <div class="list-details">
+                                    <div class="list-content">
+                                        <div class="loc-name">{{name}}</div>
+                                        {{#if description}}
+                                            <div>{{{description}}}</div>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </li>
+                        {{/location}}
+                    ]]>
+                </kml_location_list_description>
+                <location_list_description>
+                    <![CDATA[
+                        {{#location}}
+                        <li data-markerid="{{markerid}}">
+                            {{#if image}}
+                                <div class="loc-image">
+                                    <img src="{{image}}"/>
+                                </div>
+                            {{else}}
+                                <div class="list-label">
+                                {{marker}}
+                                </div>
+                            {{/if}}
+                            <div class="list-details">
+                                <div class="loc-name">{{name}}</div>
+                                <div class="list-content">
+                                    <div class="loc-addr"><b>Address: </b>{{address}} {{city}}{{#if city}},{{/if}} {{state}} {{postal}}</div>
+                                    {{#if phone}}
+                                        <div class="loc-phone">
+                                            <b>Phone: </b>
+                                            <a href="tel:{{phone}}" target="_blank">{{phone}}</a>
+                                        </div>
+                                    {{/if}}
+                                    {{#if email}}
+                                        <div class="loc-email"><b>E-Mail: </b><a href="mailto:{{email}}" target="_blank">{{email}}</a></div>
+                                    {{/if}}
+                                    {{#if external_link}}
+                                        <div class="loc-web"><b>Homepage: </b><a href="{{external_link}}" target="_blank">{{niceURL external_link}}</a></div>
+                                    {{/if}}
+                                    {{#if distance}}
+                                        <div class="loc-dist loc-default-dist">{{distance}} {{length}}</div>
+                                        {{#if altdistance}}<div class="loc-dist loc-alt-dist">{{altdistance}} {{altlength}}</div>{{/if}}
+                                        <div class="loc-directions"><a href="https://maps.google.com/maps?saddr={{origin}}&amp;daddr={{address}} {{address2}} {{city}}, {{state}} {{postal}}" target="_blank">Directions</a></div>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        </li>
+                        {{/location}}
+                    ]]>
+                </location_list_description>
+            </template>
+            <text>
+                <address_error_alert>Unable to find address</address_error_alert>
+                <auto_geocode_error_alert>Automatic location detection failed. Please fill in your address or zip code.</auto_geocode_error_alert>
+                <distance_error_alert>Unfortunately, our closest location is more than</distance_error_alert>
+                <kilometer_lang>kilometer</kilometer_lang>
+                <kilometers_lang>kilometers</kilometers_lang>
+                <mile_lang>mile</mile_lang>
+                <miles_lang>miles</miles_lang>
+                <no_results_title>No results</no_results_title>
+                <no_results_desc>No locations were found with the given criteria. Please modify your selections or input.</no_results_desc>
+                <next_page><![CDATA[Next &raquo;]]></next_page>
+                <prev_page><![CDATA[&laquo; Prev]]></prev_page>
+            </text>
+            <map>
+                <template>full_width_right_sidebar</template>
+                <api_key>AIzaSyDQoYGuJE3CogwzmFTzp7Eb8LpL5Tp-swo</api_key>
+                <unit_length>km</unit_length>
+                <zoom>13</zoom>
+                <map_style>default</map_style>
+                <map_type>roadmap</map_type>
+            </map>  
+            <search>
+                <radius>40233.6</radius>
+                <ask_location>1</ask_location>
+                <inline_directions>1</inline_directions>
+                <address_autocomplete>1</address_autocomplete>
+                <locations_per_page>5</locations_per_page>
+                <distance_alert>60</distance_alert>
+                <pagination>1</pagination>
+                <store_limit>26</store_limit>
+                <open_nearest>1</open_nearest>
+                <max_distance>1</max_distance>
+                <name_search>1</name_search>
+            </search>
+            <filter>
+                <allow_country_filter>0</allow_country_filter>
+                <allow_category_filter>0</allow_category_filter>
+                <allow_city_filter>0</allow_city_filter>
+                <category_filter_renderer>select</category_filter_renderer>
+                <country_filter_renderer>select</country_filter_renderer>
+                <city_filter_renderer>select</city_filter_renderer>
+            </filter>
+            <individual>
+                <zoom_individual>16</zoom_individual>
+                <stores_slider>1</stores_slider>
+                <other_stores>1</other_stores>
+                <slider_store_limit>10</slider_store_limit>
+            </individual>
+            <contact>
+                <sender_email_identity>custom2</sender_email_identity>
+                <email_template>ecomteck_storelocator_contact_email_template</email_template>
+            </contact>
+            <installer>
+                <display_page>shopping_cart</display_page>
+                <without_fitment_free_shipping_qty>2</without_fitment_free_shipping_qty>
+            </installer>
+        </ecomteck_storelocator>
+    </default>
+</config>

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <klever_brandsegment>
+            <general>
+                <enabled>1</enabled>
+                <products_per_segment>3</products_per_segment>
+                <segments>top_premium,top_quality,top_budget</segments>
+            </general>
+        </klever_brandsegment>
+    </default>
+</config>

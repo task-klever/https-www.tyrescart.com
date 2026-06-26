@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var HyvaCsp $hyvaCsp */
+?>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('hyvaAccordion', ({ multiselectable = false, childOpenStateName = 'open' } = {}) => ({
+            accordion: null,
+            init() {
+                this.$el.setAttribute('role', 'region');
+                this.$el.setAttribute('aria-multiselectable', multiselectable);
+                this.accordion = this.$el.addEventListener('click', (event) =>{
+                    if (multiselectable) return;
+                    const target = event.target.closest('[x-data]');
+                    if (!target) return;
+                    this.toggleItems(target);
+                });
+            },
+            destroy() {
+                removeEventListener(this.accordion);
+            },
+            toggleItems(target) {
+                const items = [...this.$root.children];
+                if (!items) return;
+
+                items.forEach(item => {
+                    if (item._x_ids !== target._x_ids) {
+                        Alpine.$data(item)[childOpenStateName] = false;
+                    }
+                });
+            },
+        }))
+    })
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

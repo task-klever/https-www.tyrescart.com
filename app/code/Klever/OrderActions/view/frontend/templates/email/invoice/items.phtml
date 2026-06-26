@@ -1,0 +1,49 @@
+<?php
+/**
+ * Klever_OrderActions – Invoice email items template.
+ *
+ * Clean styling: no colored backgrounds on headers.
+ * - <thead>: no background-color
+ * - <th> color: #333333 (dark text)
+ * - border-bottom: 1px solid #dddddd
+ */
+
+/** @var \Magento\Sales\Block\Order\Email\Invoice\Items $block */
+/** @var \Magento\Framework\Escaper $escaper */
+?>
+<?php $_invoice = $block->getInvoice() ?>
+<?php $_order   = $block->getOrder() ?>
+<?php if ($_invoice && $_order): ?>
+    <table border="0" class="email-items" width="100%" style="padding:15px;">
+        <thead>
+            <tr style="border-bottom:1px solid #dddddd;">
+                <th scope="col" colspan="3" class="item-info"
+                    style="text-align:left; font-weight:100; font-size:14px; padding:10px 9px; color:#333333; font-family:'Montserrat',arial,tahoma; border-bottom:1px solid #dddddd;">
+                    <?= $escaper->escapeHtml(__('Items')) ?>
+                </th>
+                <th scope="col" class="item-price"
+                    style="text-align:center; font-weight:100; font-size:14px; padding:10px 9px; color:#333333; font-family:'Montserrat',arial,tahoma; border-bottom:1px solid #dddddd;">
+                    <?= $escaper->escapeHtml(__('Price')) ?>
+                </th>
+                <th scope="col" class="item-qty"
+                    style="text-align:center; font-weight:100; font-size:14px; padding:10px 9px; color:#333333; font-family:'Montserrat',arial,tahoma; border-bottom:1px solid #dddddd;">
+                    <?= $escaper->escapeHtml(__('Qty')) ?>
+                </th>
+                <th scope="col" class="item-subtotal"
+                    style="text-align:right; font-weight:100; font-size:14px; padding:10px 9px; color:#333333; font-family:'Montserrat',arial,tahoma; border-bottom:1px solid #dddddd;">
+                    <?= $escaper->escapeHtml(__('Subtotal')) ?>
+                </th>
+            </tr>
+        </thead>
+        <?php foreach ($_invoice->getAllItems() as $_item): ?>
+            <?php if (!$_item->getOrderItem()->getParentItem()): ?>
+                <tbody>
+                    <?= $block->getItemHtml($_item) ?>
+                </tbody>
+            <?php endif; ?>
+        <?php endforeach; ?>
+        <tfoot class="order-totals">
+            <?= $block->getChildHtml('invoice_totals') ?>
+        </tfoot>
+    </table>
+<?php endif; ?>

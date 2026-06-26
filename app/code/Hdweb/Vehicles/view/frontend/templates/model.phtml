@@ -1,0 +1,297 @@
+<?php
+use Hyva\Theme\ViewModel\HyvaCsp;
+/** @var HyvaCsp $hyvaCsp */
+$make = $this->getRequest()->getParam('make');
+$model = $this->getRequest()->getParam('model');
+$carImage = $block->getCarImage($make, $model);
+$vehicleData = $block->getVehicleData($make);
+if (!$vehicleData) {
+    $vehicleData['model_paragraph1'] = '';
+    //$vehicleData['model_paragraph2'] = '';
+}
+$strMake = str_replace('-', ' ', $make);
+$makeString = ucwords($strMake);
+$strModel = str_replace('-', ' ', $model);
+$modelString = ucwords($strModel);
+$vehicleYears = $block->getVehicleYears($make, $model);
+$vehiclesSearchbyFormUrl = str_replace(".html","",$block->getVehiclesSearchbyFormUrl());
+$vehiclesSearchbyFormActionUrl = $vehiclesSearchbyFormUrl;//$block->getVehiclesSearchbyFormUrl();
+$mediaURL = $block->getMediaUrl();
+?>
+<div class="section finde-tyre-section py-5">
+    <div class="container-theme">
+        <div class="section-title text-center">
+            <h3><?php echo $makeString . ' ' . $modelString; ?> <span class="text-theme-blue"><?php echo __('TYRES SHOP'); ?></span></h3>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center gap-5 md:gap-7">
+            <div class="flex-shrink-0 w-[10rem] h-[6rem] md:w-[14rem] md:h-[7rem] border border-gray-200 rounded-xl flex items-center justify-center bg-white p-1 md:p-3">
+                <img class="w-full h-full object-contain" loading="lazy" src="<?php echo $this->getViewFileUrl('Hdweb_Vehicles::images/logo/' . $make . '.png'); ?>" data-src="<?php echo $this->getViewFileUrl('Hdweb_Vehicles::images/logo/' . $make . '.png'); ?>" alt="#" />
+            </div>
+            <div class="flex-1 min-w-0">
+                <h4 class="text-base lg:text-lg font-bold text-gray-900 mb-2 leading-snug">
+                    <?php echo __('Buy Tyres for'); ?> <?php echo $makeString . ' ' . $modelString; ?> <?php echo __('Online in the UAE'); ?>
+                </h4>
+                <p class="text-base text-gray-600 leading-relaxed">
+                    <?php echo __('Find the perfect tyres for your'); ?> <?php echo strtolower($makeString) . ' ' . strtolower($modelString); ?> <?php echo __('at TyresCart. We stock trusted tyre brands tailored for your car, ensuring smooth handling, long-lasting durability, and a safer, more comfortable drive every time.'); ?>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="section section-padding car-modeal-about bg-[linear-gradient(90deg,#e1e1e1_0%,#ffffff_64%)] border-t border-[#e1e1e1] mt-6">
+   <div class="container-theme w-full mx-auto block">
+      <div class="flex gap-0 md:gap-4 flex-wrap md:flex-nowrap justify-center items-center">
+         <div class="w-full md:3/5 lg:1/2 xl:w-1/2">
+            <div class="section-title text-center md:[text-align:inherit]">
+               <h3><span class="text-theme-blue"><?php echo $makeString . ' ' . $modelString; ?></span> <?php echo __('tyre shop in Dubai, UAE'); ?></h3>
+               <p><?php echo __('Get the best'); ?> <?php echo $makeString . ' ' . $modelString; ?> <?php echo __('tyre offers online only'); ?></p>
+           </div>
+            <div class="text-wrap">
+               <ul class="list-none space-y-2 lg:space-y-4">
+                  <li class="flex items-start gap-2">
+                     <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                     <span class="text-black"> <?php echo __('Premium'); ?> <?php echo $makeString; ?> <?php echo __('Tyres & Installation'); ?></span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                     <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                     <span class="text-black"> <?php echo __('Expert'); ?> <?php echo $makeString; ?> <?php echo __('Repairs & Service'); ?></span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                     <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                     <span class="text-black"> <?php echo __('Genuine'); ?> <?php echo $makeString; ?> <?php echo __('Parts for Performance'); ?></span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                     <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                     <span class="text-black"> <?php echo __('Quick'); ?> <?php echo $makeString; ?> <?php echo __('Battery Replacement'); ?></span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                     <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                            <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                     <span class="text-black"> <?php echo __('On-Demand'); ?> <?php echo $makeString; ?> <?php echo __('Mobile Van Service'); ?></span>
+                  </li>
+               </ul>
+            </div>
+         </div>
+         <div class="w-full md:2/5 lg:1/2 xl:w-1/2">
+            <div class="image-wrap img-auto aspect-custom mt-2 md:mt-0">
+               <picture>
+                  <img class="mx-auto max-w-auto lg:max-w-[450px]" loading="lazy" src="<?php echo $carImage; ?>" data-src="<?php echo $carImage; ?>" alt="#" />
+               </picture>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+<div class="section section-padding car-modeal">
+    <div class="container-theme-custom">
+        <div class="make-list">
+            <div class="section-title text-center">
+                <h3><?php echo __('Find tyres for'); ?> <span class="text-theme-blue"><?php echo $makeString . ' ' . $modelString; ?></span> <?php echo __('models'); ?></h3>
+            </div>
+            <div id="hdweb_vehicles_years" class="">
+                <div class="gap-2 flex flex-wrap justify-center" id="hdweb-vehicles-years-data">
+                    <?php foreach ($vehicleYears->data as $modelYear) : ?>
+                                <a href="javascript:void(0)" class="group relative rounded-[10px] border transition-all duration-200 min-w-[107px] md:min-w-[116px] border-gray-200 bg-white text-gray-800 hover:border-theme-blue hover:shadow-sm text-center px-4 py-3" onclick="getVehicleModifications('<?php echo $modelYear->slug; ?>' , '<?php echo $modelYear->name; ?>', '<?php echo $make; ?>', '<?php echo $model; ?>')">
+                                    <span class="block text-sm font-medium" title="<?php echo __($modelYear->name); ?>">
+                                        <span><?php echo __($modelYear->name); ?></span>
+                                    </span>
+                                </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+        <div id="hdweb_vehicles_modifications" class="hidden">
+            <div class="flex w-max items-center gap-3 mb-3 p-1.5 rounded-full text-sm font-semibold text-gray-700 bg-white border border-gray-300 mx-auto">
+                <div class="flex flex-wrap items-center gap-2" id="hdweb-breadcrumb-modifications">
+                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-theme-blue text-white">
+                        <span id="breadcrumb-year"></span>
+                    </span>
+                </div>
+               <?php /* <p class="text-sm text-gray-500 ml-auto"><?php echo __('Select Engine'); ?></p> */ ?>
+            </div>
+            <div class="gap-2 flex flex-wrap justify-center" id="hdweb-vehicles-modifications-data"></div>
+            <div class="flex justify-center mt-4">
+                <button onclick="goBackToYears()" class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-semibold text-gray-700 bg-white border border-gray-300 hover:border-theme-blue hover:text-theme-blue transition-all duration-200 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    <?php echo __('Back to Year'); ?>
+                </button>
+            </div>
+        </div>
+        <div id="hdweb_vehicles_rest" class="hidden">
+            <div class="flex w-max items-center gap-3 mb-3 p-1.5 rounded-full text-sm font-semibold text-gray-700 bg-white border border-gray-300 mx-auto">
+                <div class="flex flex-wrap items-center gap-2" id="hdweb-breadcrumb-rest">
+                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-theme-blue text-white">
+                        <span id="breadcrumb-year-rest"></span>
+                    </span>
+                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-theme-blue text-white">
+                        <span id="breadcrumb-engine-rest"></span>
+                    </span>
+                </div>
+              <?php /*   <p class="text-sm text-gray-500 ml-auto"><?php echo __('Select Tyre Size'); ?></p>*/ ?>
+            </div>
+            <div class="gap-2 flex flex-wrap justify-center pt-3" id="hdweb-vehicles-rest-data"></div>
+            <div class="flex justify-center mt-4">
+                <button onclick="goBackToModifications()" class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-semibold text-gray-700 bg-white border border-gray-300 hover:border-theme-blue hover:text-theme-blue transition-all duration-200 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    <?php echo __('Back to Engine'); ?>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php if ($vehicleData['model_paragraph1']) : ?>
+    <div class="section section-padding content-block pb-6 md:pb-12 lg:pb-14">
+        <div class="container custom-width">
+            <div class="content-wrap">
+                <?php echo $vehicleData['model_paragraph1']; ?>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+<script>
+    // Store selections for back navigation
+    var vehicleSelection = {
+        year: '',
+        yearName: '',
+        make: '',
+        model: '',
+        engineName: ''
+    };
+    function getVehicleModifications(year, yearName, make, model) {
+        vehicleSelection.year = year;
+        vehicleSelection.yearName = yearName;
+        vehicleSelection.make = make;
+        vehicleSelection.model = model;
+        // Update breadcrumb
+        var breadcrumbYear = document.getElementById('breadcrumb-year');
+        if (breadcrumbYear) breadcrumbYear.textContent = yearName;
+        fetch('<?php echo $this->getBaseUrl() . 'vehicles/ajax/getvehiclemodifications'; ?>', {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            },
+            body: new URLSearchParams({
+                form_key: hyva.getFormKey(),
+                make: make,
+                model: model,
+                year: year,
+                uenc: btoa(window.location.href)
+            }),
+            method: 'POST',
+            mode: 'cors',
+            credentials: 'include',
+        })
+        .then(response => response.json())
+        .then(data => {
+            const yearsElement = document.getElementById('hdweb_vehicles_years');
+            const modificationsElement = document.getElementById('hdweb_vehicles_modifications');
+            const modificationsDataElement = document.getElementById('hdweb-vehicles-modifications-data');
+            if (yearsElement) yearsElement.style.display = 'none';
+            if (modificationsElement) modificationsElement.classList.remove('hidden');
+            if (modificationsDataElement) modificationsDataElement.innerHTML = data.response;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    function getVehicleTyreSizes(value, label, make, model, year) {
+        vehicleSelection.engineName = label;
+        // Update breadcrumbs
+        var breadcrumbYearRest = document.getElementById('breadcrumb-year-rest');
+        if (breadcrumbYearRest) breadcrumbYearRest.textContent = vehicleSelection.yearName;
+        var breadcrumbEngineRest = document.getElementById('breadcrumb-engine-rest');
+        if (breadcrumbEngineRest) breadcrumbEngineRest.textContent = label;
+        const modification = value;
+        fetch('<?php echo $this->getBaseUrl() . 'vehicles/ajax/getsearchbymodel'; ?>', {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            },
+            body: new URLSearchParams({
+                form_key: hyva.getFormKey(),
+                make: make,
+                model: model,
+                year: year,
+                modification: modification,
+                uenc: btoa(window.location.href)
+            }),
+            method: 'POST',
+            mode: 'cors',
+            credentials: 'include',
+        })
+        .then(response => response.json())
+        .then(data => {
+            var enginesTyre = data.enginesTyre.join("");
+            const modificationsElement = document.getElementById('hdweb_vehicles_modifications');
+            const restElement = document.getElementById('hdweb_vehicles_rest');
+            const restDataElement = document.getElementById('hdweb-vehicles-rest-data');
+            if (modificationsElement) modificationsElement.classList.add('hidden');
+            if (restElement) restElement.classList.remove('hidden');
+            if (restDataElement) restDataElement.innerHTML = enginesTyre;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    function goBackToYears() {
+        const yearsElement = document.getElementById('hdweb_vehicles_years');
+        const modificationsElement = document.getElementById('hdweb_vehicles_modifications');
+        if (modificationsElement) modificationsElement.classList.add('hidden');
+        if (yearsElement) yearsElement.style.display = '';
+    }
+    function goBackToModifications() {
+        const modificationsElement = document.getElementById('hdweb_vehicles_modifications');
+        const restElement = document.getElementById('hdweb_vehicles_rest');
+        if (restElement) restElement.classList.add('hidden');
+        if (modificationsElement) modificationsElement.classList.remove('hidden');
+    }
+    function vehiclesShowProduct(width, height, rim, rear_width, rear_height, rear_rim) {
+        const frontWidth = document.getElementById('vehicles_front_width');
+        const frontHeight = document.getElementById('vehicles_front_height');
+        const frontRim = document.getElementById('vehicles_front_rim');
+        const rearWidth = document.getElementById('vehicles_rear_width');
+        const rearHeight = document.getElementById('vehicles_rear_height');
+        const rearRim = document.getElementById('vehicles_rear_rim');
+        if (frontWidth) frontWidth.value = width;
+        if (frontHeight) frontHeight.value = height;
+        if (frontRim) frontRim.value = rim;
+        if (typeof rear_width !== 'undefined' && rear_width !== null && rear_width !== '' && rearWidth) {
+            rearWidth.value = rear_width;
+        }
+        if (typeof rear_height !== 'undefined' && rear_height !== null && rear_height !== '' && rearHeight) {
+            rearHeight.value = rear_height;
+        }
+        if (typeof rear_rim !== 'undefined' && rear_rim !== null && rear_rim !== '' && rearRim) {
+            rearRim.value = rear_rim;
+        }
+        let selectedVehicleFinderUrl;
+        if ((typeof rear_width !== 'undefined' && rear_width !== null && rear_width !== '') &&
+            (typeof rear_height !== 'undefined' && rear_height !== null && rear_height !== '') &&
+            (typeof rear_rim !== 'undefined' && rear_rim !== null && rear_rim !== '')) {
+            selectedVehicleFinderUrl = '<?php echo $vehiclesSearchbyFormActionUrl; ?>' + 
+                'width=' + width + 
+                '&height=' + height + 
+                '&rim=' + rim + 
+                '&width_rear=' + rear_width + 
+                '&height_rear=' + rear_height + 
+                '&rim_rear=' + rear_rim +
+                '&product_list_limit=5000';
+        } else {
+            selectedVehicleFinderUrl = '<?php echo $vehiclesSearchbyFormActionUrl; ?>' + 
+                'width=' + width + 
+                '&height=' + height + 
+                '&rim=' + rim + 
+                '&width_rear=&height_rear=&rim_rear=';
+        }
+        window.location.href = selectedVehicleFinderUrl;
+    }
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

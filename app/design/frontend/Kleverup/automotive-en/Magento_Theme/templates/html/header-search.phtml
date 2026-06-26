@@ -1,0 +1,284 @@
+<div class="search search-full-tyre-by-size-head w-full transition-all">
+    <form action="<?php echo $this->getBaseUrl() . 'tyres?'; ?>" class="tyre-size-search-full-form-head relative w-full xl:w-1/2 py-2 border border-gray-200 rounded-[10px] text-sm focus:outline-none focus:ring-2 focus:ring-theme-blue/30 focus:border-theme-blue transition-all" method="GET" x-data="{...hyva.formValidation($el), ...initTyreSizeSearchFull()}" @submit.prevent="submitTyreSizeSearchFullForm()">
+        <div class="tyre-size-search-full-form-selected-items-head pl-2 pr-2 flex items-center flex-wrap gap-2" id="tyre-size-search-full-form-selected-items-head">
+            <a class="active front-selected-atag-head hidden inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-theme-blue text-white">
+                <span class="front-selected ml-1 font-normal"></span>
+                <button type="button" class="icon icon-cancel-1 remove-selected cursor-pointer remove ml-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                </button>
+            </a>
+            <a class="active rear-selected-atag-head hidden inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-theme-blue text-white">
+                <span class="rear-selected-head ml-1 font-normal"></span>
+                <button type="button" class="icon icon-cancel-1 remove-selected cursor-pointer remove ml-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                </button>
+            </a>
+        </div>
+        <input type="text" class="input-text pl-0 pr-1 py-2 text-sm text-theme-blue h-auto flex items-center border-0 justify-start font-normal leading-none focus:outline-none focus:ring-0 bg-transparent w-1/5" id="tyre-size-search-full-input-head" autocomplete="off" placeholder="<?= $escaper->escapeHtmlAttr(__('Search Tyre Size e.g 1956515 or 195/65 R15')) ?>" title="<?= $escaper->escapeHtmlAttr(__('Search here')) ?>">
+        <div class="field field-error absolute -bottom-[27px]">
+            <div class="full-search-3-or-more messages hidden  text-sm" id="full-search-3-or-more-head"><?php echo __('Please enter 3 or more characters') ?></div>
+            <div class="full-search-no-result messages hidden  text-sm" id="full-search-no-result-head"><?php echo __('No results found') ?></div>
+            <div class="full-search-selection-limit messages hidden text-sm" id="full-search-selection-limit-head"><?php echo __('You can only select 2 items') ?></div>
+        </div>
+        <input type="hidden" id="full-search-tyresize-head-width" name="width" value="" data-validate='{ "required": true }' data-msg-required="<?= $escaper->escapeHtmlAttr('You must select a size') ?>" />
+        <input type="hidden" id="full-search-tyresize-head-height" name="height" value="" />
+        <input type="hidden" id="full-search-tyresize-head-rim" name="rim" value="" />
+        <input type="hidden" id="full-search-tyresize-head-rear-width" name="width_rear" value="" />
+        <input type="hidden" id="full-search-tyresize-head-rear-height" name="height_rear" value="" />
+        <input type="hidden" id="full-search-tyresize-head-rear-rim" name="rim_rear" value="" />
+        <button type="submit" class="absolute right-3 top-3.5 text-lg sm:text-xl">
+            <svg class="w-5 h-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round"  stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg></button>
+    </form>
+    <div class="size-result mt-3 max-h-[calc(100vh-226px)] md:max-h-[calc(100vh-400px)] lg:max-h-[calc(100vh-345px)] overflow-y-auto overscroll-contain scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-theme-blue [&::-webkit-scrollbar-thumb]:rounded-full">
+        <ul class="search-full-tyre-by-sizeUL-head hidden gap-2 flex flex-wrap" id="search-full-tyre-by-sizeUL-head">
+        </ul>
+    </div>
+    <button type="button" class="hidden mt-4 bg-theme-yellow hover:bg-theme-blue text-theme-blue hover:text-white rounded-full uppercase inline-flex items-center justify-center px-4 py-2 font-semibold transition-colors text-xs gap-1.5" id="full-search-tyresize-submit-head" onclick="submitHeaderTyreSizeSearch()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <span><?= $escaper->escapeHtml(__('Search Tyres')) ?></span>
+    </button>
+</div>
+<script>
+    function initTyreSizeSearchFull() {
+        return {
+            submitTyreSizeSearchFullForm() {
+                this.validate()
+                    .then(() => {
+                        var form = event.target;
+                        var rearWidth = form.querySelector('[name="width_rear"]') ? form.querySelector('[name="width_rear"]').value : '';
+                        var rearHeight = form.querySelector('[name="height_rear"]') ? form.querySelector('[name="height_rear"]').value : '';
+                        var rearRim = form.querySelector('[name="rim_rear"]') ? form.querySelector('[name="rim_rear"]').value : '';
+                        if (rearWidth && rearHeight && rearRim && !form.querySelector('[name="product_list_limit"]')) {
+                            var input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'product_list_limit';
+                            input.value = '5000';
+                            form.appendChild(input);
+                        }
+                        form.submit();
+                    })
+                    .catch((invalid) => {
+                        if (invalid.length > 0) {
+                            invalid[0].focus();
+                        }
+                    });
+            }
+        }
+    }
+    var searchFullSelectedItemsHead = document.getElementById('tyre-size-search-full-form-selected-items-head');
+    var footerSearchInput = document.getElementById('tyre-size-search-full-input-head');
+    var searchFullDropdownListHead = document.getElementById('search-full-tyre-by-sizeUL-head');
+    var searchFullCharLimitMsgHead = document.getElementById('full-search-3-or-more-head');
+    var searchFullNoResultMsgHead = document.getElementById('full-search-no-result-head');
+    var searchFullSelectionLimitMsgHead = document.getElementById('full-search-selection-limit-head');
+    var searchFullMaxSelectionsHead = 2;
+    var searchFullSubmitButtonHead = document.getElementById('full-search-tyresize-submit-head');
+    let searchFullSelectedCountHead = 0;
+    // Function to render the dropdown items
+    function renderDropdown() {
+        if (searchFullSelectedCountHead === 2) {
+            searchFullSelectionLimitMsgHead.classList.remove('hidden');
+            var defaultErrorHead = document.querySelector('.search-full-tyre-by-size-head ul.messages');
+            if (defaultErrorHead) {
+                defaultErrorHead.classList.add('hidden');
+            }
+            return;
+        }
+        var searchFullValueHead = footerSearchInput.value.toLowerCase();
+        if (searchFullValueHead.length < 3) {
+            // Hide the default list when less than 3 characters
+            searchFullDropdownListHead.classList.add('hidden');
+            searchFullCharLimitMsgHead.classList.remove('hidden');
+            var defaultErrorHead = document.querySelector('.search-full-tyre-by-size-head ul.messages');
+            if (defaultErrorHead) {
+                defaultErrorHead.classList.add('hidden');
+            }
+            searchFullNoResultMsgHead.classList.add('hidden');
+            return;
+        } else {
+            searchFullCharLimitMsgHead.classList.add('hidden');
+        }
+        var listItemsHead = searchFullDropdownListHead.getElementsByTagName('li');
+        let hasMatchHead = false;
+        for (let i = 0; i < listItemsHead.length; i++) {
+            var listItemHead = listItemsHead[i];
+            //var itemText = listItemHead.textContent.toLowerCase();
+            var itemTextHead = listItemHead.getAttribute('data-lookup').toLowerCase();
+            if (itemTextHead.includes(searchFullValueHead)) {
+                listItemHead.classList.remove('hidden');
+                hasMatchHead = true;
+            } else {
+                listItemHead.classList.add('hidden');
+            }
+        }
+        if (!hasMatchHead) {
+            // Show "No results found" message when no matches are found
+            searchFullNoResultMsgHead.classList.remove('hidden');
+            var defaultErrorHead = document.querySelector('.search-full-tyre-by-size-head ul.messages');
+            if (defaultErrorHead) {
+                defaultErrorHead.classList.add('hidden');
+            }
+        } else {
+            // Show the dropdown list for valid search input
+            searchFullDropdownListHead.classList.remove('hidden');
+            searchFullNoResultMsgHead.classList.add('hidden');
+        }
+    }
+    function toggleSelectionHead(item) {
+        if (searchFullSelectedItemsHead.textContent.includes(item.textContent)) {
+            searchFullSelectedCountHead--;
+            document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-width').value = '';
+            document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-height').value = '';
+            document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rim').value = '';
+            document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-width').value = '';
+            document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-height').value = '';
+            document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-rim').value = '';
+        } else if (searchFullSelectedCountHead < searchFullMaxSelectionsHead) {
+            var width = item.getAttribute('data-width');
+            var height = item.getAttribute('data-height');
+            var rim = item.getAttribute('data-rim');
+            if (searchFullSelectedCountHead === 0) {
+                document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-width').value = width;
+                document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-height').value = height;
+                document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rim').value = rim;
+                searchFullSelectedItemsHead.querySelector('.front-selected').textContent = width + '/' + height + ' R' + rim;
+                searchFullSelectedItemsHead.querySelector('.front-selected-atag-head').classList.remove('hidden');
+            } else if (searchFullSelectedCountHead === 1) {
+                document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-width').value = width;
+                document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-height').value = height;
+                document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-rim').value = rim;
+                searchFullSelectedItemsHead.querySelector('.rear-selected-head').textContent = width + '/' + height + ' R' + rim;
+                searchFullSelectedItemsHead.querySelector('.rear-selected-atag-head').classList.remove('hidden');
+            }
+            searchFullSelectedCountHead++;
+        }
+        // Show/hide submit button based on selection
+        if (searchFullSelectedCountHead > 0) {
+            searchFullSubmitButtonHead.classList.remove('hidden');
+        } else {
+            searchFullSubmitButtonHead.classList.add('hidden');
+        }
+        // Clear the input value
+        footerSearchInput.value = '';
+        // Hide the dropdown list after selection
+        searchFullDropdownListHead.classList.add('hidden');
+        // Set focus to the input
+        footerSearchInput.focus();
+    }
+    // Event listeners for input focus and typing
+    //searchInput.addEventListener('focus', renderDropdown);
+    footerSearchInput.addEventListener('input', renderDropdown);
+    footerSearchInput.addEventListener('focusout', function(event) {
+        searchFullCharLimitMsgHead.classList.add('hidden');
+        searchFullNoResultMsgHead.classList.add('hidden');
+        searchFullSelectionLimitMsgHead.classList.add('hidden');
+        if (searchFullSelectedCountHead > 0) {
+            footerSearchInput.setAttribute('placeholder', '');
+            footerSearchInput.classList.add('w-1/5');
+            footerSearchInput.classList.remove('w-5/6');
+        } else {
+            footerSearchInput.setAttribute('placeholder', '<?= $escaper->escapeJs(__('Search Tyre Size e.g 1956515 or 195/65 R15')) ?>');
+            footerSearchInput.classList.remove('w-1/5');
+            footerSearchInput.classList.add('w-5/6');
+        }
+    });
+    footerSearchInput.addEventListener('focus', function(event) {
+        if (searchFullSelectedCountHead > 0) {
+            footerSearchInput.setAttribute('placeholder', '');
+            footerSearchInput.classList.add('w-1/5');
+            footerSearchInput.classList.remove('w-5/6');
+        } else {
+            footerSearchInput.setAttribute('placeholder', '<?= $escaper->escapeJs(__('Search Tyre Size e.g 1956515 or 195/65 R15')) ?>');
+            footerSearchInput.classList.remove('w-1/5');
+            footerSearchInput.classList.add('w-5/6');
+        }
+    });
+    const searchFullCloseIconsHead = document.querySelectorAll('.search-full-tyre-by-size-head .icon.remove-selected');
+    searchFullCloseIconsHead.forEach(icon => {
+        icon.addEventListener('click', (event) => {
+            var selectedParent = event.currentTarget.closest('a');
+            if (!selectedParent) {
+                return;
+            }
+            selectedParent.classList.add('hidden');
+            selectedParent.querySelector('span').textContent = '';
+            const frontClass = selectedParent.classList.contains('front-selected-atag-head');
+            const rearClass = selectedParent.classList.contains('rear-selected-atag-head');
+            if (frontClass) {
+                var rearWidth = document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-width').value;
+                var rearHeight = document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-height').value;
+                var rearRim = document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-rim').value;
+                if (rearWidth != '' && rearHeight != '' && rearRim != '') {
+                    document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-width').value = rearWidth;
+                    document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-height').value = rearHeight;
+                    document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rim').value = rearRim;
+                    document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-width').value = '';
+                    document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-height').value = '';
+                    document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-rim').value = '';
+                    selectedParent.classList.remove('hidden');
+                    selectedParent.querySelector('.front-selected-atag-head span').textContent = rearWidth + '/' + rearHeight + ' R' + rearRim;
+                    document.querySelector('.rear-selected-atag-head').classList.add('hidden');
+                    document.querySelector('.rear-selected-atag-head span').textContent = '';
+                } else {
+                    document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-width').value = '';
+                    document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-height').value = '';
+                    document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rim').value = '';
+                }
+            }
+            if (rearClass) {
+                document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-width').value = '';
+                document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-height').value = '';
+                document.querySelector('.tyre-size-search-full-form-head #full-search-tyresize-head-rear-rim').value = '';
+            }
+            searchFullSelectedCountHead--;
+            if (searchFullSelectedCountHead > 0) {
+                footerSearchInput.setAttribute('placeholder', '');
+                footerSearchInput.classList.add('w-1/5');
+                footerSearchInput.classList.remove('w-5/6');
+                searchFullSubmitButtonHead.classList.remove('hidden');
+            } else {
+                footerSearchInput.setAttribute('placeholder', '<?= $escaper->escapeJs(__('Search Tyre Size e.g 1956515 or 195/65 R15')) ?>');
+                footerSearchInput.classList.remove('w-1/5');
+                footerSearchInput.classList.add('w-5/6');
+                searchFullSubmitButtonHead.classList.add('hidden');
+            }
+        });
+    });
+
+    function submitHeaderTyreSizeSearch() {
+        var form = document.querySelector('.tyre-size-search-full-form-head');
+        var widthValue = form.querySelector('[name="width"]').value;
+        var heightValue = form.querySelector('[name="height"]').value;
+        var rimValue = form.querySelector('[name="rim"]').value;
+
+        if (widthValue && heightValue && rimValue) {
+            var baseUrl = form.action;
+            var url = baseUrl + 'width=' + encodeURIComponent(widthValue) +
+                '&height=' + encodeURIComponent(heightValue) +
+                '&rim=' + encodeURIComponent(rimValue);
+
+            var rearWidth = form.querySelector('[name="width_rear"]').value;
+            var rearHeight = form.querySelector('[name="height_rear"]').value;
+            var rearRim = form.querySelector('[name="rim_rear"]').value;
+
+            if (rearWidth && rearHeight && rearRim) {
+                url += '&width_rear=' + encodeURIComponent(rearWidth) +
+                    '&height_rear=' + encodeURIComponent(rearHeight) +
+                    '&rim_rear=' + encodeURIComponent(rearRim) +
+                    '&product_list_limit=5000';
+            } else {
+                url += '&width_rear=&height_rear=&rim_rear=';
+            }
+            window.location.href = url;
+        }
+    }
+</script>
+<?php
+/** @var \Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp */
+$hyvaCsp->registerInlineScript();
+?>

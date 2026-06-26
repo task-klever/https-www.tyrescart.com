@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this module to newer
+ * versions in the future.
+ *
+ *
+ * @category  Ecomteck
+ * @package   Ecomteck_StoreLocator
+ * @author    Ecomteck <ecomteck@gmail.com>
+ * @copyright 2016 Ecomteck
+ * @license   Open Software License ("OSL") v. 3.0
+ */
+ -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="header.links">
+               <!-- Store Locator Link -->
+            <!--block class="Magento\Framework\View\Element\Html\Link" name="storelocator.link" after="register-link">
+                <arguments>
+                    <argument name="label" xsi:type="string" translate="false">Store Locator</argument>
+                    <argument name="path" xsi:type="string" translate="false">storelocator</argument>
+                </arguments>
+            </block-->
+            <block class="Ecomteck\StoreLocator\Block\Link" name="storelocator.link" after="register-link" template="link.phtml">
+                <arguments>
+                    <argument name="sortOrder" xsi:type="number">10</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+    </body>
+</page>

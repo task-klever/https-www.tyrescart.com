@@ -1,0 +1,515 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\Cart\Items as CartItems;
+use Hyva\Theme\ViewModel\ProductCompare;
+use Hyva\Theme\ViewModel\ProductList;
+use Hyva\Theme\ViewModel\Slider;
+use Hyva\Theme\ViewModel\Store;
+use Hyva\Theme\ViewModel\Wishlist;
+use Magento\Catalog\Model\Product\Visibility as ProductVisibility;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hdweb\Core\Helper\Data as HdwebCoreDataHelper;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var Slider $sliderViewModel */
+/** @var ProductList $productListViewModel */
+/** @var Wishlist $wishlistViewModel */
+/** @var ProductCompare $compareViewModel */
+/** @var Store $storeViewModel */
+
+$sliderViewModel      = $viewModels->require(Slider::class);
+$productListViewModel = $viewModels->require(ProductList::class);
+$wishlistViewModel    = $viewModels->require(Wishlist::class);
+$compareViewModel     = $viewModels->require(ProductCompare::class);
+$storeViewModel       = $viewModels->require(Store::class);
+
+$sliderName        = str_replace('.', '_', $block->getNameInLayout());
+$categoryIds       = $block->getData('category_ids') ?: '';
+$isAnchorCategory  = $block->getData('include_child_category_products');
+$pageSize          = $block->getData('page_size') ?: 8;
+$priceFrom         = $block->getData('price_from');
+$priceTo           = $block->getData('price_to');
+$sortAttribute     = $block->getData('sort_attribute') ?: '';
+$sortDirection     = $block->getData('sort_direction') ?: 'ASC';
+$title             = $block->getData('title') ?: '';
+$headingTag        = $block->getData('heading_tag') ?: 'h3';
+$hideDetails       = $block->getData('hide_details') ?? false;
+$hideRatingSummary = $block->getData('hide_rating_summary') ?? false;
+$type              = $block->getData('type');
+$skusFilter        = $block->getData('product_skus') ? explode(',', $block->getData('product_skus')) : [];
+$additionalFilters = (array) $block->getData('additional_filters');
+$itemTemplate      = $block->getData('item_template') ?? 'Magento_Catalog::product/list/item.phtml';
+$containerTemplate = $block->getData('container_template')
+    ?? 'Magento_Catalog::product/slider/product-slider-container.phtml';
+
+
+// The number of slides visible on the xl breakpoint
+$maxVisibleSlides = $block->getData('max_visible'); // default to null
+// Passed to the product slider container
+$slideSectionClasses = $block->getData('maybe_purged_tailwind_section_classes'); // default to null
+$slideItemClasses = $block->getData('maybe_purged_tailwind_slide_item_classes'); // default to null
+
+
+// In case $type is not set on the block, it will default the block class name, which is not what we need in this template.
+$type = is_string($type) && strpos($type, '\\') === false  ? $type : 'generic';
+
+if ($categoryIds) {
+    $productListViewModel->addFilter('category_id', $categoryIds, 'in');
+}
+
+if ($isAnchorCategory) {
+    // Only has an effect if a single category ID filter is set, and that category is an anchor category
+    $productListViewModel->includeChildCategoryProducts();
+}
+
+if ($priceFrom) {
+    $productListViewModel->addFilter('price', $priceFrom, 'gteq');
+}
+if ($priceTo) {
+    $productListViewModel->addFilter('price', $priceTo, 'lteq');
+}
+
+if ($hideRatingSummary) {
+    $productListViewModel->excludeReviewSummary();
+}
+
+if ($skusFilter) {
+    $productListViewModel->addFilter('sku', array_map('trim', $skusFilter), 'in');
+}
+
+foreach ($additionalFilters as $filter) {
+    $productListViewModel->addFilter($filter['field'], $filter['value'], $filter['conditionType'] ?? 'eq');
+}
+
+$productListViewModel->setPageSize($pageSize);
+$productListViewModel->addFilter('website_id', $storeViewModel->getWebsiteId());
+$productListViewModel->addFilter('visibility', [
+    ProductVisibility::VISIBILITY_IN_CATALOG,
+    ProductVisibility::VISIBILITY_BOTH,
+], 'in');
+if ($sortAttribute) {
+    $sortDirection === 'ASC'
+        ? $productListViewModel->addAscendingSortOrder($sortAttribute)
+        : $productListViewModel->addDescendingSortOrder($sortAttribute);
+}
+
+if (in_array($type, ['related', 'upsell', 'crosssell'], true)) {
+
+    /* $items = $type === 'crosssell'
+        ? $productListViewModel->getCrosssellItems(...$viewModels->require(CartItems::class)->getCartItems())
+        : $productListViewModel->getLinkedItems($type, $block->getProduct()); */
+    if($type == 'crosssell'){
+        $items = $productListViewModel->getCrosssellItems(...$viewModels->require(CartItems::class)->getCartItems());
+    }elseif ($type == 'upsell') {
+        $items = $productListViewModel->getLinkedItems($type, $block->getProduct());
+    }else{
+        $hdwebCoreDataHelper = $this->helper(HdwebCoreDataHelper::class); 
+        $items = $hdwebCoreDataHelper->getRelatedItems($type, $block->getProduct()->getId());
+    }
+
+} else {
+    $items = $productListViewModel->getItems();
+}
+
+$sliderHtml = $sliderViewModel->getSliderForItems($itemTemplate, $items, $containerTemplate)
+    ->setData('hide_details', $hideDetails)
+    ->setData('hide_rating_summary', $hideRatingSummary)
+    ->setData('name', $sliderName)
+    ->setData('title', $title)
+    ->setData('item_relation_type', $type)
+    ->setData('heading_tag', $headingTag)
+    ->setData('max_visible', $maxVisibleSlides)
+    ->setData('maybe_purged_tailwind_section_classes', $slideSectionClasses)
+    ->setData('maybe_purged_tailwind_slide_item_classes', $slideItemClasses)
+    ->toHtml();
+
+if (empty($sliderHtml)) {
+    return '';
+}
+?>
+<div class="product-slider <?= $escaper->escapeHtmlAttr($type) ?>-product-slider">
+    <div>
+        <?= /* @noEscape */ $sliderHtml ?>
+    </div>
+    <script>
+        'use strict';
+        window.addEventListener('DOMContentLoaded', function() {
+            if (! window.productSliderEventHandlerInitialized) {
+                window.productSliderEventHandlerInitialized = true;
+
+                <?php if ($wishlistViewModel->isEnabled()): ?>
+                window.addEventListener('product-add-to-wishlist', (event) => {
+                    const formKey = hyva.getFormKey();
+                    const postUrl = BASE_URL + 'wishlist/index/add/';
+                    const productId = event.detail.productId;
+
+                    fetch(postUrl, {
+                        "headers": {
+                            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                        },
+                        "body": "form_key=" + formKey + "&product=" + productId + "&uenc=" + hyva.getUenc(),
+                        "method": "POST",
+                        "mode": "cors",
+                        "credentials": "include"
+                    }).then(function (response) {
+                        if (response.redirected) {
+                            window.location.href = response.url;
+                        } else if (response.ok) {
+                            return response.json();
+                        } else {
+                            typeof window.dispatchMessages !== "undefined" && window.dispatchMessages(
+                                [{
+                                    type: "warning",
+                                    text: "<?= $escaper->escapeHtml(__('Could not add item to wishlist.')) ?>"
+                                }], 5000
+                            );
+                        }
+                    }).then(function (result) {
+                        if (!result) {
+                            return
+                        }
+                        typeof window.dispatchMessages !== "undefined" && window.dispatchMessages(
+                            [{
+                                type: (result.success) ? "success" : "error",
+                                text: (result.success)
+                                    ? "<?=
+                                        $escaper->escapeHtml(
+                                            __("%1 has been added to your Wish List.", __("Product"))
+                                        )
+                                        ?>" : result.error_message
+                            }], 5000
+                        );
+                        window.dispatchEvent(new CustomEvent("reload-customer-section-data"));
+                    }).catch(function (error) {
+                        typeof window.dispatchMessages !== "undefined" && window.dispatchMessages(
+                            [{
+                                type: "error",
+                                text: error
+                            }], 5000
+                        );
+                    });
+                })
+                <?php endif; ?>
+
+                <?php if ($compareViewModel->showInProductList()): ?>
+                window.addEventListener('product-add-to-compare', (event) => {
+                    const productId = event.detail.productId;
+                    hyva.postForm({
+                        action: BASE_URL + 'catalog/product_compare/add/',
+                        data: {product: productId}
+                    })
+                })
+                <?php endif; ?>
+            }
+        });
+    </script>
+</div>
+<div class="sliebar">
+    <div id="fully-fitted-price"
+        class="fixed top-0 right-0 h-full w-[447px] max-w-full bg-white shadow-lg z-60 transform translate-x-full transition-transform ease-in-out duration-500 sm:duration-700">
+        <div class="tyre-sidebar-content hidden">
+            <div class="flex items-center justify-between p-4 border-b border-border-color relative">
+                <h3
+                    class="text-[1.2rem] md:text-[1.35rem] lg:text-[1.45rem] text-theme-dark font-bold relative uppercase">
+                    Fully Fitted <span class="text-theme-blue">Price per tyre</span>
+                </h3>
+                <button type="button" onclick="CLoseFittedPrice()" aria-label="Close minicart"
+                    class="absolute top-0 right-2 p-4 mt-2 text-black transition-colors hover:text-theme-blue">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" width="24" height="24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="bg-white rounded-lg px-4 sm:px-4 py-4 sm:py-5">
+                <p
+                    class="text-body text-sm md:text-sm lg:text-base tracking-ls10 mb-4 lg:mb-4 leading-[1.5] font-medium">
+                    There are NO EXTRAS to pay on the day of your visit - in relation to the tyre fitting. </p>
+                <h6 class="font-body text-black text-sm md:text-base lg:text-lg font-semibold uppercase mb-3">The
+                    following is included in the price,</h6>
+                <ul class="text-sm md:text-sm lg:text-base text-graydark3 font-normal leading-none block list-icon">
+                    <li class="flex items-center mb-[1rem]">
+                        <span class="min-w-[0.9rem] lg:min-w-[1.2rem] h-auto inline-block mr-[0.4rem] md:mr-[0.6rem]">
+                            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 122.88"
+                                style="enable-background:new 0 0 122.88 122.88" xml:space="preserve">
+                                <style type="text/css">
+                                <![CDATA[
+                                .st0 {
+                                    fill-rule: evenodd;
+                                    clip-rule: evenodd;
+                                    fill: #0057a0;
+                                }
+                                ]]>
+                                </style>
+                                <g>
+                                    <path class="st0"
+                                        d="M61.44,0c33.93,0,61.44,27.51,61.44,61.44c0,33.93-27.51,61.44-61.44,61.44C27.51,122.88,0,95.37,0,61.44 C0,27.51,27.51,0,61.44,0L61.44,0L61.44,0z M39.48,56.79c4.6,2.65,7.59,4.85,11.16,8.78c9.24-14.88,19.28-23.12,32.32-34.83 l1.28-0.49h14.28C79.38,51.51,64.53,69.04,51.24,94.68c-6.92-14.79-13.09-25-26.88-34.47L39.48,56.79L39.48,56.79z" />
+                                </g>
+                            </svg>
+                        </span>
+                        VAT
+                    </li>
+                    <li class="flex items-center mb-[1rem]">
+                        <span class="min-w-[0.9rem] lg:min-w-[1.2rem] h-auto inline-block mr-[0.4rem] md:mr-[0.6rem]">
+                            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 122.88"
+                                style="enable-background:new 0 0 122.88 122.88" xml:space="preserve">
+                                <style type="text/css">
+                                <![CDATA[
+                                .st0 {
+                                    fill-rule: evenodd;
+                                    clip-rule: evenodd;
+                                    fill: #0057a0;
+                                }
+                                ]]>
+                                </style>
+                                <g>
+                                    <path class="st0"
+                                        d="M61.44,0c33.93,0,61.44,27.51,61.44,61.44c0,33.93-27.51,61.44-61.44,61.44C27.51,122.88,0,95.37,0,61.44 C0,27.51,27.51,0,61.44,0L61.44,0L61.44,0z M39.48,56.79c4.6,2.65,7.59,4.85,11.16,8.78c9.24-14.88,19.28-23.12,32.32-34.83 l1.28-0.49h14.28C79.38,51.51,64.53,69.04,51.24,94.68c-6.92-14.79-13.09-25-26.88-34.47L39.48,56.79L39.48,56.79z" />
+                                </g>
+                            </svg>
+                        </span>
+                        Fitting (Bead lock wheel etc. excluded)
+                    </li>
+                    <li class="flex items-center mb-[1rem]">
+                        <span class="min-w-[0.9rem] lg:min-w-[1.2rem] h-auto inline-block mr-[0.4rem] md:mr-[0.6rem]">
+                            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 122.88"
+                                style="enable-background:new 0 0 122.88 122.88" xml:space="preserve">
+                                <style type="text/css">
+                                <![CDATA[
+                                .st0 {
+                                    fill-rule: evenodd;
+                                    clip-rule: evenodd;
+                                    fill: #0057a0;
+                                }
+                                ]]>
+                                </style>
+                                <g>
+                                    <path class="st0"
+                                        d="M61.44,0c33.93,0,61.44,27.51,61.44,61.44c0,33.93-27.51,61.44-61.44,61.44C27.51,122.88,0,95.37,0,61.44 C0,27.51,27.51,0,61.44,0L61.44,0L61.44,0z M39.48,56.79c4.6,2.65,7.59,4.85,11.16,8.78c9.24-14.88,19.28-23.12,32.32-34.83 l1.28-0.49h14.28C79.38,51.51,64.53,69.04,51.24,94.68c-6.92-14.79-13.09-25-26.88-34.47L39.48,56.79L39.48,56.79z" />
+                                </g>
+                            </svg>
+                        </span>
+                        Balancing
+                    </li>
+                    <li class="flex items-center mb-[1rem]">
+                        <span class="min-w-[0.9rem] lg:min-w-[1.2rem] h-auto inline-block mr-[0.4rem] md:mr-[0.6rem]">
+                            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 122.88"
+                                style="enable-background:new 0 0 122.88 122.88" xml:space="preserve">
+                                <style type="text/css">
+                                <![CDATA[
+                                .st0 {
+                                    fill-rule: evenodd;
+                                    clip-rule: evenodd;
+                                    fill: #0057a0;
+                                }
+                                ]]>
+                                </style>
+                                <g>
+                                    <path class="st0"
+                                        d="M61.44,0c33.93,0,61.44,27.51,61.44,61.44c0,33.93-27.51,61.44-61.44,61.44C27.51,122.88,0,95.37,0,61.44 C0,27.51,27.51,0,61.44,0L61.44,0L61.44,0z M39.48,56.79c4.6,2.65,7.59,4.85,11.16,8.78c9.24-14.88,19.28-23.12,32.32-34.83 l1.28-0.49h14.28C79.38,51.51,64.53,69.04,51.24,94.68c-6.92-14.79-13.09-25-26.88-34.47L39.48,56.79L39.48,56.79z" />
+                                </g>
+                            </svg>
+                        </span>
+                        New rubber valve (standard valve only)
+                    </li>
+                    <li class="flex items-center mb-[1rem]">
+                        <span class="min-w-[0.9rem] lg:min-w-[1.2rem] h-auto inline-block mr-[0.4rem] md:mr-[0.6rem]">
+                            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 122.88"
+                                style="enable-background:new 0 0 122.88 122.88" xml:space="preserve">
+                                <style type="text/css">
+                                <![CDATA[
+                                .st0 {
+                                    fill-rule: evenodd;
+                                    clip-rule: evenodd;
+                                    fill: #0057a0;
+                                }
+                                ]]>
+                                </style>
+                                <g>
+                                    <path class="st0"
+                                        d="M61.44,0c33.93,0,61.44,27.51,61.44,61.44c0,33.93-27.51,61.44-61.44,61.44C27.51,122.88,0,95.37,0,61.44 C0,27.51,27.51,0,61.44,0L61.44,0L61.44,0z M39.48,56.79c4.6,2.65,7.59,4.85,11.16,8.78c9.24-14.88,19.28-23.12,32.32-34.83 l1.28-0.49h14.28C79.38,51.51,64.53,69.04,51.24,94.68c-6.92-14.79-13.09-25-26.88-34.47L39.48,56.79L39.48,56.79z" />
+                                </g>
+                            </svg>
+                        </span>
+                        Delivery to installer
+                    </li>
+                    <li class="flex items-center mb-[1rem]">
+                        <span class="min-w-[0.9rem] lg:min-w-[1.2rem] h-auto inline-block mr-[0.4rem] md:mr-[0.6rem]">
+                            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 122.88"
+                                style="enable-background:new 0 0 122.88 122.88" xml:space="preserve">
+                                <style type="text/css">
+                                <![CDATA[
+                                .st0 {
+                                    fill-rule: evenodd;
+                                    clip-rule: evenodd;
+                                    fill: #0057a0;
+                                }
+                                ]]>
+                                </style>
+                                <g>
+                                    <path class="st0"
+                                        d="M61.44,0c33.93,0,61.44,27.51,61.44,61.44c0,33.93-27.51,61.44-61.44,61.44C27.51,122.88,0,95.37,0,61.44 C0,27.51,27.51,0,61.44,0L61.44,0L61.44,0z M39.48,56.79c4.6,2.65,7.59,4.85,11.16,8.78c9.24-14.88,19.28-23.12,32.32-34.83 l1.28-0.49h14.28C79.38,51.51,64.53,69.04,51.24,94.68c-6.92-14.79-13.09-25-26.88-34.47L39.48,56.79L39.48,56.79z" />
+                                </g>
+                            </svg>
+                        </span>
+                        Disposal of old tyres
+                    </li>
+                    <li class="flex items-center">
+                        <span class="min-w-[0.9rem] lg:min-w-[1.2rem] h-auto inline-block mr-[0.4rem] md:mr-[0.6rem]">
+                            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 122.88"
+                                style="enable-background:new 0 0 122.88 122.88" xml:space="preserve">
+                                <style type="text/css">
+                                <![CDATA[
+                                .st0 {
+                                    fill-rule: evenodd;
+                                    clip-rule: evenodd;
+                                    fill: #0057a0;
+                                }
+                                ]]>
+                                </style>
+                                <g>
+                                    <path class="st0"
+                                        d="M61.44,0c33.93,0,61.44,27.51,61.44,61.44c0,33.93-27.51,61.44-61.44,61.44C27.51,122.88,0,95.37,0,61.44 C0,27.51,27.51,0,61.44,0L61.44,0L61.44,0z M39.48,56.79c4.6,2.65,7.59,4.85,11.16,8.78c9.24-14.88,19.28-23.12,32.32-34.83 l1.28-0.49h14.28C79.38,51.51,64.53,69.04,51.24,94.68c-6.92-14.79-13.09-25-26.88-34.47L39.48,56.79L39.48,56.79z" />
+                                </g>
+                            </svg>
+                        </span>
+                        On purchase of 4 tyres, 1 FREE scheduled instance of tyre rotation every 20,000kms per year
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="battery-sidebar-content hidden">
+            <div class="flex items-center justify-between p-4 border-b border-border-color relative">
+                <h3
+                    class="text-[1.2rem] md:text-[1.35rem] lg:text-[1.45rem] text-theme-dark font-bold relative uppercase">
+                    Price Incl. <span class="text-theme-blue">Replacement per battery</span>
+                </h3>
+                <button type="button" onclick="CLoseFittedPrice()" aria-label="Close minicart"
+                    class="absolute top-0 right-2 p-4 mt-2 text-black transition-colors hover:text-theme-blue">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" width="24" height="24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="bg-white rounded-lg px-4 sm:px-4 py-4 sm:py-5">
+                <p
+                    class="text-body text-sm md:text-sm lg:text-base tracking-ls10 mb-4 lg:mb-4 leading-[1.5] font-medium">
+                    There are NO EXTRAS to pay on the day of your visit - in relation to the battery fitting.</p>
+                <h6 class="font-body text-black text-sm md:text-base lg:text-lg font-semibold uppercase mb-3">The
+                    following is included in the price:</h6>
+                <ul class="text-sm md:text-sm lg:text-base text-graydark3 leading-none block list-icon">
+                    <li class="flex items-center mb-[1rem]">
+                        <span class="min-w-[0.9rem] lg:min-w-[1.2rem] h-auto inline-block mr-[0.4rem] md:mr-[0.6rem]">
+                            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 122.88"
+                                style="enable-background:new 0 0 122.88 122.88" xml:space="preserve">
+                                <style type="text/css">
+                                <![CDATA[
+                                .st0 {
+                                    fill-rule: evenodd;
+                                    clip-rule: evenodd;
+                                    fill: #0057a0;
+                                }
+                                ]]>
+                                </style>
+                                <g>
+                                    <path class="st0"
+                                        d="M61.44,0c33.93,0,61.44,27.51,61.44,61.44c0,33.93-27.51,61.44-61.44,61.44C27.51,122.88,0,95.37,0,61.44 C0,27.51,27.51,0,61.44,0L61.44,0L61.44,0z M39.48,56.79c4.6,2.65,7.59,4.85,11.16,8.78c9.24-14.88,19.28-23.12,32.32-34.83 l1.28-0.49h14.28C79.38,51.51,64.53,69.04,51.24,94.68c-6.92-14.79-13.09-25-26.88-34.47L39.48,56.79L39.48,56.79z" />
+                                </g>
+                            </svg>
+                        </span>
+                        VAT
+                    </li>
+                    <li class="flex items-center mb-[1rem]">
+                        <span class="min-w-[0.9rem] lg:min-w-[1.2rem] h-auto inline-block mr-[0.4rem] md:mr-[0.6rem]">
+                            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 122.88"
+                                style="enable-background:new 0 0 122.88 122.88" xml:space="preserve">
+                                <style type="text/css">
+                                <![CDATA[
+                                .st0 {
+                                    fill-rule: evenodd;
+                                    clip-rule: evenodd;
+                                    fill: #0057a0;
+                                }
+                                ]]>
+                                </style>
+                                <g>
+                                    <path class="st0"
+                                        d="M61.44,0c33.93,0,61.44,27.51,61.44,61.44c0,33.93-27.51,61.44-61.44,61.44C27.51,122.88,0,95.37,0,61.44 C0,27.51,27.51,0,61.44,0L61.44,0L61.44,0z M39.48,56.79c4.6,2.65,7.59,4.85,11.16,8.78c9.24-14.88,19.28-23.12,32.32-34.83 l1.28-0.49h14.28C79.38,51.51,64.53,69.04,51.24,94.68c-6.92-14.79-13.09-25-26.88-34.47L39.48,56.79L39.48,56.79z" />
+                                </g>
+                            </svg>
+                        </span>
+                        Fitting
+                    </li>
+                    <li class="flex items-center">
+                        <span class="min-w-[0.9rem] lg:min-w-[1.2rem] h-auto inline-block mr-[0.4rem] md:mr-[0.6rem]">
+                            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 122.88"
+                                style="enable-background:new 0 0 122.88 122.88" xml:space="preserve">
+                                <style type="text/css">
+                                <![CDATA[
+                                .st0 {
+                                    fill-rule: evenodd;
+                                    clip-rule: evenodd;
+                                    fill: #0057a0;
+                                }
+                                ]]>
+                                </style>
+                                <g>
+                                    <path class="st0"
+                                        d="M61.44,0c33.93,0,61.44,27.51,61.44,61.44c0,33.93-27.51,61.44-61.44,61.44C27.51,122.88,0,95.37,0,61.44 C0,27.51,27.51,0,61.44,0L61.44,0L61.44,0z M39.48,56.79c4.6,2.65,7.59,4.85,11.16,8.78c9.24-14.88,19.28-23.12,32.32-34.83 l1.28-0.49h14.28C79.38,51.51,64.53,69.04,51.24,94.68c-6.92-14.79-13.09-25-26.88-34.47L39.48,56.79L39.48,56.79z" />
+                                </g>
+                            </svg>
+                        </span>
+                        Delivery to installer
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="fully-fitted-price-overlay" onclick="CLoseFittedPrice()"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-all ease-in-out duration-500 sm:duration-700">
+    </div>
+</div>
+<script>
+function OpenFittedPrice(partsCategory) {
+    document.getElementById("fully-fitted-price").classList.remove("translate-x-full");
+    document.getElementById("fully-fitted-price-overlay").classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+    if (partsCategory == 'Tyres') {
+        document.querySelector('.tyre-sidebar-content').classList.remove('hidden');
+        document.querySelector('.battery-sidebar-content').classList.add('hidden');
+    }
+    if (partsCategory == 'Battery') {
+        document.querySelector('.tyre-sidebar-content').classList.add('hidden');
+        document.querySelector('.battery-sidebar-content').classList.remove('hidden');
+    }
+}
+
+function CLoseFittedPrice() {
+    document.getElementById("fully-fitted-price").classList.add("translate-x-full");
+    document.getElementById("fully-fitted-price-overlay").classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+}
+</script>

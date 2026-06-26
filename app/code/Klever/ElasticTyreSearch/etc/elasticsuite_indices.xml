@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<indices xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Smile_ElasticsuiteCore:etc/elasticsuite_indices.xsd">
+
+    <index identifier="klever_brand" defaultSearchType="brand">
+        <type name="brand" idFieldName="brand_id">
+            <mapping>
+                <field name="brand_id" type="integer"/>
+                <field name="name" type="text">
+                    <isSearchable>1</isSearchable>
+                    <isUsedForSortBy>1</isUsedForSortBy>
+                </field>
+                <field name="url_key" type="keyword"/>
+                <field name="image" type="keyword"/>
+            </mapping>
+        </type>
+    </index>
+
+    <index identifier="klever_blog" defaultSearchType="post">
+        <type name="post" idFieldName="post_id">
+            <mapping>
+                <field name="post_id" type="integer"/>
+                <field name="title" type="text">
+                    <isSearchable>1</isSearchable>
+                    <isUsedForSortBy>1</isUsedForSortBy>
+                </field>
+                <field name="short_content" type="text">
+                    <isSearchable>1</isSearchable>
+                </field>
+                <field name="url_key" type="keyword"/>
+                <field name="image" type="keyword"/>
+                <field name="status" type="integer"/>
+            </mapping>
+        </type>
+    </index>
+
+    <index identifier="klever_vehicle" defaultSearchType="vehicle">
+        <type name="vehicle" idFieldName="id">
+            <mapping>
+                <field name="id" type="integer"/>
+                <field name="name" type="text">
+                    <isSearchable>1</isSearchable>
+                    <isUsedForSortBy>1</isUsedForSortBy>
+                </field>
+                <field name="slug" type="keyword"/>
+                <field name="logo_image" type="keyword"/>
+                <field name="is_active" type="integer"/>
+            </mapping>
+        </type>
+    </index>
+
+    <index identifier="klever_cms" defaultSearchType="page">
+        <type name="page" idFieldName="page_id">
+            <mapping>
+                <field name="page_id" type="integer"/>
+                <field name="title" type="text">
+                    <isSearchable>1</isSearchable>
+                    <isUsedForSortBy>1</isUsedForSortBy>
+                </field>
+                <field name="content" type="text">
+                    <isSearchable>1</isSearchable>
+                </field>
+                <field name="identifier" type="keyword"/>
+                <field name="is_active" type="integer"/>
+            </mapping>
+        </type>
+    </index>
+
+</indices>

@@ -1,0 +1,83 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \WeltPixel\GA4\Block\TiktokPixel\Common */
+
+/** @var \WeltPixel\GA4\Helper\TiktokPixelTracking $tiktokPixelHelper */
+$tiktokPixelHelper = $this->helper('WeltPixel\GA4\Helper\TiktokPixelTracking');
+$cspNonceProvider = $tiktokPixelHelper->getCspNonceProvider();
+$eventIdPaymentInfo = $tiktokPixelHelper->getEventUID();
+$eventIdPurchase = $tiktokPixelHelper->getEventUID();
+$orderId = $block->getOrderId();
+?>
+
+<?php if ($tiktokPixelHelper->isTiktokPixelTrackingEnabled() && $tiktokPixelHelper->shouldTiktokPixelEventBeTracked(\WeltPixel\GA4\Model\Config\Source\TiktokPixel\TrackingEvents::EVENT_ADD_PAYMENT_INFO)) :
+    ?>
+    <script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        if (window.ga4AllowServices) {
+            ttq.track('AddPaymentInfo', {
+                "contents": <?= /* @noEscape */ $block->getProductsForPurchase() ?>,
+                "value": <?= /* @noEscape */ $block->getOrderValue() ?>,
+                "currency": "<?= /* @noEscape */ $tiktokPixelHelper->getCurrencyCode() ?>"
+            },{
+                eventID: '<?= /* @noEscape */ $eventIdPaymentInfo ?>'
+            });
+        }
+    </script>
+<?php endif; ?>
+
+<?php if ($tiktokPixelHelper->isServerSideTrackingEnabled() && $tiktokPixelHelper->shouldTikTokServerSideEventBeTracked(\WeltPixel\GA4\Model\Config\Source\TiktokPixel\TrackingEvents::EVENT_ADD_PAYMENT_INFO)) : ?>
+    <script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        requirejs(['jquery'],
+            function  ($) {
+                $(document).ready(function() {
+                    var requestUrl = '<?php echo $block->escapeUrl($tiktokPixelHelper->getTikTokSSTrackUrl()); ?>';
+                    $.post({
+                        url: requestUrl,
+                        global: false,
+                        data: {
+                            'eventId': '<?= /* @noEscape */ $eventIdPaymentInfo ?>',
+                            'eventName': '<?= /* @noEscape */ \WeltPixel\GA4\Model\Config\Source\TiktokPixel\TrackingEvents::EVENT_ADD_PAYMENT_INFO  ?>',
+                            'pageUrl': '<?= $block->escapeUrl($tiktokPixelHelper->getStoreCurrenUrl()) ?>',
+                            'orderId': '<?=  /* @noEscape */ $orderId ?>'
+                        }
+                    });
+                });
+            });
+    </script>
+<?php endif; ?>
+
+<?php if ($tiktokPixelHelper->isTiktokPixelTrackingEnabled() && $tiktokPixelHelper->shouldTiktokPixelEventBeTracked(\WeltPixel\GA4\Model\Config\Source\TiktokPixel\TrackingEvents::EVENT_PLACE_AN_ORDER)) :
+    ?>
+    <script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        if (window.ga4AllowServices) {
+            ttq.track('PlaceAnOrder', {
+                "contents": <?= /* @noEscape */ $block->getProductsForPurchase(true) ?>,
+                "value": <?= /* @noEscape */ $block->getOrderValue() ?>,
+                "currency": "<?= /* @noEscape */ $tiktokPixelHelper->getCurrencyCode() ?>"
+            },{
+                eventID: '<?= /* @noEscape */ $eventIdPurchase ?>'
+            });
+        }
+    </script>
+<?php endif; ?>
+
+<?php if ($tiktokPixelHelper->isServerSideTrackingEnabled() && $tiktokPixelHelper->shouldTikTokServerSideEventBeTracked(\WeltPixel\GA4\Model\Config\Source\TiktokPixel\TrackingEvents::EVENT_PLACE_AN_ORDER)) : ?>
+    <script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        requirejs(['jquery'],
+            function  ($) {
+                $(document).ready(function() {
+                    var requestUrl = '<?php echo $block->escapeUrl($tiktokPixelHelper->getTikTokSSTrackUrl()); ?>';
+                    $.post({
+                        url: requestUrl,
+                        global: false,
+                        data: {
+                            'eventId': '<?= /* @noEscape */ $eventIdPurchase ?>',
+                            'eventName': '<?= /* @noEscape */ \WeltPixel\GA4\Model\Config\Source\TiktokPixel\TrackingEvents::EVENT_PLACE_AN_ORDER  ?>',
+                            'pageUrl': '<?= $block->escapeUrl($tiktokPixelHelper->getStoreCurrenUrl()) ?>',
+                            'orderId': '<?=  /* @noEscape */ $orderId ?>'
+                        }
+                    });
+                });
+            });
+    </script>
+<?php endif; ?>

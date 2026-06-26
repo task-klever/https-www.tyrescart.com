@@ -1,0 +1,161 @@
+<?php
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\ProductListItem;
+use Hyva\Theme\ViewModel\ProductPage;
+use Magento\Catalog\Block\Product\AbstractProduct;
+use Magento\Catalog\Helper\Output as CatalogOutputHelper;
+use Magento\Framework\Escaper;
+use Hdweb\Tyrefinder\Helper\Productlisting as ListingHelper;
+use Hyva\Theme\ViewModel\ProductPrice;
+use Magento\Catalog\Pricing\Price\FinalPrice;
+
+/** @var AbstractProduct $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+$productViewModel = $viewModels->require(ProductPage::class);
+$productListItemViewModel = $viewModels->require(ProductListItem::class);
+$catalogOutputHelper = $this->helper(CatalogOutputHelper::class);
+
+/** @var \Magento\Catalog\Model\Product $product */
+if (! ($product = $block->getData('product'))) {
+    return;
+}
+
+$imageDisplayArea = $block->getData('image_display_area');
+$productId = $product->getId();
+$productName = $catalogOutputHelper->productAttribute($product, $product->getName(), 'name');
+
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$listingHelper = $this->helper(ListingHelper::class);
+$mediaUrl = $objectManager->get('Magento\Store\Model\StoreManagerInterface')
+    ->getStore()
+    ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+
+$partsCategory = '';
+if ($product->getPartsCategory()) {
+    $partsCategory = $product->getAttributeText('parts_category');
+}
+
+$brand = $catalogOutputHelper->productAttribute($product, $product->getBrand(), 'brand');
+$brandImage = '';
+$brand_title = '';
+$brandUrl = '';
+if ($brand) {
+    $brandDetails = $listingHelper->getBrandDetails($brand);
+    if ($brandDetails) {
+        $brandImage = $listingHelper->getBrandImageUrl($brandDetails);
+        $brand_title = $brandDetails->getName();
+        $brandUrl = $listingHelper->getBrandUrl($brandDetails);
+    }
+}
+
+$pattern = '';
+if ($product->getPattern()) {
+    $pattern = $product->getAttributeText('pattern');
+}
+$oemMarking = '';
+if ($product->getOemMarking()) {
+    $oemMarking = $product->getAttributeText('oem_marking');
+}
+
+$tyreSize = $product->getAttributeText('tyre_size');
+$loadIndex = $product->getLoadIndex() ?: '';
+$warranty = $product->getWarrantyPeriod() ? $product->getAttributeText('warranty_period') : '';
+$year = $product->getAttributeText('year');
+$origin = $product->getAttributeText('country');
+$priceIncludedText = $product->getAttributeText('price_included_text');
+
+$productPriceViewModel = $viewModels->require(ProductPrice::class);
+$unitFinalPrice = $productPriceViewModel->getPriceValue(FinalPrice::PRICE_CODE, $product);
+
+$imageCustomAttributes = $product->getData('image_custom_attributes')
+    ?? $block->getData('image_custom_attributes')
+    ?? [];
+?>
+
+<div class="slider-product-card bg-white rounded-[10px] border border-[#eee] overflow-hidden flex flex-col h-full">
+    <!-- Brand -->
+    <div class="flex justify-center items-center p-1.5 border-b border-[#eee] min-h-[36px]">
+        <?php if ($brand && $brandImage) : ?>
+            <a href="<?php echo $brandUrl; ?>">
+                <img loading="lazy" class="h-[25px] object-contain max-w-[140px]" src="<?php echo $brandImage; ?>" alt="<?php echo __($brand_title); ?>" />
+            </a>
+        <?php elseif ($brand && $brand_title) : ?>
+            <span class="font-semibold text-xs"><?php echo __($brand_title); ?></span>
+        <?php endif; ?>
+    </div>
+
+    <!-- Image -->
+    <div class="relative px-3 py-2 flex items-center justify-center min-h-[120px]">
+        <a href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+           title="<?= $escaper->escapeHtmlAttr($product->getName()) ?>"
+           class="block" tabindex="-1">
+            <?= $block->getImage($product, $imageDisplayArea)
+                ->setTemplate('Magento_Catalog::product/list/image.phtml')
+                ->setData('custom_attributes', $imageCustomAttributes)
+                ->setProductId($productId)
+                ->toHtml(); ?>
+        </a>
+        <?php if ($warranty) : ?>
+            <div class="absolute bottom-1 left-1 bg-white/90 px-1.5 py-0.5 rounded">
+                <span class="uppercase text-black text-[0.6rem] font-medium"><?php echo $warranty; ?></span>
+            </div>
+        <?php endif; ?>
+        <?php if ($year) : ?>
+            <span class="absolute bottom-1 right-1 text-black text-[0.6rem] font-medium bg-white/90 px-1.5 py-0.5 rounded"><?php echo $year; ?></span>
+        <?php endif; ?>
+    </div>
+
+    <!-- Product Info -->
+    <div class="px-3 pb-2 text-center flex flex-col flex-grow">
+        <!-- Pattern/Name -->
+        <div class="product-name mb-0.5">
+            <a class="product-item-link text-theme-dark hover:text-theme-blue transition-all duration-300 font-semibold text-sm leading-tight line-clamp-1"
+               href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+               title="<?php echo $productName; ?>">
+                <?php if ($partsCategory == 'Battery') : ?>
+                    <?php echo $productName; ?>
+                <?php else : ?>
+                    <?php echo $pattern . ' ' . $oemMarking; ?>
+                <?php endif; ?>
+            </a>
+        </div>
+
+        <!-- Tyre Size -->
+        <?php if ($tyreSize) : ?>
+            <p class="text-xs font-medium text-gray-600 mb-0.5"><?php echo $tyreSize . ' ' . $loadIndex; ?></p>
+        <?php endif; ?>
+
+        <!-- Origin -->
+        <?php if ($origin) : ?>
+            <span class="text-[0.65rem] text-gray-500"><?php echo __($origin); ?></span>
+        <?php endif; ?>
+
+        <!-- Fitted Price Text -->
+        <div class="mt-auto pt-1">
+            <?php if ($priceIncludedText) : ?>
+                <span class="text-[0.7rem] text-gray-500"><?php echo $priceIncludedText; ?></span>
+            <?php elseif ($partsCategory == 'Battery') : ?>
+                <span class="text-[0.7rem] text-gray-500"><?php echo __('Fully Fitted Price per Item'); ?></span>
+            <?php endif; ?>
+        </div>
+
+        <!-- Price -->
+        <div class="text-theme-dark flex items-center justify-center leading-none mt-1">
+            <?= /* @noEscape */ $productListItemViewModel->getProductPriceHtml($product) ?>
+            <span class="text-xs ml-1 whitespace-nowrap"><?php echo $partsCategory == 'Battery' ? '/ item' : '/ tyre'; ?></span>
+        </div>
+    </div>
+
+    <!-- View Button -->
+    <div class="border-t border-[#eee] p-2 mt-auto">
+        <a href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+           class="btn btn-secondary justify-center text-xs min-h-8 py-1 px-3 w-full whitespace-nowrap"
+           title="<?= $escaper->escapeHtmlAttr(__('View Details')) ?>">
+            <span><?= $escaper->escapeHtml(__('View Details')) ?></span>
+        </a>
+    </div>
+</div>

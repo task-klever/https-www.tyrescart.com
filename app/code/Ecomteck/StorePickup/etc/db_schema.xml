@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="quote">
+        <column xsi:type="varchar" name="fitment_type" nullable="true" length="50" comment="Fitment Type"/>
+        <column xsi:type="text" name="pickup_location" nullable="true" comment="Pickup Location for Mobile Van"/>
+	</table>
+    <table name="sales_order">
+        <column xsi:type="text" name="pickup_location" nullable="true" comment="Pickup Location for Mobile Van"/>
+    </table>
+</schema>

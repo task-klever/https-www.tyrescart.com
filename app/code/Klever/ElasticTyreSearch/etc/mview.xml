@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Mview/etc/mview.xsd">
+
+    <view id="klever_brand_fulltext"
+          class="Klever\ElasticTyreSearch\Model\Indexer\Brand"
+          group="indexer">
+        <subscriptions>
+            <table name="mgs_brand" entity_column="brand_id"/>
+        </subscriptions>
+    </view>
+
+    <view id="klever_blog_fulltext"
+          class="Klever\ElasticTyreSearch\Model\Indexer\Blog"
+          group="indexer">
+        <subscriptions>
+            <table name="mgs_blog_post" entity_column="post_id"/>
+        </subscriptions>
+    </view>
+
+    <view id="klever_vehicle_fulltext"
+          class="Klever\ElasticTyreSearch\Model\Indexer\Vehicle"
+          group="indexer">
+        <subscriptions>
+            <table name="flat_wheel_data" entity_column="id"/>
+        </subscriptions>
+    </view>
+
+    <view id="klever_cms_fulltext"
+          class="Klever\ElasticTyreSearch\Model\Indexer\Cms"
+          group="indexer">
+        <subscriptions>
+            <table name="cms_page" entity_column="page_id"/>
+        </subscriptions>
+    </view>
+
+</config>

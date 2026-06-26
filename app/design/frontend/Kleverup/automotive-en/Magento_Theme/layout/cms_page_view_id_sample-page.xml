@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+-->
+<page layout="3columns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="script-alpine-js">
+            <block name="alpine-plugin-collapse" template="Magento_Theme::page/js/plugins/collapse.phtml"/>
+            <block name="alpine-plugin-hyva-accordion" template="Magento_Theme::page/js/plugins/hyva-accordion.phtml"/>
+        </referenceBlock>
+    </body>
+</page>

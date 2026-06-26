@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">blog_tag_form.blog_tag_data_source</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">General Information</item>
+        <item name="reverseMetadataMerge" xsi:type="boolean">true</item> 
+    </argument>
+    <settings>
+        <buttons>
+            <button name="save" class="MGS\Blog\Block\Adminhtml\Tag\SaveButton"/>
+            <button name="back" class="MGS\Blog\Block\Adminhtml\Tag\BackButton"/>
+        </buttons>
+        <layout>
+            <navContainerName>left</navContainerName>
+            <type>tabs</type>
+        </layout>
+        <namespace>blog_tag_form</namespace>
+        <dataScope>data</dataScope>
+        <deps>
+            <dep>blog_tag_form.blog_tag_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="blog_tag_data_source">
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+         <settings>
+            <submitUrl path="blog/tag/save"/>
+        </settings>
+        <dataProvider class="MGS\Blog\Model\Tag\DataProvider" name="blog_tag_data_source">
+            <settings>
+                <requestFieldName>tag_id</requestFieldName>
+                <primaryFieldName>tag_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+
+   <fieldset name="general">
+        <settings>
+            <label translate="true">General</label>
+        </settings>
+        <field name="tag" sortOrder="10" formElement="input">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">index</item>
+                </item>
+            </argument>
+            <settings>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+                <dataType>text</dataType>
+                <label translate="true">Tag</label>
+                <dataScope>tag</dataScope>
+            </settings>
+        </field>
+
+        <!-- <field name="tag_name" sortOrder="20" formElement="input">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">index</item>
+                </item>
+            </argument>
+            <settings>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+                <dataType>text</dataType>
+                <label translate="true">Tag Name</label>
+                <dataScope>tag_name</dataScope>
+            </settings>
+        </field> -->
+
+        <field name="store_id" sortOrder="30" formElement="hidden">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">company</item>
+                    </item>
+            </argument>
+            <settings>
+                <dataType>hidden</dataType>
+                <dataScope>store_id</dataScope>
+                </settings>
+        </field>
+
+        <field name="short_description" sortOrder="40">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">wysiwyg</item>
+                    <item name="source" xsi:type="string">sample_shop</item>
+                    <item name="label" xsi:type="string">Short Description</item>
+                    <item name="template" xsi:type="string">ui/form/field</item>
+                    <item name="wysiwyg" xsi:type="boolean">true</item>
+                    <item name="dataScope" xsi:type="string">short_description</item>
+                    <item name="rows" xsi:type="number">8</item>
+                </item>
+            </argument>
+        </field>
+
+        <field name="long_description" sortOrder='50'>
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">wysiwyg</item>
+                    <item name="source" xsi:type="string">sample_shop</item>
+                    <item name="label" xsi:type="string">Long Description</item>
+                    <item name="template" xsi:type="string">ui/form/field</item>
+                    <item name="wysiwyg" xsi:type="boolean">true</item>
+                    <item name="dataScope" xsi:type="string">long_description</item>
+                    <item name="rows" xsi:type="number">8</item>
+                     <item name="validation" xsi:type="array">
+                    <item name="required-entry" xsi:type="boolean">true</item><!-- this validates it as required -->
+                </item>
+                </item>
+            </argument>
+        </field>
+        
+        <field name="status" sortOrder='60'>
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">MGS\Blog\Model\Options\Status</item>
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Status</item>
+                    <item name="formElement" xsi:type="string">select</item>
+                    <item name="source" xsi:type="string">modulename</item>
+                    <item name="dataScope" xsi:type="string">status</item>
+                    <item name="default" xsi:type="string">0</item>
+                </item>
+            </argument>
+        </field>
+    </fieldset>
+
+    <fieldset name="meta">
+        <settings>
+            <label translate="true">Meta Information</label>
+        </settings>
+        <field name="meta_title" sortOrder="10" formElement="textarea">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">index</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Meta Title</label>
+                <dataScope>meta_title</dataScope>
+            </settings>
+        </field>
+
+          <field name="meta_description" sortOrder="20" formElement="textarea">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">index</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Meta Description</label>
+                <dataScope>meta_description</dataScope>
+            </settings>
+        </field>
+    </fieldset>
+  
+</form>

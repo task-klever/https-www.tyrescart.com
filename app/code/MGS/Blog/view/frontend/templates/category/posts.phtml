@@ -1,0 +1,64 @@
+<?php
+   $helper = $this->helper('MGS\Blog\Helper\Data');
+   $brandhelper =  $this->helper('MGS\Brand\Helper\Data');
+   $collection = $block->getCollection();
+   $showThumbnail = $this->getConfig('general_settings/show_thumbnail');
+   if ($this->getConfig('general_settings/thumbnail_width') != '') {
+       $width = $this->getConfig('general_settings/thumbnail_width');
+   } else {
+       $width = 240;
+   }
+   if ($this->getConfig('general_settings/thumbnail_height') != '') {
+       $height = $this->getConfig('general_settings/thumbnail_height');
+   } else {
+       $height = 180;
+   }
+   $categoryId = (int)$this->getRequest()->getParam('category_id', false);
+?>
+<?php if (!isset($collection) || (isset($collection) && $collection->getSize()==0)): ?>
+<div class="empty relative py-10">
+   <h3 class="border-b pb-4 text-center"><?php echo __('Have no posts.') ?></h3>
+</div>
+<?php else: ?>
+<div class="section section-padding blog-list">
+   <div class="w-full inline-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 place-items-center">
+      <?php
+      $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+      $currentStoreId = $objectManager->get('Magento\Store\Model\StoreManagerInterface')->getStore()->getId();
+   ?>
+   <?php foreach ($collection as $post): ?>
+      <?php
+         $storeOverrides = $block->getPostByStore($currentStoreId, $post->getId());
+         $postTitle = isset($storeOverrides['title']) ? $storeOverrides['title']['value'] : $post->getTitle();
+         $postShortContent = isset($storeOverrides['short_content']) ? $storeOverrides['short_content']['value'] : $post->getShortContent();
+      ?>
+      <div class="flex items-end justify-center shrink-0">
+         <div class="slide group w-full overflow-hidden border bg-[#f5f5f5] border-[#e1e1e1] rounded-[10px]">
+            <div class="blog-image relative">
+               <div class="img_wrp w-full pb-full h-0 z-0 bg-gray-200 pb-[56%]">
+                  <figure class="absolute inset-0">
+                     <picture>
+                        <source srcset="<?php echo $post->getThumbnailUrl(); ?>" loading="lazy" alt="social image" title="Blog Image" type="image/jpg">
+                        <source srcset="<?php echo $post->getThumbnailUrl(); ?>" loading="lazy" alt="Blog Image" title="Blog Image" type="image/jpg">
+                        <img class="w-full h-full object-cover object-top overflow-hidden" src="<?php echo $post->getThumbnailUrl(); ?>" alt="Blog Image" loading="lazy">
+                     </picture>
+                  </figure>
+               </div>
+                <div class="absolute top-2 left-2 z-10">
+                   <span class="inline-block bg-white/90 backdrop-blur-sm text-[#222] text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm">
+                      <?php echo $block->formatDate($post->getPublishedAt(), \IntlDateFormatter::MEDIUM, false); ?>
+                   </span>
+                </div>
+            </div>
+            <div class="blog-blog-info p-4">
+               <h6 class="mb-2">
+                  <a href="<?php echo $post->getPostUrlWithNoCategory(); ?>" class="text-ellipsis line-clamp-2 text-black hover:text-theme-blue transition ease-out text-[1rem] font-bold uppercase"><?php echo $postTitle; ?></a>
+               </h6>
+               <?php echo $postShortContent; ?>
+            </div>
+         </div>
+      </div>
+      <?php endforeach; ?>
+   </div>
+</div>
+<?php endif; ?>

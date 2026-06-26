@@ -1,0 +1,70 @@
+<div class="mst_sorting-formula_description">
+    <p class="title strong">Description:</p>
+    <p>
+        The factor of the type formula calculates the sorting score based on the formula.
+        The syntax of the formula is the same as the syntax of spreadsheet formulas.
+        The formula should return a numeric result. Non-numeric results will be considered as NULL.
+        The formula <span class="strong">should</span> always start with "=".
+    </p>
+    <p class="title strong">Allowed variable types:</p>
+    <ul>
+        <li>
+            <p>
+                <span class="strong">{product_[attribute_code]}</span> - product attributes variable like
+                <span class="strong">{product_price}</span>, <span class="strong">{product_color}</span>.
+                Almost any attribute can be used in the formula.
+            </p>
+            <p>
+                Attributes of types <span class="strong">gallery</span> and <span class="strong">media_image</span>
+                are <span class="strong">not allowed</span>.
+            </p>
+
+            <p class="strong title">Most common product attributes' variables:</p>
+            <ul>
+                <li class="strong">{product_price}</li>
+                <li class="strong">{product_cost}</li>
+                <li class="strong">{product_size}</li>
+                <li class="strong">{product_color}</li>
+                <li class="strong">{product_material}</li>
+                <li class="strong">{product_brand}</li>
+            </ul>
+        </li>
+        <li>
+            <p>
+                <span class="strong">{factor_[id]}</span> - ranking factor variables.
+                You can use scores calculeted in other factors in the factor of the type formula.
+                The only restriction is - factor of the type formula can <span class="strong">NOT</span> be used in
+                another factor of the type formula
+            </p>
+        </li>
+    </ul>
+    <p class="title strong">Examples:</p>
+    <ul>
+        <li>
+            <p class="strong">Simple formula:</p>
+            <code>={product_cost} / {product_weight}</code>
+            <p class="small">This formula calculates the unit cost for each product</p>
+        </li>
+        <li>
+            <p class="strong">Formula with the condition:</p>
+            <code>=IF({product_cost} > 50, 100, 0)</code>
+        </li>
+        <li>
+            <p class="strong">Formula with the attribute of the type <i>select</i>:</p>
+            <code>=IF({product_brand} = "Adidas", 100, 0)</code>
+        </li>
+        <li>
+            <p class="strong">Formula with the attribute of the type <i>multiselect</i>:</p>
+            <code>=IF(ISNUMBER(FIND("Gym", {product_activity})), 10, 1)</code>
+            <p class="small">
+                When using attributes of the type <span class="strong">multiselect</span> the construction <code>ISNUMBER(FIND([needle], [variable]))</code>
+                should be used.
+                The part <code>FIND([needle], [variable])</code> is responsible for searching needle in the variable's value.<br>
+                If the needle is not found the <code>FIND()</code> function returns <span class="strong">#VALUE!</span> which makes the <code>IF()</code> function return the same.<br>
+                The <span class="strong">#VALUE!</span> value will be considered as NULL.<br>
+                For making it work es expected the <code>FIND()</code> function should be wrapped in <code>ISNUMBER()</code> function.<br>
+                In this case, the whole formula will return correct results.
+            </p>
+        </li>
+    </ul>
+</div>

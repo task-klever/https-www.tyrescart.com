@@ -1,0 +1,14 @@
+{
+    "weltpixel_ga4_orders_pushed": {
+        "column": {
+            "id": true,
+            "order_id": true
+        },
+        "index": {
+            "WELTPIXEL_GA4_ORDERS_PUSHED_ORDER_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

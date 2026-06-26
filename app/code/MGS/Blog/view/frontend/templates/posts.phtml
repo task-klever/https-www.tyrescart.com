@@ -1,0 +1,84 @@
+<?php
+   $helper = $this->helper('MGS\Blog\Helper\Data');
+   $brandhelper =  $this->helper('MGS\Brand\Helper\Data');
+   $collection = $block->getCollection();
+   $showThumbnail = $this->getConfig('general_settings/show_thumbnail');
+   $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+   $sideBarBlock = $objectManager->get('MGS\Blog\Block\Sidebar');
+   $categories = $sideBarBlock->getCategories();
+   $firsCategory = $categories->getFirstItem();
+   // $categoryPostCollection = $helper->getAllCategoryCollection();
+   // echo "<pre>";
+   // print_r($categoryPostCollection->getData());
+   // die();
+   ?>
+<div class="section section-padding blog-list">
+         <div x-data="{ activeTab: 'tab<?php echo $firsCategory->getCategoryId(); ?>' }">
+            <?php /* ?>
+            <div class="flex items-center justify-center overflow-hidden">
+               <nav class="flex bg-[#d8e9f3] rounded-full overflow-x-auto">
+                  <?php foreach ($categories as $category) : ?>
+                  <button class="text-center rounded-full uppercase font-semibold text-gray-800 text-xs md:text-sm lg:text-base hover:text-white hover:bg-theme-blue px-4 md:px-5 lg:px-5 py-2 md:py-2 transition-all leading-none whitespace-nowrap" 
+                     :class="{ 'bg-theme-blue text-white': activeTab === 'tab<?php echo $category->getId(); ?>' }" @click="activeTab = 'tab<?php echo $category->getId(); ?>'"><?php echo $category->getTitle(); ?></button>
+                  <?php endforeach; ?>
+               </nav>
+            </div>
+            <?php */ ?>
+            <div class="block">
+               <?php foreach ($categories as $category) : ?>
+               <?php //$categoryPostCollection = $helper->getCategoryCollection($category->getId()); ?>
+               <?php $categoryPostCollection = $helper->getAllCategoryCollection(); ?>
+               <div x-show="activeTab === 'tab<?php echo $category->getId(); ?>'">
+                  <div class="relative">
+                     <?php if($categoryPostCollection->count() == 0): ?>
+                     <h3 class="border-b pb-4 text-center"><?php echo __('Have no posts.') ?></h3>
+                     <?php else: ?>
+                     <div class="w-full inline-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 place-items-center">
+                        <?php foreach($categoryPostCollection as $categoryPost): ?>
+                        <?php
+                        $categoryId = $block->getPostByCategory($categoryPost->getId());
+                        $currentStoreId = $objectManager->get('Magento\Store\Model\StoreManagerInterface')->getStore()->getId();
+                        $storeOverrides = $block->getPostByStore($currentStoreId, $categoryPost->getId());
+                        $postTitle = isset($storeOverrides['title']) ? $storeOverrides['title']['value'] : $categoryPost->getTitle();
+                        $postShortContent = isset($storeOverrides['short_content']) ? $storeOverrides['short_content']['value'] : $categoryPost->getShortContent();
+                        ?>
+                        <div class="flex items-end justify-center shrink-0 w-full js_slide">
+                           <div class="slide group w-full overflow-hidden border bg-[#f5f5f5] border-[#e1e1e1] rounded-[10px]">
+                              <div class="blog-image relative">
+                                 <div class="img_wrp w-full pb-full h-0 z-0 bg-gray-200 pb-[56%]">
+                                    <figure class="absolute inset-0">
+                                       <picture>
+                                          <source srcset="<?php echo $categoryPost->getThumbnailUrl(); ?>" loading="lazy" alt="social image" title="Blog Image" type="image/jpg">
+                                          <source srcset="<?php echo $categoryPost->getThumbnailUrl(); ?>" loading="lazy" alt="Blog Image" title="Blog Image" type="image/jpg">
+                                          <img class="w-full h-full object-cover object-top overflow-hidden" src="<?php echo $categoryPost->getThumbnailUrl(); ?>" alt="Blog Image" loading="lazy">
+                                       </picture>
+                                    </figure>
+                                 </div>
+                                 <div class="absolute top-2 left-2 z-10">
+                                    <span class="inline-block bg-white/90 backdrop-blur-sm text-[#222] text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm">
+                                       <?php echo $block->formatDate($categoryPost->getPublishedAt(), \IntlDateFormatter::MEDIUM, false); ?>
+                                    </span>
+                                 </div>
+                              </div>
+
+                              <div class="blog-blog-info p-4">
+                                 <h6 class="mb-2">
+                                    <a href="<?php echo $categoryPost->getPostUrlWithNoCategory(); ?>" class="text-ellipsis line-clamp-2 text-black hover:text-theme-blue transition ease-out text-[1rem] font-bold uppercase"><?php echo $postTitle; ?></a>
+                                 </h6>
+                                 <?php echo $postShortContent; ?>
+                              </div>
+                              
+                           </div>
+                        </div>
+                        <?php endforeach; ?>
+                     </div>
+                     <?php endif; ?>
+                  </div>
+               </div>
+               <?php endforeach; ?>
+            </div>
+            <div class="bottom-pagination mt-6">
+				   <div class="toolbar"><?php echo $block->getPagerHtml(); ?></div>
+			   </div>
+         </div>
+</div>

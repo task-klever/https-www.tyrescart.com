@@ -1,0 +1,23 @@
+{
+    "prince_faqgroup": {
+        "column": {
+            "footer_slugs": true,
+            "url_key": true,
+            "meta_title": true,
+            "meta_description": true
+        },
+        "index": {
+            "PRINCE_FAQGROUP_URL_KEY": true
+        }
+    },
+    "prince_faq": {
+        "column": {
+            "url_key": true,
+            "meta_title": true,
+            "meta_description": true
+        },
+        "index": {
+            "PRINCE_FAQ_URL_KEY": true
+        }
+    }
+}

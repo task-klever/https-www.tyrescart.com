@@ -1,0 +1,329 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Checkout\Magewire\Checkout\PriceSummary\CartItems;
+use Hyva\Checkout\ViewModel\Checkout\PriceSummary\CartItems as CartItemsViewModel;
+use Hyva\Checkout\ViewModel\Checkout\Formatter as FormatterViewModel;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Magento\Tax\Helper\Data as TaxHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var FormatterViewModel $formatterViewModel */
+/** @var ViewModelRegistry $viewModels */
+/** @var CartItems $magewire */
+/** @var CartItemsViewModel $cartItemsViewModel */
+/** @var TaxHelper $taxHelper */
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+$formatterViewModel = $viewModels->require(FormatterViewModel::class);
+$cartItemsViewModel = $viewModels->require(CartItemsViewModel::class);
+$taxHelper = $this->helper(TaxHelper::class);
+
+$quoteItems = $magewire->getQuoteItemData();
+$quoteItemsCount = $quoteItems ? count($quoteItems) : 0;
+?>
+
+<div
+    x-data="hyvaCheckoutPriceSummaryCartItems"
+    x-bind:open="visible"
+    class="pb-3 mt-2">
+    <button
+        type="button"
+        class="group w-full flex font-bold items-center gap-1.5 cursor-pointer text-slate-700 text-sm"
+        aria-controls="checkout-cart-details"
+        x-on:click="toggleVisible"
+        x-bind:aria-expanded="visible"
+        aria-label="<?= $escaper->escapeHtmlAttr(__('Cart') . ' ' . ($quoteItemsCount > 1
+            ? __('%1 Items', $quoteItemsCount)
+            : __('%1 Item', $quoteItemsCount))) ?>"
+    >
+        <?= $heroicons->shoppingCartHtml('text-blue-900', 18, 18, ['aria-hidden' => 'true']) ?>
+        <?= $escaper->escapeHtml(__('Cart')) ?>
+        <span class="font-normal text-slate-600">
+            (<?= $escaper->escapeHtml($quoteItemsCount > 1 ? __('%1 Items', $quoteItemsCount) : __('%1 Item', $quoteItemsCount)) ?>)
+        </span>
+
+        <span
+            class="mr-auto"
+            x-bind:class="applyDownRotateClass"
+        >
+            <?= $heroicons->chevronDownHtml('text-theme-blue', 16, 16, ['aria-hidden' => 'true']) ?>
+        </span>
+    </button>
+
+    <div
+    id="checkout-cart-details"
+    class="cart-items overflow-hidden"
+    x-show="visible"
+    x-cloak
+    x-ref="cartContent"
+    x-transition:enter="transition-all duration-300 ease-in-out"
+    x-transition:enter-start="max-h-0 opacity-0"
+    x-transition:enter-end="max-h-[1000px] opacity-100"
+    x-transition:leave="transition-all duration-300 ease-in-out"
+    x-transition:leave-start="max-h-[1000px] opacity-100"
+    x-transition:leave-end="max-h-0 opacity-0">
+        <div class="flex flex-col h-full space-y-6">
+            <div class="relative grid">
+                <?php if ($quoteItems): ?>
+                    <?php foreach ($quoteItems as $item): ?>
+                        <div class="border-b border-slate-300 flex gap-4 py-6">
+                            <div class="flex-none relative">
+                                <img
+                                    src="<?= $escaper->escapeUrl($item['thumbnail']) ?>"
+                                    width="96"
+                                    height="96"
+                                    alt="<?= $escaper->escapeHtmlAttr($item['name']) ?>"
+                                    loading="lazy"
+                                    class="rounded"
+                                >
+                            </div>
+
+                            <div class="flex-grow space-y-2">
+                                <div class="">
+                                    <div class="product-title">
+                                        <p class="font-bold pb-1 text-slate-800 text-lg">
+                                            <?= $escaper->escapeHtml($item['name']) ?>
+                                        </p>
+                                    </div>
+                                    <div class="product-price flex justify-between flex-wrap gap-x-1.5 self-start text-right">
+                                        <span class="text-slate-600 text-left" dir="ltr">
+                                            <span><?= /* @noEscape */ $item['qty'] ?> <?= $escaper->escapeHtml('x') ?></span>
+                                            <?php if ($taxHelper->displayCartPriceInclTax() || $taxHelper->displayCartBothPrices()): ?>
+                                                <span class="price-including-tax" data-label="<?= $escaper->escapeHtmlAttr(__('Incl. Tax')) ?>">
+                                                    <?php //echo  /* @noEscape */ $formatterViewModel->currency($item['base_price_incl_tax']) ?>
+                                                    <span class="currency-dirham">&#xe900;</span>&nbsp;
+                                                    <?= /* @noEscape */ number_format((float)$item['base_price_incl_tax'], 2, '.', ',') ?>
+                                                </span>
+                                            <?php endif; ?>
+
+                                            <?php if ($taxHelper->displayCartPriceExclTax() || $taxHelper->displayCartBothPrices()): ?>
+                                                <span
+                                                    class="price-excluding-tax <?php if ($taxHelper->displayCartPriceExclTax()): ?> inline <?php endif ?>"
+                                                    data-label="<?= $escaper->escapeHtmlAttr(__('Excl. Tax')) ?>"
+                                                >
+                                                    <?php //echo  /* @noEscape */ $formatterViewModel->currency($item['base_price']) ?>
+
+                                                     <span class="currency-dirham">&#xe900;</span>&nbsp;
+                                                    <?= /* @noEscape */ number_format((float)$item['base_price'], 2, '.', ',') ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </span>
+                                        <span class="text-right">
+                                            <?php if ($taxHelper->displayCartPriceInclTax() || $taxHelper->displayCartBothPrices()): ?>
+                                                <span class="price-including-tax block" data-label="<?= $escaper->escapeHtmlAttr(__('Incl. Tax')) ?>">
+                                                    <?php //echo  /* @noEscape */ $formatterViewModel->currency($item['row_total_incl_tax']) ?>
+                                                  
+                                                    <span class="currency-dirham">&#xe900;</span>&nbsp;
+                                                    <?= /* @noEscape */ number_format((float)$item['row_total_incl_tax'], 2, '.', ',') ?>
+                                                </span>
+                                            <?php endif ?>
+
+                                            <?php if ($taxHelper->displayCartPriceExclTax() || $taxHelper->displayCartBothPrices()): ?>
+                                                <span class="price-excluding-tax block" data-label="<?= $escaper->escapeHtmlAttr(__('Excl. Tax')) ?>">
+                                                    <?php //echo  /* @noEscape */ $formatterViewModel->currency($item['row_total']) ?>
+                                                    <span class="currency-dirham">&#xe900;</span>&nbsp;
+                                                    <?= /* @noEscape */ number_format((float)$item['row_total'], 2, '.', ',') ?>
+                                                </span>
+                                            <?php endif ?>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <?php $optionsRenderer = $cartItemsViewModel->getProductOptionsRenderer($block, $item['product_type']) ?>
+
+                                <?php if ($optionsRenderer): ?>
+                                    <?= /* @noEscape */ $optionsRenderer->setData('quote_item', $item)->toHtml() ?>
+
+
+
+<?php
+/** @var \Magento\Framework\Pricing\Helper\Data $priceHelper */
+$priceHelper = $this->helper(\Magento\Framework\Pricing\Helper\Data::class);
+?>
+ <?php
+/** @var array $item */ /*
+$productOptions = $item['product']['options'] ?? [];
+$selectedOptions = [];
+foreach ($item['options'] ?? [] as $opt) {
+    $selectedOptions[$opt['label']] = $opt['value'];
+}
+$formKey = $block->getLayout()
+    ->createBlock(\Magento\Framework\View\Element\Template::class)
+    ->getFormKey();
+?>
+
+<?php if ($productOptions): ?>
+    <dl class="item-options w-full break-all mt-2 text-sm">
+        <?php foreach ($productOptions as $productOption): ?>
+            <?php if ($productOption->getType() === 'radio'): ?>
+                <?php
+                $optionId = (int)$productOption->getOptionId();
+                $selectedValueLabel = $selectedOptions[$productOption->getTitle()] ?? null;
+                $values = $productOption->getValues() ?: [];
+                $selectedValueLabel = null;
+if (!empty($item['options']) && isset($item['options'][0]['value'])) {
+    $selectedValueLabel = $item['options'][0]['value']; // e.g. "Yes"
+}
+                ?>
+
+                
+               <?php *//* <dt class="font-bold"><?= $escaper->escapeHtml($productOption->getTitle()) ?>:</dt> */ /* ?>
+                <dd>
+                    <div
+                        x-data="{
+                            selected: '<?= $escaper->escapeHtmlAttr($selectedValueLabel) ?>',
+                            loading: false,
+                            itemId: <?= (int)$item['item_id'] ?>,
+                            optionId: <?= $optionId ?>,
+                            async update() {
+                                this.loading = true;
+                                window.dispatchEvent(new CustomEvent('start-hyva-loader'));
+                                try {
+                                    const payload = {
+                                        form_key: '<?= $escaper->escapeHtmlAttr($formKey) ?>',
+                                        item_id: this.itemId,
+                                        options: { [this.optionId]: this.selected }
+                                    };
+
+                                    const res = await fetch('<?= $block->getUrl('customcart/update/option') ?>', {
+                                        method: 'POST',
+                                        credentials: 'same-origin',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-Requested-With': 'XMLHttpRequest'
+                                        },
+                                        body: JSON.stringify(payload)
+                                    });
+
+                                    const json = await res.json();
+                                    if (json.success) {
+                                        window.dispatchEvent(new CustomEvent('reload-customer-section-data', {
+                                            detail: { sections: ['cart'] }
+                                        }));
+                                    } else {
+                                        alert(json.message || 'Failed to update item.');
+                                    }
+                                } catch (err) {
+                                    console.error(err);
+                                    alert(err.message || 'Network error while updating item.');
+                                } finally {
+                                    this.loading = false;
+                                    window.dispatchEvent(new CustomEvent('stop-hyva-loader'));
+                                }
+                            }
+                        }"
+                        class="flex flex-col gap-2 mt-1"
+                    >
+                        <?php
+// Get selected value label from $item['options'] (if any)
+$selectedValueLabel = null;
+if (!empty($item['options']) && isset($item['options'][0]['value'])) {
+    $selectedValueLabel = $item['options'][0]['value']; // e.g. "Yes"
+}
+
+if (!empty($item['product']['options'])) :
+    foreach ($item['product']['options'] as $option) :
+        if ($option->getType() === 'radio') :
+            $values = $option->getValues();
+?>
+    <div class="cart-item-options">
+        <strong><?= $block->escapeHtml($option->getTitle()); ?>:</strong>
+        <?php foreach ($values as $value) :
+            $isChecked = ($selectedValueLabel === $value->getTitle()); // ✅ Compare with selected value
+        ?>
+       
+<?php 
+$priceType = $value->getPriceType(); // fixed | percent
+
+        $formattedPrice = '';
+
+
+if ($priceType === 'percent') {
+    $basePrice = $item['product']['price'] ; // $product->getPrice();
+    $price = $value->getPrice();
+    $price = ($basePrice * $price) / 100;
+}
+
+        if ($price != 0) {
+            $formattedPrice =   $priceHelper->currency($price, false, false) ;
+        }
+
+
+?>
+        
+            <label>
+                <input type="radio"
+                       name="options[<?= $option->getOptionId(); ?>]"
+                       value="<?= $value->getOptionTypeId(); ?>"
+                       <?= $isChecked ? 'checked' : ''; ?>>
+                <?= $block->escapeHtml($value->getTitle()); ?>
+                <?php if ($value->getPrice() > 0) : ?>
+                    (+<?= $block->escapeHtml($formattedPrice); ?>)
+                <?php endif; ?>
+            </label>
+        <?php endforeach; ?>
+    </div>
+<?php
+        endif;
+    endforeach;
+endif;
+?>
+
+                        <button
+                            type="button"
+                            @click.prevent="update()"
+                            :disabled="loading"
+                            class="ml-3 px-3 py-1 rounded-lg text-xs border bg-blue-600 text-white"
+                        >
+                            <span x-show="!loading">Update</span>
+                            <span x-show="loading" aria-live="polite" class="flex items-center gap-2">
+                                <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+                                    <path d="M22 12a10 10 0 0 1-10 10" stroke-linecap="round"></path>
+                                </svg>
+                                Updating...
+                            </span>
+                        </button>
+                    </div>
+                </dd>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    </dl>
+<?php endif; ?>
+
+
+
+<?php */ ?>
+
+
+
+
+
+
+
+
+
+                                <?php endif ?>
+                            </div>
+                        </div>
+                    <?php endforeach ?>
+                <?php endif ?>
+            </div>
+        </div>
+    </div>
+</div>

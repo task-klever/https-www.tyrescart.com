@@ -1,0 +1,135 @@
+<?php
+   /**
+    * Hyvä Themes - https://hyva.io
+    * Copyright © Hyvä Themes 2020-present. All rights reserved.
+    * This product is licensed per Magento install
+    * See https://hyva.io/license
+    */
+   
+   use Hyva\Theme\Model\ViewModelRegistry;
+   use Hyva\Theme\ViewModel\HeroiconsOutline;
+   use Hyva\Theme\ViewModel\HyvaCsp;
+   use Hyva\Theme\ViewModel\ReCaptcha;
+   use Magento\Framework\Escaper;
+   use Magento\Newsletter\Block\Subscribe;
+   
+   /** @var Subscribe $block */
+   /** @var Escaper $escaper */
+   /** @var HyvaCsp $hyvaCsp */
+   /** @var ViewModelRegistry $viewModels */
+   /** @var ReCaptcha $recaptcha */
+   /** @var HeroiconsOutline $heroicons */
+   
+   $heroicons = $viewModels->require(HeroiconsOutline::class);
+   
+   // Do not replace this with $viewModels->require(ReCaptcha::class); that might break the dependency
+   // on the Magento_ReCaptchaNewsletter module
+   $recaptcha = $block->getData('viewModelRecaptcha');
+   ?>
+<div class="footer-top bg-theme-blue ">
+   <div class="container-theme mx-auto">
+      <div class="flex flex-wrap items-center w-full justify-between">
+         <div class="w-full lg:w-2/5">
+            <div class="special-mail flex items-center gap-4 justify-center lg:justify-start lg:mt-0 mt-4">
+               <span class="text-white text-4xl"><i class="icon icon-email"></i></span>
+               <div class="text">
+                  <h4 class="font-extrabold text-white text-[1.3rem] md:text-[1.6rem] xl:text-[2.1rem] text-stroke">Get Special Offers and Saving</h4>
+                  <span class="text-white text-[1rem] lg:text-[1.1rem] mt-1 block">Get all the latest information on Events, Sales and Offers.</span>
+               </div>
+            </div>
+         </div>
+         <div class="w-full md:w-3/5 lg:w-2/5">
+            <div class="">
+               <form
+                  class="form subscribe"
+                  action="<?= $escaper->escapeUrl($block->getFormActionUrl()) ?>"
+                  method="post"
+                  x-data="initNewsletterForm"
+                  @submit.prevent="submitForm"
+                  id="newsletter-validate-detail"
+                  aria-label="<?= $escaper->escapeHtmlAttr(__('Subscribe to Newsletter')) ?>"
+                  >
+                  <div class="relative my-[1rem] md:my-0">
+                     <label for="newsletter-subscribe" class="sr-only">
+                     <?= $escaper->escapeHtml(__('Email Address')) ?>
+                     </label>
+                     <input
+                        name="email"
+                        type="email"
+                        required
+                        id="newsletter-subscribe"
+                        class="form-input inline-flex w-full min-h-[52px] md:min-h-[62px] rounded-[10px]"
+                        placeholder=""
+                        autocomplete="email"
+                        aria-describedby="footer-newsletter-heading"
+                        >
+                     <?= $block->getBlockHtml('formkey') ?>
+                     <?= $recaptcha ? $recaptcha->getInputHtml(ReCaptcha::RECAPTCHA_FORM_ID_NEWSLETTER) : '' ?>
+                     <button class="group absolute right-[4px] md:right-[6px] top-1/2 -translate-y-1/2 btn bg-theme-yellow uppercase text-black text-[1rem] md:text-[1.12rem] hover:bg-theme-blue transition-all duration-300 ease-in-out min-h-[44px]  md:min-h-[50px]">
+                     <?= $escaper->escapeHtml(__('Subscribe')) ?> <i class="hidden xl:inline-block text-black text-xs icon icon-three-arrow relative top-[0.8px] group-hover:text-white transition-all duration-300 ease-in-out"></i>
+                     </button>
+                  </div>
+                  <div>
+                     <template x-if="displayErrorMessage">
+                        <p class="flex items-center text-red">
+                           <span class="inline-block w-8 h-8 mr-3">
+                           <?= $heroicons->exclamationCircleHtml('', 24, 24, ['aria-hidden' => true]); ?>
+                           </span>
+                           <template x-for="errorMessage in errorMessages">
+                              <span x-html="errorMessage"></span>
+                           </template>
+                        </p>
+                     </template>
+                  </div>
+               </form>
+               <div class="w-full">
+                  <?= $recaptcha ? $recaptcha->getLegalNoticeHtml(ReCaptcha::RECAPTCHA_FORM_ID_NEWSLETTER) : '' ?>
+               </div>
+               <script>
+                  function initNewsletterForm() {
+                      return {
+                          errors: 0,
+                          hasCaptchaToken: 0,
+                          displayErrorMessage: false,
+                          errorMessages: [],
+                          setErrorMessages(messages) {
+                              this.errorMessages = [messages]
+                              this.displayErrorMessage = this.errorMessages.length
+                          },
+                          submitForm() {
+                              // Do not rename $form, the variable is expected to be declared in the recaptcha output
+                              const $form = document.querySelector('#newsletter-validate-detail');
+                              <?= $recaptcha ? $recaptcha->getValidationJsHtml(ReCaptcha::RECAPTCHA_FORM_ID_NEWSLETTER) : '' ?>
+                  
+                              if (this.errors === 0) {
+                                  $form.submit();
+                              }
+                          }
+                      }
+                  }
+                  
+                  window.addEventListener('alpine:init', () => Alpine.data('initNewsletterForm', initNewsletterForm), {once: true})
+               </script>
+               <?php $hyvaCsp->registerInlineScript() ?>
+            </div>
+         </div>
+         <div class="w-full md:w-1/4 lg:w-1/6">
+                              <div class="image-wrap no-position h-auto md:h-[131px] lg:h-[131px]">
+                                 <picture>
+                                    <source loading="lazy" srcset="<?php echo $this->getViewFileUrl('images/home/special-offer-right.png'); ?>" data-srcset="<?php echo $this->getViewFileUrl('images/home/special-offer-right.png'); ?>">
+                                    <img loading="lazy" class="mx-auto md:mr-0" src="<?php echo $this->getViewFileUrl('images/home/special-offer-right.png'); ?>" data-src="<?php echo $this->getViewFileUrl('images/home/special-offer-right.png'); ?>" alt="Car tyre offers and discounts UAE" />
+                                 </picture>
+                              </div>
+         </div>
+      </div>
+   </div>
+</div>
+
+
+
+
+
+
+
+
+

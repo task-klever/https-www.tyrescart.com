@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="before.body.end">
+            <!-- Meta Pixel Tracking -->
+            <block
+                ifconfig="weltpixel_ga4_meta_pixel/general_tracking/enable"
+                class="WeltPixel\GA4\Block\MetaPixel\Purchase"
+                name="weltpixel_ga4_metapixel_purchase"
+                template="WeltPixel_GA4::metapixel/purchase.phtml"
+            />
+            <!-- Meta Pixel Tracking -->
+            <!-- Reddit Pixel Tracking -->
+            <block
+                ifconfig="weltpixel_ga4_reddit_pixel/general_tracking/enable"
+                class="WeltPixel\GA4\Block\RedditPixel\Common"
+                name="weltpixel_ga4_reddditpixel_purchase"
+                template="WeltPixel_GA4::redditpixel/purchase.phtml"
+            />
+            <!-- Reddit Pixel Tracking -->
+            <!-- Tiktok Pixel Tracking -->
+            <block
+                ifconfig="weltpixel_ga4_tiktok_pixel/general_tracking/enable"
+                class="WeltPixel\GA4\Block\TiktokPixel\Common"
+                name="weltpixel_ga4_tiktokpixel_purchase"
+                template="WeltPixel_GA4::tiktokpixel/purchase.phtml"
+            />
+            <!-- Tiktok Pixel Tracking -->
+        </referenceContainer>
+    </body>
+</page>

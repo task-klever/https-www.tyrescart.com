@@ -1,0 +1,152 @@
+<?php
+/**
+ * Order Actions Tab - renders custom action buttons
+ *
+ * @var \Klever\OrderActions\Block\Adminhtml\Order\View\Tab\OrderActions $block
+ */
+$orderId = $block->getOrderId();
+?>
+
+<section class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $block->escapeHtml(__('Purchase Orders')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; padding: 15px 0;">
+            <button type="button" class="action-default scalable"
+                    onclick="setLocation('<?= $block->escapeUrl($block->getPurchaseOrderUrl('mpo')) ?>')">
+                <span><?= $block->escapeHtml(__('MPO')) ?></span>
+            </button>
+
+            <button type="button" class="action-default scalable"
+                    onclick="setLocation('<?= $block->escapeUrl($block->getPurchaseOrderUrl('fpo', ['fpo' => 1])) ?>')">
+                <span><?= $block->escapeHtml(__('FPO')) ?></span>
+            </button>
+
+            <button type="button" class="action-default scalable"
+                    onclick="setLocation('<?= $block->escapeUrl($block->getPurchaseOrderUrl('dpo', ['dpo' => 1])) ?>')">
+                <span><?= $block->escapeHtml(__('DPO')) ?></span>
+            </button>
+
+            <button type="button" class="action-default scalable"
+                    onclick="setLocation('<?= $block->escapeUrl($block->getPurchaseOrderUrl('ppo', ['ppo' => 1])) ?>')">
+                <span><?= $block->escapeHtml(__('PPO')) ?></span>
+            </button>
+        </div>
+    </div>
+</section>
+
+<section class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $block->escapeHtml(__('Installer Actions')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; padding: 15px 0;">
+            <button type="button" class="action-default scalable installer-button">
+                <span><?= $block->escapeHtml(__('Notify Installer')) ?></span>
+            </button>
+
+            <button type="button" class="action-default scalable notify-customer-button">
+                <span><?= $block->escapeHtml(__('Notify Customer')) ?></span>
+            </button>
+
+            <?php if ($block->canShowNotifyInvoice()): ?>
+            <button type="button" class="action-default scalable notify-invoice-button">
+                <span><?= $block->escapeHtml(__('Notify Invoice')) ?></span>
+            </button>
+            <?php endif; ?>
+
+            <?php /* Commented out - replaced by Delivery Information Edit
+            <button type="button" class="action-default scalable edit-installer-button">
+                <span><?= $block->escapeHtml(__('Edit Installer')) ?></span>
+            </button>
+            */ ?>
+        </div>
+    </div>
+</section>
+
+<?php if ($block->canShowNotifyInvoice()): ?>
+<!-- Notify Invoice Modal -->
+<div id="notify-invoice-popup-modal" style="display:none;">
+    <form class="form" action="<?= $block->escapeUrl($block->getNotifyInvoiceSendUrl()) ?>"
+          id="notify-invoice-form" method="post">
+        <input name="form_key" type="hidden" value="<?= $block->escapeHtmlAttr($block->getFormKey()) ?>"/>
+        <input name="order_id" type="hidden" value="<?= $block->escapeHtmlAttr((string) $orderId) ?>"/>
+
+        <fieldset class="fieldset">
+            <div class="field">
+                <div>
+                    <label class="admin__field-label"><?= $block->escapeHtml(__('Invoice Comment')) ?></label>
+                </div>
+                <div>
+                    <textarea name="invoice_comment" rows="5" cols="100"><?= $block->escapeHtml($block->getInvoiceComment()) ?></textarea>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="actions-toolbar">
+            <div class="primary" style="display:flex; gap:10px;">
+                <button type="button" class="action submit" title="<?= $block->escapeHtmlAttr(__('Update')) ?>" onclick="
+                    var form = document.getElementById('notify-invoice-form');
+                    form.action = '<?= $block->escapeUrl($block->getNotifyInvoiceUpdateUrl()) ?>';
+                    form.submit();
+                ">
+                    <span><?= $block->escapeHtml(__('Update')) ?></span>
+                </button>
+                <button type="button" class="action submit" title="<?= $block->escapeHtmlAttr(__('Download PDF')) ?>" onclick="
+                    var form = document.getElementById('notify-invoice-form');
+                    form.action = '<?= $block->escapeUrl($block->getNotifyInvoiceDownloadUrl()) ?>';
+                    form.submit();
+                ">
+                    <span><?= $block->escapeHtml(__('Download PDF')) ?></span>
+                </button>
+                <button type="submit" class="action submit primary" title="<?= $block->escapeHtmlAttr(__('Save & Send Mail')) ?>" onclick="
+                    document.getElementById('notify-invoice-form').action = '<?= $block->escapeUrl($block->getNotifyInvoiceSendUrl()) ?>';
+                ">
+                    <span><?= $block->escapeHtml(__('Save & Send Mail')) ?></span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+require(['jquery', 'Magento_Ui/js/modal/modal'], function ($, modal) {
+    'use strict';
+
+    $('.notify-invoice-button').click(function () {
+        var options = {
+            type: 'popup',
+            responsive: true,
+            innerScroll: true,
+            title: '<?= $block->escapeJs(__('Notify Invoice')) ?>',
+            buttons: []
+        };
+        modal(options, $('#notify-invoice-popup-modal'));
+        $('#notify-invoice-popup-modal').modal('openModal');
+    });
+});
+</script>
+<?php endif; ?>
+
+<?php if ($block->canShowAbandonedMail()): ?>
+<section class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $block->escapeHtml(__('Notifications')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; padding: 15px 0;">
+            <?php
+            $escapedEmail = $block->escapeJs($block->getCustomerEmail());
+            $escapedUrl = $block->escapeUrl($block->getAbandonedMailSendUrl());
+            $restrictedFlag = $block->isAbandonedMailRestricted() ? 'true' : 'false';
+            ?>
+            <button type="button"
+                    class="action-default scalable notify-abandoned-mail-button"
+                    onclick="require(['Klever_AbandonedMail/js/abandoned-mail-modal'], function(abandonedMail) { abandonedMail.send('<?= $escapedEmail ?>', '<?= $escapedUrl ?>', <?= $restrictedFlag ?>); }); return false;">
+                <span><?= $block->escapeHtml(__('Notify Abandoned Mail')) ?></span>
+            </button>
+        </div>
+    </div>
+</section>
+<?php endif; ?>

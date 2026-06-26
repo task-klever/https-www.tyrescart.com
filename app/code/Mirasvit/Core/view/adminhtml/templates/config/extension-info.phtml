@@ -1,0 +1,51 @@
+<?php
+/** @var \Mirasvit\Core\Block\Adminhtml\Config\ExtensionInfo $block */
+$package = $block->getPackage();
+if (!$package || !$package->getLabel() || !$package->getVersion()) {
+    return;
+}
+?>
+<div class="mst-extensionInfo">
+    <div>
+        <div class="mst-extensionInfo-title">
+            <?= $block->escapeHtml($package->getLabel()) ?> <span><?= $block->escapeHtml($package->getVersion()) ?></span>
+
+            <?php if ($package->getVersion() === $package->getLatestVersion()): ?>
+                <div class="mst-extensionInfo-version">
+                    <svg viewBox="0 0 36 36" fill="#2ebc5e" width="24" height="24">
+
+                        <path class="st0" d="M12.8,28.7l-9.5-9.5c-0.4-0.4-0.4-1.1,0-1.6l1.5-1.5c0.4-0.4,1.1-0.4,1.6,0l7.2,7.2   l16-16c0.4-0.4,1.1-0.4,1.6,0l1.5,1.5c0.4,0.4,0.4,1.1,0,1.6L14.4,28.7C13.9,29.1,13.2,29.1,12.8,28.7z" id="check_x5F_mark_1_"/>
+                    </svg>
+                    You have the latest version
+                </div>
+            <?php else: ?>
+                <div class="mst-extensionInfo-version">
+                    <svg viewBox="0 0 24 24" fill="#eb5202" width="24" height="24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12.866 3l9.526 16.5a1 1 0 0 1-.866 1.5H2.474a1 1 0 0 1-.866-1.5L11.134 3a1 1 0 0 1 1.732 0zM11 16v2h2v-2h-2zm0-7v5h2V9h-2z"/>
+                    </svg>
+                    New version <?= $block->escapeHtml($package->getLatestVersion()) ?> is available
+                </div>
+            <?php endif ?>
+        </div>
+        <div style="margin-top: 10px; display: flex; gap: 10px;margin-left: 30px;">
+            <?php if ($package->getUrl()): ?>
+                <a href="<?= $block->escapeUrl($package->getUrl()) ?>" target="_blank">Details</a>
+            <?php endif ?>
+
+            <?php if ($package->getDocsUrl()): ?>
+                <a href="<?= $block->escapeUrl($package->getDocsUrl()) ?>" target="_blank">User Guide</a>
+            <?php endif ?>
+
+            <?php if ($package->getChangelogUrl()): ?>
+                <a href="<?= $block->escapeUrl($package->getChangelogUrl()) ?>" target="_blank">Changelog</a>
+            <?php endif ?>
+        </div>
+    </div>
+
+    <div class="mst-extensionInfo-bar">
+        <div class="mst-extensionInfo-fr">
+            <a href="<?= $block->escapeUrl($block->getRequestUrl()) ?>" target="_blank">Request New Feature</a>
+        </div>
+    </div>
+</div>

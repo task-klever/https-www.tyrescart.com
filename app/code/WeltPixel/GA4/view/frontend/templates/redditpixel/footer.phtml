@@ -1,0 +1,32 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \WeltPixel\GA4\Block\RedditPixel\Common */
+
+/** @var \WeltPixel\GA4\Helper\RedditPixelTracking $redditPixelHelper */
+$redditPixelHelper = $this->helper('WeltPixel\GA4\Helper\RedditPixelTracking');
+$cspNonceProvider = $redditPixelHelper->getCspNonceProvider();
+?>
+<?php if ($redditPixelHelper->isRedditPixelTrackingEnabled()) : ?>
+    <script <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        require(['jquery', 'Magento_Customer/js/customer-data'],
+            function ($, customerData) {
+                if (window.ga4AllowServices) {
+                    $(document).ajaxComplete(function (event, xhr, settings) {
+                        if (settings.url.search('/customer\/section\/load/') > 0) {
+                            var response = xhr.responseJSON;
+                            if (response.wp_ga4) {
+                                var redditPixel = $.parseJSON(response.wp_ga4.redditpixel);
+                                for (index in redditPixel) {
+                                    if (redditPixel[index].eventData) {
+                                        rdt(redditPixel[index].track, redditPixel[index].eventName, redditPixel[index].eventData);
+                                    } else {
+                                        rdt(redditPixel[index].track, redditPixel[index].eventName);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+    </script>
+<?php endif; ?>

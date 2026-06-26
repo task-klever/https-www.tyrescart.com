@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="WeltPixel_GA4::GA4Settings" title="WeltPixel Google Analytics 4 Ecommerce PRO" sortOrder="300" />
+                            <resource id="WeltPixel_GA4::GA4MetaSettings" title="WeltPixel GA4 Meta Pixel Settings" sortOrder="301" />
+                            <resource id="WeltPixel_GA4::GA4TikTokSettings" title="WeltPixel GA4 TikTok Pixel Settings" sortOrder="302" />
+                            <resource id="WeltPixel_GA4::GA4RedditSettings" title="WeltPixel GA4 Reddit Pixel Settings" sortOrder="303" />
+                        </resource>
+                    </resource>
+                </resource>
+                <resource id="WeltPixel_Backend::WeltPixel" >
+                    <resource id="WeltPixel_GA4::GA4_Label" sortOrder="60" title="Google Analytics 4 Ecommerce PRO" >
+                        <resource id="WeltPixel_GA4::GA4" sortOrder="10" title="Google Analytics 4 Ecommerce PRO Settings" />
+                        <resource id="WeltPixel_GA4::GA4MetaPixel" sortOrder="20" title="GA4 Meta Pixel Settings" />
+                        <resource id="WeltPixel_GA4::GA4TikTokPixel" sortOrder="30" title="GA4 TikTok Pixel Settings" />
+                        <resource id="WeltPixel_GA4::GA4RedditPixel" sortOrder="40" title="GA4 Reddit Pixel Settings" />
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

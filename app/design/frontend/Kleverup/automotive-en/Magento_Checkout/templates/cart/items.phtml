@@ -1,0 +1,60 @@
+<?php
+/** @var \Magento\Checkout\Block\Cart $block */
+$items = $block->getItems();
+?>
+
+<div x-data="cartComponent()" class="space-y-6">
+    <?php foreach ($items as $item): ?>
+        <?php
+        $buyRequest = $item->getOptionByCode('info_buyRequest');
+        $options = [];
+        if ($buyRequest) {
+            $options = json_decode($buyRequest->getValue(), true)['options'] ?? [];
+        }
+        ?>
+        <div class="p-4 rounded-xl border border-gray-200 shadow bg-white">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="font-semibold text-lg"><?= $block->escapeHtml($item->getProduct()->getName()); ?></h2>
+                    <p class="text-sm text-gray-600">Qty: <?= $item->getQty(); ?></p>
+                </div>
+                <div class="text-right font-medium">
+                    <?= $block->escapeHtml($block->formatPrice($item->getRowTotalInclTax())); ?>
+                </div>
+            </div>
+
+            <!-- ✅ Klever CustomCart Checkbox -->
+            <?php
+            $productOptions = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
+            if (!empty($productOptions['options'])):
+                foreach ($productOptions['options'] as $option):
+                    $checked = isset($options[$option['option_id']]);
+            ?>
+                <div class="mt-2 flex items-center space-x-2">
+                    <input type="checkbox"
+                           class="h-5 w-5 rounded border-gray-300 text-primary"
+                           <?= $checked ? 'checked' : '' ?>
+                           @change="updateCartOption('<?= $item->getId() ?>', '<?= $option['option_id'] ?>', $event.target.checked)">
+                    <label class="text-sm"><?= $block->escapeHtml($option['label']); ?></label>
+                </div>
+            <?php
+                endforeach;
+            endif;
+            ?>
+        </div>
+    <?php endforeach; ?>
+</div>
+
+<script>
+function cartComponent() {
+    return {
+        updateCartOption(itemId, optionId, isChecked) {
+            fetch('<?= $block->getUrl("customcart/update/option") ?>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ item_id: itemId, option_id: optionId, checked: isChecked })
+            }).then(() => window.location.reload());
+        }
+    }
+}
+</script>

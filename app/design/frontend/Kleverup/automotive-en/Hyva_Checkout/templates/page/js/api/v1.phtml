@@ -1,0 +1,1315 @@
+<?php
+/**
+ * @author Hyvä Themes <info@hyva.io>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var HyvaCsp $hyvaCsp */
+
+/**
+ * @Internal Prefer utilizing the "after" container for injecting additional code.
+ */
+?>
+<script>
+    const hyvaCheckout = {
+        <?php /** @api */ ?>
+        api: {
+            awaiting: {
+                after: []
+            },
+
+            <?php /* Execute code after it's certain that the API is fully initialized. */ ?>
+            after(callback, options = {}) {
+                if (! callback || typeof callback !== 'function') {
+                    return Promise.reject(new Error('After callback must be a function'))
+                }
+                if (hyvaCheckout.main.isApiActive()) {
+                    return Promise.resolve(callback());
+                }
+
+                return new Promise((resolve, reject) => {
+                    this.awaiting.after.push({
+                        callback: () => Promise.resolve().then(callback).then(resolve).catch(reject),
+
+                        options: Object.assign({
+                            stackPosition: 500
+                        }, options)
+                    });
+                });
+            },
+
+            priority(callback, options = {}, section = null) {
+                let position = 20
+
+                if (section && hyvaCheckout.hasOwnProperty(section)) {
+                    position += (Object.keys(hyvaCheckout).indexOf(section) * 10);
+                }
+
+                return this.after(callback, Object.assign(options, {
+                    section: section,
+                    stackPosition: position
+                }));
+            },
+
+            async executeAwaiting() {
+                const callbacks = hyvaCheckout.api.awaiting.after
+                    .sort((a, b) => (a.options.stackPosition || 500) - (b.options.stackPosition || 500));
+
+                const awaitingPromises = callbacks.map((item, index) => {
+                    return Promise.resolve().then(() => {
+                        return item.callback();
+                    }).catch(error => {
+                        console.error(`Awaiting callback ${index} failed:`, error);
+                        return null;
+                    });
+                });
+
+                return Promise.all(awaitingPromises).then(() => hyvaCheckout.api.awaiting.after = []);
+            }
+        },
+
+        <?php /** @api */ ?>
+        main: {
+            <?php /* Returns the Main stepper element DOM id. */ ?>
+            id: null,
+            <?php /* Returns the Main stepper wire name. */ ?>
+            name: null,
+            <?php /* Returns the Main container element DOM id. */ ?>
+            container: null,
+            <?php /* Returns if the API was successfully initialized. */ ?>
+            active: false,
+            <?php /* Returns the current active checkout name. */ ?>
+            activeNamespace: null,
+
+            /**
+             * @return {{step: string, config: Object, navigateToStep: Function, navigateToSuccess: Function, placeOrder: Function}|null} || null
+             */
+            getWireComponent() {
+                try {
+                    return Magewire.find(this.id);
+                } catch (exception) {
+                    return null;
+                }
+            },
+            getElement() {
+                return document.getElementById(this.id);
+            },
+            getConfig(namespace = null) {
+                const config = this.getWireComponent() ? this.getWireComponent().config : {};
+                return namespace ? config[namespace] : config;
+            },
+            getStepHistory(key = null) {
+                const history = this.getConfig('step_history');
+                return key ? history[key] : history;
+            },
+            getVersion() {
+                return 1.0;
+            },
+            isApiActive() {
+                return this.active;
+            },
+
+            async init(stepperHtmlId, stepperHtmlContainerId, exceptionCallback) {
+                return Promise.resolve().then(async () => {
+                    this.id = stepperHtmlId;
+                    this.container = stepperHtmlContainerId;
+
+                    await Promise.all(Object.keys(hyvaCheckout).map(key => {
+                        return Promise.resolve().then(() => {
+                            const namespace = hyvaCheckout[key];
+
+                            if (typeof namespace === 'object') {
+                                if ('initialize' in namespace) {
+                                    return Promise.resolve().then(() => {
+                                        return namespace.initialize(this.getConfig());
+                                    });
+                                }
+                            } else if (typeof namespace === 'function') {
+                                return Promise.resolve().then(() => {
+                                    return namespace();
+                                });
+                            }
+                        }).then(() => {
+                            window.dispatchEvent(
+                                new CustomEvent(`checkout:init:${key}`, {
+                                    detail: { namespace: hyvaCheckout[key] }
+                                })
+                            );
+                        }).catch(error => {
+                            console.error(`Failed to initialize namespace '${key}':`, error);
+                            throw error;
+                        });
+                    }));
+
+                    this.active = true;
+
+                    await hyvaCheckout.api.executeAwaiting().then(() => {
+                        window.dispatchEvent(new Event('checkout:init:after'));
+                    });
+                }).catch(exception => {
+                    window.dispatchEvent(new Event('checkout:init:failure'));
+
+                    if (typeof exceptionCallback === 'function') {
+                        throw exceptionCallback(exception);
+                    }
+
+                    throw exception;
+                }).finally(() => {
+                    window.dispatchEvent(new Event('checkout:init:done'));
+                });
+            },
+
+            async initialize() {
+                [this.id, this.container].map(element => {
+                    if (document.getElementById(element) === null) {
+                        throw new Error(`Required DOM element #${ element } is missing.`);
+                    }
+                })
+
+                <?php /* Validate if the Main wire component is available. */ ?>
+                const component = this.getWireComponent();
+
+                if (component === null) {
+                    throw new Error('Main wire element could not be found.');
+                }
+            }
+        },
+
+        <?php /** @api */ ?>
+        storage: {
+            data: null,
+
+            initialize() {
+                return new Promise((resolve, reject) => {
+                    try {
+                        let storage = sessionStorage.getItem('hyva_checkout');
+
+                        if (storage === '{}' || storage === null) {
+                            storage = sessionStorage.getItem('hyva_checkout') || {};
+
+                            if (typeof storage === 'string') {
+                                storage = JSON.parse(storage);
+                            }
+
+                            // Making sure we always have a hyva_checkout session storage object
+                            sessionStorage.setItem('hyva_checkout', JSON.stringify(storage));
+                        }
+
+                        this.data = typeof storage === 'string' ? JSON.parse(storage) : storage;
+                        resolve();
+                    } catch (error) {
+                        reject(new Error(`Failed to initialize storage: ${error.message}`));
+                    }
+                })
+            },
+            clear() {
+                return new Promise((resolve, reject) => {
+                    try {
+                        sessionStorage.removeItem('hyva_checkout');
+                        this.data = null;
+
+                        window.dispatchEvent(
+                            new CustomEvent('checkout:storage:cleared', {
+                                bubbles: true
+                            })
+                        );
+
+                        resolve();
+                    } catch (error) {
+                        reject(new Error(`Failed to clear storage: ${error.message}`));
+                    }
+                })
+            },
+            setValue(key, value, group = null) {
+                return new Promise((resolve, reject) => {
+                    if (! key || typeof key !== 'string') {
+                        return reject(new Error('Key must be a non-empty string'));
+                    }
+                    if (typeof sessionStorage === 'undefined') {
+                        return reject(new Error('Browser Storage is unavailable.'));
+                    }
+
+                    try {
+                        const changeEventDetails = {
+                            key: key,
+                            newValue: value
+                        }
+
+                        if (group) {
+                            if (typeof group !== 'string') {
+                                return reject(new Error('Group must be a string'));
+                            }
+
+                            this.data[group] = this.data[group] || {};
+
+                            changeEventDetails.group = group;
+                            changeEventDetails.oldValue = this.data[group][key];
+                            changeEventDetails.data = this.data[group];
+
+                            this.data[group][key] = value;
+                        } else {
+                            changeEventDetails.oldValue = this.data[key];
+                            changeEventDetails.data = this.data;
+
+                            this.data[key] = value;
+                        }
+
+                        sessionStorage.setItem('hyva_checkout', JSON.stringify(this.data));
+
+                        window.dispatchEvent(
+                            new CustomEvent('checkout:storage:changed', {
+                                detail: changeEventDetails,
+                                bubbles: true
+                            })
+                        );
+
+                        resolve(value);
+                    } catch (error) {
+                        reject(new Error(`Failed to set storage value: ${error.message}`));
+                    }
+                })
+            },
+            getValue(key, group) {
+                if (group) {
+                    return (this.data[group] && this.data[group][key] !== undefined)
+                        ? this.data[group][key]
+                        : null;
+                }
+
+                return this.data[key] !== undefined ? this.data[key] : null;
+            },
+
+            getGroupData(group) {
+                return this.data[group] !== undefined ? this.data[group] : null;
+            }
+        },
+
+        <?php /** @api */ ?>
+        config: {
+            config: {},
+
+            hasValue(path) {
+                return this.getValue(path) !== undefined
+            },
+            getValue(path) {
+                return path.split('.').reduce((acc, part) => {
+                    return acc && typeof acc === 'object' && part in acc ? acc[part] : undefined;
+                }, this.config);
+            },
+            isSetFlag(path) {
+                let flag = this.getValue(path)
+
+                if ([true, false].includes(flag)) {
+                    return flag
+                }
+
+                throw new Error(`Value for path "${ path }" can only be of type Boolean, ${ typeof flag } given.`)
+            }
+        },
+
+        <?php /** @api */ ?>
+        validation: {
+            validations: {},
+
+            register(name, callback, el = null, group = null, options = {}) {
+                return new Promise((resolve, reject) => {
+                    if (! name || typeof name !== 'string') {
+                        return reject(new Error('Validation name must be a non-empty string'));
+                    }
+                    if (! callback || typeof callback !== 'function') {
+                        return reject(new Error('Validation callback must be a function'));
+                    }
+
+                    hyvaCheckout.api.after(() => {
+                        try {
+                            options = Object.assign({
+                                scrollOnFailure: true,
+                                skipOnFailure: false,
+                                stackPosition: 100,
+                                executeAfter: false
+                            }, options || {})
+
+                            const step = hyvaCheckout.navigation.getCurrent().name
+
+                            if (! this.validations[step]) {
+                                this.validations[step] = {}
+                            }
+
+                            const validation = {
+                                step: step,
+                                name: name,
+                                group: (typeof group === 'string' ? group : 'default'),
+                                validate: callback,
+                                el: el,
+                                options: options
+                            }
+
+                            this.validations[step][name] = validation
+
+                            window.dispatchEvent(new CustomEvent('checkout:validation:register', {
+                                detail: { validation },
+                                bubbles: true
+                            }));
+
+                            resolve(validation)
+                        } catch (error) {
+                            reject(new Error(`Failed to register validation '${name}': ${error.message}`))
+                        }
+                    })
+                })
+            },
+
+            remove(name, group = null) {
+                if (hyvaCheckout.navigation.hasCurrent() === false) {
+                    return
+                }
+
+                const step = hyvaCheckout.navigation.getCurrent().name
+
+                if (step && (! this.validations[step] || ! this.validations[step][name])) {
+                    return
+                }
+
+                const validation = this.validations[step][name];
+
+                if (validation) {
+                    if (group && validation.group !== group) {
+                        return
+                    }
+
+                    delete this.validations[step][name];
+                }
+            },
+
+            <?php /* @deprecated Blocking and unblocking are no longer supported, please use a UX-friendly alternative instead. */ ?>
+            block(name, el) {
+                this.register(name, () => {}, el, 'blocking')
+            },
+            unblock(name) {
+                this.remove(name, 'blocking')
+            },
+            hasBlocking() {
+                return Object.values(this.getValidationForCurrentStep('blocking')).length !== 0
+            },
+
+            reset() {
+                this.validations = {}
+            },
+            getValidations() {
+                return this.validations
+            },
+            getValidationsForStep(step, group = null) {
+                if (step in this.validations) {
+                    let stepValidations = this.validations[step]
+
+                    if (group) {
+                        return Object.values(stepValidations).filter(validation => validation.group === group)
+                    }
+
+                    return stepValidations
+                }
+
+                return {}
+            },
+            getValidationForCurrentStep(group = null) {
+                return this.getValidationsForStep(hyvaCheckout.navigation.getCurrent().name, group)
+            },
+
+            async validate(options = {}) {
+                if (hyvaCheckout.navigation.hasCurrent() === false) {
+                    return true
+                }
+
+                <?php /* Setup global options with optional overwrites. */ ?>
+                options = Object.assign({ executeAfter: false }, options)
+                <?php /* Grep the current step name. */ ?>
+                const step = hyvaCheckout.navigation.getCurrent().name
+
+                try {
+                    let validationResults = []
+
+                    return await Promise.all(
+                        Object.values(this.validations[step] || {})
+                            .filter(validation => validation.options.executeAfter === options.executeAfter)
+                            .sort((a, b) => a.options.stackPosition - b.options.stackPosition)
+                            .map(async (validation) => {
+                                const options = validation.options;
+                                const main = hyvaCheckout.main.getElement();
+
+                                let validationResult = await validation.validate(options);
+
+                                if ((validation.el && main && !main.contains(validation.el))
+                                    || (!validationResult && options.skipOnFailure))
+                                {
+                                    validationResult = true;
+                                }
+
+                                validationResults.push({ result: validationResult, validation });
+
+                                return validationResult;
+                            })
+                    ).then(results => {
+                        const result = results.every(item => item === true);
+                        const event  = result ? 'checkout:validation:success' : 'checkout:validation:failure';
+
+                        window.dispatchEvent(
+                            new CustomEvent(event, { detail: { options: options, step: step, results: validationResults } })
+                        );
+
+                        return result;
+                    })
+                } catch (exception) {
+                    window.dispatchEvent(
+                        new CustomEvent('checkout:validation:exception', { detail: { options: options, step: step, exception: exception } })
+                    );
+                }
+
+                return false;
+            }
+        },
+
+        <?php /** @api */ ?>
+        evaluation: {
+            <?php /** @see \Hyva\Checkout\Model\Magewire\Component\Evaluation\EvaluationResult::getType() */ ?>
+            processors: {},
+            <?php /** @see \Hyva\Checkout\Model\Magewire\Component\Evaluation\Validation */ ?>
+            validators: [],
+            <?php /** @see \Hyva\Checkout\Model\Magewire\Component\Evaluation\NavigationTask */ ?>
+            <?php /** @see \Hyva\Checkout\Model\Magewire\Component\Evaluation\Executable */ ?>
+            executables: [],
+            <?php /** @see \Hyva\Checkout\Model\Magewire\Component\Evaluation\Deferrable */ ?>
+            deferrables: [],
+
+            registerValidator(name, callback) {
+                return new Promise((resolve, reject) => {
+                    if (! name || typeof name !== 'string') {
+                        return reject(new Error('Evaluation validator name must be a non-empty string'));
+                    }
+                    if (! callback || typeof callback !== 'function') {
+                        return reject(new Error('Evaluation validator callback must be a function'));
+                    }
+
+                    this.validators[name] = callback;
+                    resolve();
+                });
+            },
+            registerExecutable(name, callback) {
+                return new Promise((resolve, reject) => {
+                    if (! name || typeof name !== 'string') {
+                        return reject(new Error('Evaluation executable name must be a non-empty string'))
+                    }
+                    if (! callback || typeof callback !== 'function') {
+                        return reject(new Error('Evaluation executable callback must be a function'))
+                    }
+
+                    this.executables[name] = callback;
+                    resolve();
+                });
+            },
+            registerProcessor(name, callback) {
+                return new Promise((resolve, reject) => {
+                    if (! name || typeof name !== 'string') {
+                        return reject(new Error('Processor name must be a non-empty string'))
+                    }
+                    if (! callback || typeof callback !== 'function') {
+                        return reject(new Error('Processor callback must be a function'))
+                    }
+
+                    if (this.processors[name]) {
+                        console.warn(`Processor '${name}' already exists. Overwriting.`)
+                    }
+
+                    this.processors[name] = callback;
+                    resolve();
+                });
+            },
+            registerDeferrable(name, callback) {
+                return new Promise((resolve, reject) => {
+                    if (! name || typeof name !== 'string') {
+                        return reject(new Error('Deferrable name must be a non-empty string'));
+                    }
+                    if (! callback || typeof callback !== 'function') {
+                        return reject(new Error('Deferrable callback must be a function'));
+                    }
+
+                    if (this.deferrables[name]) {
+                        console.warn(`Processor '${name}' already exists. Overwriting.`);
+                    }
+
+                    this.deferrables[name] = {
+                        action: callback
+                    };
+
+                    resolve();
+                })
+            },
+            hasProcessor(name) {
+                return name in this.processors;
+            },
+            getProcessor(name) {
+                return this.processors[name];
+            },
+
+            <?php /* Runs a deferrable with optional argument overwrites. */ ?>
+            async run(deferrable, args = {}, el = null) {
+                if (typeof deferrable !== 'string' || !deferrable.trim()) {
+                    throw new Error('Deferrable name must be a non-empty string.');
+                }
+                if (! (deferrable in this.deferrables)) {
+                    throw new Error(`Requested deferrable '${deferrable}' does not exist.`);
+                }
+                if (typeof args !== 'object') {
+                    throw new Error('Arguments must be an object.');
+                }
+
+                deferrable = this.deferrables[deferrable];
+                const action = deferrable.action;
+
+                if (typeof action !== 'function') {
+                    throw new Error(`Deferrable '${deferrable}' is not a function.`);
+                }
+
+                try {
+                    return await action(args, el);
+                } catch (error) {
+                    error.message = `Error in deferrable '${deferrable}': ${error.message}`;
+                    throw error;
+                }
+            },
+
+            <?php /* Processes a Evaluation result. */ ?>
+            process(el, component, result = null) {
+                return new Promise(async (resolve, reject) => {
+                    if (! el) {
+                        return reject(new Error('Element parameter is required'));
+                    }
+                    if (! component || typeof component !== 'object') {
+                        return reject(new Error('Component parameter must be an object'));
+                    }
+                    if (! ('serverMemo' in component)) {
+                        return reject(new Error('Server memo not found for component.'));
+                    }
+                    if (! ('evaluation' in component.serverMemo)) {
+                        return reject(new Error('No evaluation data available in component server memo.'));
+                    }
+                    if (! component.id) {
+                        return reject(new Error('Component ID is required'));
+                    }
+
+                    try {
+                        result = result || component.serverMemo.evaluation[component.id];
+
+                        if (! result) {
+                            return reject(new Error(`No evaluation result found for component ID: ${component.id}`));
+                        }
+                        if (! result.type) {
+                            return reject(new Error('Evaluation result must have a type property'));
+                        }
+                        if (! (result.type in this.processors)) {
+                            return reject(new Error(`Evaluation processor '${result.type}' does not exist.`));
+                        }
+
+                        await this.processors[result.type](component, el, result);
+
+                        window.dispatchEvent(
+                            new CustomEvent('checkout:evaluation-process:after', {
+                                detail: {
+                                    el: el,
+                                    component: component,
+                                    result: result
+                                },
+                                bubbles: true
+                            })
+                        );
+
+                        resolve();
+                    } catch (error) {
+                        reject(new Error(`Failed to process evaluation for component ${component.id}: ${error.message}`));
+                    }
+                })
+            }
+        },
+
+        <?php /** @api */ ?>
+        navigation: {
+            tasks: [],
+
+            async stepTo(route, validate = true) {
+                <?php /* Remove all flash message from the page before trying to navigate into the next step. */ ?>
+                window.dispatchEvent(new Event('clear-messages'))
+
+                const currentStep = this.getCurrent();
+                const beforeStep = this.getBefore();
+
+                let direction = 'forwards';
+
+                <?php /* Make sure navigating backwards is always possible without any requirements. */ ?>
+                if (typeof route === 'string') {
+                    if (beforeStep && currentStep
+                        && route === beforeStep.route
+                        && beforeStep.position < currentStep.position)
+                    {
+                        validate  = false
+                        direction = 'backwards'
+                    }
+                }
+
+                const validationFn = async () => {
+                    return validate ? hyvaCheckout.validation.validate() : true;
+                };
+
+                return this.executeTasks({
+                    navigationDirections: [direction]
+                })
+
+                <?php /* 2. Only proceed if API is idle. */ ?>
+                    .then(hyvaCheckout.isIdle)
+
+                    <?php /* 3. Process all validation callbacks. */ ?>
+                    .then(validationFn)
+
+                    <?php /* 4. Finally, try to navigate to the next step. */ ?>
+                    .then(async isValid => {
+                        if (! currentStep) {
+                            return true
+                        }
+                        if (! isValid || route === currentStep.route) {
+                            return false
+                        }
+
+                        <?php /* Clears all tasks that need to be executed immediately or upfront. */ ?>
+                        this.clearTasks(task => task.options.executeAfter === false)
+
+                        return hyvaCheckout.main.getWireComponent().navigateToStep(route)
+                            .then(async () => {
+                                <?php /* Wait for the execution of tasks that follow a successful navigation. */ ?>
+                                await this.executeTasks({
+                                    executeAfter: true,
+                                    navigationDirections: [direction]
+                                });
+
+                                return true;
+                            })
+
+                            .catch(exception => {
+                                hyvaCheckout.message.warn(
+                                    '<?= $escaper->escapeJs(__('Navigation error. Please try again.')) ?>'
+                                )
+                            })
+                    })
+
+                    .catch(exception => {
+                        <?php /* Suppress console errors from form validation failures. */ ?>
+                    });
+            },
+
+            getCurrent() {
+                <?php /* @see Hyva\Checkout\Model\Magewire\ServerMemoConfig\StepHistory */ ?>
+                return hyvaCheckout.config.getValue('step_history.current')
+            },
+            hasCurrent() {
+                return this.getCurrent() !== null
+            },
+
+            getPrevious() {
+                <?php /* @see Hyva\Checkout\Model\Magewire\ServerMemoConfig\StepHistory */ ?>
+                return hyvaCheckout.config.getValue('step_history.previous')
+            },
+            hasPrevious() {
+                return this.getPrevious() !== null
+            },
+
+            <?php /* Returns the step next the current no matter the history. */ ?>
+            getNext() {
+                <?php /* @see Hyva\Checkout\Model\Magewire\ServerMemoConfig\StepHistory */ ?>
+                return hyvaCheckout.config.getValue('step_history.steps.next')
+            },
+            hasNext() {
+                return this.getNext() !== null
+            },
+
+            <?php /* Returns the step before the current no matter the history. */ ?>
+            getBefore() {
+                <?php /* @see Hyva\Checkout\Model\Magewire\ServerMemoConfig\StepHistory */ ?>
+                return hyvaCheckout.config.getValue('step_history.steps.before')
+            },
+            hasBefore() {
+                return this.getBefore() !== null
+            },
+
+            <?php /* Tasks that may return a promise that will pause navigation until it resolves. */ ?>
+            addTask(fn, options = {}) {
+                <?php /* Assigning an optional task name for enhanced clarity and easier identification. */ ?>
+                options.name = options.name || null
+
+                if (options.name) {
+                    this.clearTasksByName(options.name)
+                }
+
+                this.tasks.push({
+                    callback: fn,
+
+                    options: Object.assign({
+                        stackPosition: 500,
+                        executeAfter: false,
+                        navigationDirections: ['forwards']
+                    }, options)
+                })
+            },
+
+            clearTasks(filter = () => true) {
+                this.tasks = this.tasks.filter(task => ! filter(task, task.options));
+            },
+            clearTasksByName(name) {
+                this.clearTasks((task, options) => name === options.name)
+            },
+
+            executeTasks(options = {}) {
+                options = Object.assign({
+                    executeAfter: false,
+                    navigationDirections: ['forwards']
+                }, options)
+
+                const matchDirections = function (a, b) {
+                    return Array.isArray(a) && Array.isArray(b) && a.every(direction => b.includes(direction))
+                }
+
+                return Promise.all(this.tasks
+                    .filter(task => task.options.executeAfter === options.executeAfter)
+                    .filter(task => matchDirections(options.navigationDirections, task.options.navigationDirections))
+                    .sort((a, b) => a.options.stackPosition - b.options.stackPosition)
+                    .map(task => task.callback()))
+            }
+        },
+
+        <?php /** @api */ ?>
+        payment: {
+            methods: [],
+
+            config: {
+                browserEventError: 'payment:method:error',
+                browserEventSuccess: 'payment:method:success'
+            },
+
+            <?php /* Run code right after the API is initialized, ensuring the correct executed priority. */ ?>
+            after: function(callback, options) {
+                hyvaCheckout.api.priority(callback, options, 'payment');
+            },
+
+            /**
+             * Register a new payment method.
+             *
+             * @param {Object} params
+             * @param {string} params.code - Unique payment method code
+             * @param {Object} params.method - Method implementation
+             * @returns {Object} Registered payment method
+             */
+            registerMethod: function({ code, method }) {
+                if (! code || typeof code !== 'string') {
+                    throw new Error('Payment method code must be a non-empty string.');
+                }
+                if (! method || typeof method !== 'object') {
+                    throw new Error('Payment method must be an object.');
+                }
+
+                const existence = this.getByCode(code);
+
+                if (existence && typeof existence === 'object' && existence.code === code) {
+                    throw new Error(`Payment method with code "${code}" is already registered.`);
+                }
+
+                <?php /* All methods are/should be async, to provide a consistent interface. */ ?>
+                method = Object.assign({
+                    code: code,
+
+                    async initialize() {
+                    },
+                    async uninitialize() {
+                    },
+                    async validate() {
+                        return true;
+                    },
+                    async placeOrder({ fallback }) {
+                        if (fallback && typeof fallback === 'function') {
+                            await fallback();
+                            return;
+                        }
+
+                        hyvaCheckout.message.console(
+                            `No place order system implemented. Please try again or select a different payment method.`
+                        );
+                    },
+                    async canPlaceOrder() {
+                        return true;
+                    },
+                    async handleException({ exception, fallback }) {
+                        if (fallback && typeof fallback === 'function') {
+                            await fallback({ exception: exception });
+                            return;
+                        }
+
+                        hyvaCheckout.message.console(
+                            `Something went wrong while placing the order: ${exception}`
+                        );
+                    },
+                    async canRedirect() {
+                        return false;
+                    },
+                    async getRedirectUrl({ fallback }) {
+                        if (fallback && typeof fallback === 'function') {
+                            return fallback();
+                        }
+
+                        return null;
+                    },
+
+                    <?php /* @deprecated Method is no longer responsible for a DOM-element. */ ?>
+                    el: null,
+
+                    <?php /* @deprecated Just get the code by its object, instead of via a method. */ ?>
+                    async getCode() {
+                        return this.code;
+                    },
+                    <?php /* @deprecated Method object itself it no longer responsible for holding the method element. */ ?>
+                    getElement() {
+                        return this.el;
+                    },
+                    <?php /* @deprecated No longer depends on component visibility for the current step. */ ?>
+                    isVisibleInStep() {
+                        return hyvaCheckout.main.getElement().contains(this.el);
+                    },
+                    <?php /* @deprecated All payment methods must be registered with a __default fallback. */ ?>
+                    async placeOrderViaJs() {
+                        return false;
+                    },
+                    <?php /* @deprecated Component handling is now framework-agnostic. */ ?>
+                    isWireComponent() {
+                        return this.getElement().hasAttribute('wire:id');
+                    }
+                }, method);
+
+                hyvaCheckout.payment.after(() => {
+                    this.methods.push(method);
+
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('payment:method:registered', {
+                            detail: {
+                                method: method
+                            }
+                        }));
+                    }
+                });
+
+                return method;
+            },
+            getActive: function() {
+                const code = this.method || hyvaCheckout.config.getValue('payment.method');
+                return this.getByCode(code);
+            },
+            hasActive: function() {
+                const code = this.method || hyvaCheckout.config.getValue('payment.method');
+                return typeof code === 'string' && code in this.methods;
+            },
+            getByCode: function(code) {
+                return this.methods.find(method => {
+                    if (method && method.code) {
+                        return code === method.code
+                    }
+                    return false;
+                }) ?? null;
+            },
+            getDefaultMethod: function() {
+                return this.getByCode(hyvaCheckout.config.getValue('payment.method_default'));
+            },
+            <?php /* Utility: display a payment success message. */ ?>
+            dispatchSuccessMessage: function(text, event = this.config.browserEventSuccess) {
+                hyvaCheckout.message.dispatch(event, text);
+            },
+            <?php /* Utility: throw a payment error message. */ ?>
+            dispatchExceptionMessage: function(text, type = 'warning', event = this.config.browserEventError) {
+                hyvaCheckout.message.dispatch(event, text, type);
+            },
+
+            <?php /* @deprecated Use "registerMethod()" instead. */ ?>
+            activate(code, method = {}, el) {
+                if (this.getByCode(code)) {
+                    const index = this.methods.findIndex(obj => obj.code === code);
+
+                    if (index !== -1) {
+                        this.methods.splice(index, 1);
+                    }
+                }
+
+                <?php /* Bind the given element to the method for backwards compatibility reasoning. */ ?>
+                if (el && ! method.el) {
+                    method.el = el;
+                }
+
+                <?php /* Stamp as being registered via the deprecated activate method. */ ?>
+                method.__viaHcPaymentActivate = true;
+                method = this.registerMethod({code: code, method: method});
+
+                <?php /* Backwards compatibility; use "payment.method" config value instead. */ ?>
+                this.method = method;
+
+                <?php /* @internal Do not use this event. Only active for backwards compatibility purposes. */ ?>
+                window.dispatchEvent(new CustomEvent('checkout:payment:method-activate:deprecated', {
+                    detail: {
+                        method: method
+                    }
+                }));
+            },
+            <?php /* @deprecated Methods are no longer immediately active; they are now registered in the "methods" array. */ ?>
+            method: null
+        },
+
+        <?php /** @api */ ?>
+        shipping: {
+            method: null,
+
+            config: {
+                browserEventError: 'shipping:method:error',
+                browserEventSuccess: 'shipping:method:success'
+            },
+
+            activate(code, method = {}) {
+                method = Object.assign({
+                    code: code,
+
+                    initialize() {
+                    },
+                    // Will run on navigation or order placement.
+                    validate () {
+                        return true;
+                    },
+                    // Get shipping method code.
+                    getCode () {
+                        return this.code;
+                    }
+                }, method)
+
+                method.initialize();
+                this.method = method;
+
+                <?php /* Register validation provided by the latest active shipping method. */ ?>
+                hyvaCheckout.validation.register(`has_active_shipping_method`, method.validate);
+            },
+
+            getActive() {
+                return this.method;
+            },
+            hasActive() {
+                return this.getActive() !== null;
+            },
+            deactivate() {
+                this.method = null;
+            },
+            dispatchSuccessMessage(text, event = this.config.browserEventSuccess) {
+                hyvaCheckout.message.dispatch(event, text)
+            },
+            dispatchExceptionMessage(text, type = 'warning', event = this.config.browserEventError) {
+                hyvaCheckout.message.dispatch(event, text, type)
+            }
+        },
+
+        <?php /** @api */ ?>
+        order: {
+            async place() {
+                try {
+                    /* start extra added for checkout vehicle form */
+                    const submitBtn = document.getElementById("checkout-vehicleinfo-submit-btn");
+                    if (submitBtn) {
+                        submitBtn.click();
+                    }
+
+                    const form = document.getElementById("vehicle-information-form");
+
+                    if (form && !form.checkValidity()) {
+                        form.reportValidity();
+                        await hyvaCheckout.navigation.executeTasks();
+                        return false;
+                    }
+                    /* end extra added for checkout vehicle form */
+
+                    <?php /* Execute any pending navigation tasks first. */ ?>
+                    await hyvaCheckout.navigation.executeTasks();
+                    <?php /* Run validations. */ ?>
+                    const validateResult = await hyvaCheckout.validation.validate();
+                    <?php /* Wait until no processes are running. */ ?>
+                    await hyvaCheckout.isIdle();
+
+                    if (validateResult === false) {
+                        return false;
+                    }
+
+                    <?php /* Prefetch fallback payment method. */ ?>
+                    const fallback = hyvaCheckout.payment.getDefaultMethod();
+                    <?php /* Get current active payment method code. */ ?>
+                    const code = hyvaCheckout.config.getValue('payment.method');
+                    <?php /* Get payment by code with an option to fallback. */ ?>
+                    const method = hyvaCheckout.payment.getByCode(code) || fallback;
+
+                    try {
+                        const place = await Promise.resolve(method.canPlaceOrder());
+
+                        if (place === true) {
+                            await Promise.resolve(method.placeOrder({ fallback: fallback.placeOrder }));
+                        }
+
+                        <?php /* Handle redirect if necessary. */ ?>
+                        const canRedirect = await method.canRedirect();
+
+                        if (canRedirect) {
+                            const redirectUrl = await method.getRedirectUrl({ fallback: fallback.getRedirectUrl });
+                            const redirectArguments = {};
+
+                            if (typeof redirectUrl === 'string') {
+                                redirectArguments.url = redirectUrl;
+                            }
+
+                            hyvaCheckout.navigation.addTask(async () => {
+                                await hyvaCheckout.evaluation.run('order.place.redirect', redirectArguments);
+                            }, {
+                                executeAfter: true,
+                                stackPosition: 9998
+                            });
+                        }
+
+                        <?php /* Run any pending validations and navigation tasks. */ ?>
+                        await hyvaCheckout.validation.validate({ executeAfter: true });
+                        await hyvaCheckout.navigation.executeTasks({ executeAfter: true });
+
+                        return {
+                            result: true
+                        };
+                    } catch (exception) {
+                        await method.handleException({ exception, fallback: fallback.handleException });
+                    }
+                } catch (exception) {
+                    hyvaCheckout.message.alert(
+                        'Something went wrong while processing your order. Please try again.'
+                    );
+                }
+
+                return false;
+            }
+        },
+
+        <?php /** @api */ ?>
+        message: {
+            warn(text, duration) {
+                this.send(text, 'warning', duration)
+            },
+            alert(text, duration) {
+                this.send(text, 'error', duration)
+            },
+            notify(text, duration) {
+                this.send(text, 'info', duration)
+            },
+            send(text, type = 'success', duration) {
+                text = text.charAt(0).toUpperCase() + text.slice(1)
+
+                window.dispatchMessages([
+                    {
+                        type: ['error', 'warning', 'success', 'info'].includes(type) ? type : 'info',
+                        text: text
+                    }
+                ], duration)
+            },
+
+            <?php /* Dispatch a message window event in a uniform manner. */ ?>
+            dispatch(event, text, type = 'success', options = {}) {
+                text = text || '<?= $escaper->escapeJs(__('Something went wrong')) ?>'
+                text = text.charAt(0).toUpperCase() + text.slice(1)
+
+                <?php /* Deep merge any message options. */ ?>
+                options = hyvaCheckout.misc.mergeObjects(typeof options === 'object' ? options : {}, {
+                    message: {
+                        type: ['error', 'warning', 'success', 'info'].includes(type) ? type : 'info',
+                        text: text
+                    }
+                });
+
+                window.dispatchEvent(new CustomEvent(event, {
+                    detail: options
+                }));
+            },
+
+            <?php /* Console log as a warning including a "Checkout:" message prefix. */ ?>
+            console(text) {
+                console.warn('Checkout:', text || '<?= $escaper->escapeJs(__('Something went wrong')) ?>')
+            },
+
+            <?php /* Display a message in a uniform dialog. */ ?>
+            dialog(text, title, type = 'error', callback = null, options = { cancelable: true }) {
+                window.dispatchEvent(new CustomEvent('checkout:dialog:new', {
+                    detail: Object.assign({
+                        message: {
+                            type: ['error', 'warning', 'success', 'info'].includes(type) ? type : 'info',
+                            text: text,
+                            title: title || {
+                                'error': '<?= $escaper->escapeJs(__('Something went wrong')) ?>'
+                            }[type] || null
+                        },
+                        actions: {
+                            confirm: callback
+                        }
+                    }, options)
+                }));
+            },
+
+            debug(...args) {
+                hyvaCheckout.api.priority(() => {
+                    if (hyvaCheckout.debug.isInDebugMode()) {
+                        console.log('[DEBUG]', ...args);
+                    }
+                });
+            }
+        },
+
+        <?php /** @api */ ?>
+        messenger: {
+            dispatch(prefix, text, type = 'error', options = {}) {
+                hyvaCheckout.message.dispatch(`${ prefix }:${ ['error', 'success'].includes(type) ? type : 'error' }`, text, type, options)
+            }
+        },
+
+        <?php /** @api */ ?>
+        loader: {
+            callback: null,
+            active: 0,
+
+            start(callback) {
+                if (! callback) {
+                    if (! this.callback) {
+                        return
+                    }
+
+                    callback = this.callback
+                }
+
+                this.running++
+
+                try {
+                    <?php /* The object either contains a 'start' fn or is a fn itself. */ ?>
+                    if ('start' in callback) {
+                        return callback.start()
+                    }
+
+                    callback()
+                } catch(exception) {
+                    hyvaCheckout.message.console('Something went wrong while trying to start the loader.')
+                }
+            },
+
+            stop(callback) {
+                if (! callback) {
+                    if (! this.callback) {
+                        return
+                    }
+
+                    callback = this.callback
+                }
+
+                this.running--
+
+                try {
+                    if (this.active === 0) {
+                        <?php /* The object either contains a 'stop' fn or is a fn itself. */ ?>
+                        if ('stop' in callback) {
+                            return callback.stop()
+                        }
+
+                        callback()
+                    }
+                } catch(exception) {
+                    hyvaCheckout.message.console('Something went wrong while trying to start the loader.')
+                }
+            },
+
+            set(callback) {
+                if (! callback.start || ! callback.stop) {
+                    return hyvaCheckout.message.console(
+                        'The loader callback necessitates the implementation of both a "start" and a "stop" method for proper functionality.'
+                    )
+                }
+
+                this.callback = callback
+            }
+        },
+
+        <?php /** @api */ ?>
+        viewport: {
+            isElementFullyVisible (el) {
+                let bounding = el.getBoundingClientRect()
+
+                return (bounding.top >= 0 && bounding.left >= 0 && bounding.right <= window.innerWidth && bounding.bottom <= window.innerHeight)
+            },
+            isElementPartiallyVisible (el) {
+                let bounding = el.getBoundingClientRect()
+
+                return (bounding.top >= -el.offsetHeight
+                    && bounding.left >= -el.offsetWidth
+                    && bounding.right <= (window.innerWidth || document.documentElement.clientWidth) + el.offsetWidth
+                    && bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) + el.offsetHeight)
+            }
+        },
+
+        <?php /** @api */ ?>
+        debug: {
+            mode: '<?= $escaper->escapeJs('disabled') ?>',
+
+            initialize() {
+                this.mode = hyvaCheckout.config.getValue('debug.mode') || this.mode;
+
+                if (this.isInTestingMode()) {
+                    console.info('Hyvä Checkout testing mode active');
+                }
+                if (this.isInDebugMode()) {
+                    console.info('Hyvä Checkout debug mode active');
+                }
+            },
+
+            isInTestingMode() {
+                return this.mode === '<?= $escaper->escapeJs('test') ?>';
+            },
+            isInDebugMode() {
+                return this.mode === '<?= $escaper->escapeJs('debug') ?>';
+            }
+        },
+
+        <?php /** @internal */ ?>
+        misc: {
+            <?php /* Deeply merge objects without the need of external libs. */ ?>
+            mergeObjects(target, source) {
+                for (let key in source) {
+                    if (source[key] && typeof source[key] === 'object' && ! Array.isArray(source[key])) {
+                        target[key] = this.mergeObjects(target[key] || {}, source[key]);
+                    } else {
+                        target[key] = source[key];
+                    }
+                }
+                return target;
+            }
+        }
+    }
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+<?php /* Priority container for payment JavaScript. */ ?>
+<?= $this->getChildHtml('payment') ?>
+<?php /* Priority container for shipping JavaScript. */ ?>
+<?= $this->getChildHtml('shipping') ?>
+
+<?php /* Extend the API with custom requirements. */ ?>
+<?= $this->getChildHtml('after') ?>

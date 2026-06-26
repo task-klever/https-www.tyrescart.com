@@ -1,0 +1,31 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \WeltPixel\GA4\Block\TiktokPixel\Common */
+
+/** @var \WeltPixel\GA4\Helper\TiktokPixelTracking $tiktokPixelHelper */
+$tiktokPixelHelper = $this->helper('WeltPixel\GA4\Helper\TiktokPixelTracking');
+?>
+<?php if ($tiktokPixelHelper->isTiktokPixelTrackingEnabled()) : ?>
+    <script>
+        let allowGa4ServicesTiktok = window.ga4AllowServices ?? true;
+        if (allowGa4ServicesTiktok) {
+            const {fetch: originalFetchTiktok} = window;
+            window.fetch = async (...args) => {
+                let [resource, config] = args;
+                let response = await originalFetchTiktok(resource, config);
+
+                if ((typeof resource == 'string') && resource.search('/customer\/section\/load/') > 0) {
+                    response.clone().json().then(data => {
+                        if (data.wp_ga4 && data.wp_ga4.tiktokpixel) {
+                            const tiktokPixel = JSON.parse(data.wp_ga4.tiktokpixel);
+                            for (index in tiktokPixel) {
+                                ttq.track(tiktokPixel[index].eventName, tiktokPixel[index].eventData);
+                            }
+                        }
+                    });
+                }
+                return response;
+            };
+        }
+    </script>
+<?php endif; ?>

@@ -1,0 +1,415 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\CurrentCategory;
+use Hyva\Theme\ViewModel\ProductListItem;
+use Hyva\Theme\ViewModel\ProductPage;
+use Magento\Catalog\Block\Product\ListProduct;
+use Magento\Framework\Escaper;
+
+/** @var ListProduct $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var ProductPage $productViewModel */
+/** @var CurrentCategory $currentCategoryViewModel */
+
+$productViewModel         = $viewModels->require(ProductPage::class);
+$productListItemViewModel = $viewModels->require(ProductListItem::class);
+$currentCategoryViewModel = $viewModels->require(CurrentCategory::class);
+
+$eagerLoadImagesCount = (int) ($block->getData('eager_load_images_count') ?? 3);
+$productCollection = $block->getLoadedProductCollection();
+
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$request = $objectManager->get('Magento\Framework\App\Action\Context')->getRequest();
+$colClass = 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+$buyTyreSearchPopup = false;
+if ($request->getFullActionName() == 'catalog_category_view') {
+    $isBundle = $block->isBundle();
+    if ($isBundle) {
+        $bundleCollection = $this->getBundleCollection();
+        //print_r($bundleCollection);
+        $colClass = 'sm:grid-cols-1 xl:grid-cols-2';
+        $buyTyreSearchPopup = true;
+    }
+} else {
+    $isBundle = 0;
+}
+if($productCollection->count() > 0){
+    $firstProduct = $productCollection->getFirstItem();
+    $firstProductPartsCat = $firstProduct->getAttributeText('parts_category');
+    if($firstProductPartsCat == 'Tyres'){
+        $buyTyreSearchPopup = true;
+    }
+}
+?>
+<?php if ($isBundle && !$bundleCollection) : ?>
+<div class="message info empty">
+    <div>
+        <?= $escaper->escapeHtml(__('We can\'t find products matching the selection.')) ?>
+    </div>
+</div>
+<?php elseif (!$productCollection->count()): ?>
+<div class="message info empty">
+    <div>
+        <?= $escaper->escapeHtml(__('We can\'t find products matching the selection.')) ?>
+    </div>
+</div>
+<?php else: ?>
+<section class="py-4" id="product-list" aria-label="<?= $escaper->escapeHtmlAttr(__('Product list')) ?>" tabindex="-1">
+    <?php /* Top Picks section — rendered via Klever_BrandSegment module */ ?>
+    <?= $block->getChildHtml('klever.brandsegment.toppicks') ?>
+    <?= $block->getToolbarHtml() ?>
+    <?= $block->getAdditionalHtml() ?>
+    <?php
+        if ($block->getMode() == 'grid') {
+            $viewMode         = 'grid';
+            $imageDisplayArea = 'category_page_grid';
+            $showDescription  = false;
+            $templateType     = \Magento\Catalog\Block\Product\ReviewRendererInterface::SHORT_VIEW;
+        } else {
+            $viewMode         = 'list';
+            $imageDisplayArea = 'category_page_list';
+            $showDescription  = true;
+            $templateType     = \Magento\Catalog\Block\Product\ReviewRendererInterface::FULL_VIEW;
+        }
+        /**
+         * Position for actions regarding image size changing in vde if needed
+         */
+        $pos = $block->getPositioned();
+        ?>
+    <div class="products wrapper mode-<?= /* @noEscape */$viewMode ?> products-<?= /* @noEscape */$viewMode ?>">
+        <ul role="list" class="product-list-lg items-end mx-auto pt-4 pb-5 grid gap-4 all-tyre-size-searchUL <?= /* @noEscape */$viewMode === 'grid'
+                    ? $colClass
+                    : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4' ?>">
+            <?php if ($isBundle) : ?>
+            <?php
+                    /** @var \Magento\Catalog\Model\Product $product */
+                    $bundleItemsForBatch = [];
+                    foreach ($bundleCollection as $bundleItem):
+                        $frontProduct = $bundleItem['frontProduct'];
+                        $frontProduct['rating_summary'] = $bundleItem['front_rating_summary'];
+                        $rearProduct = $bundleItem['rearProduct'];
+                        $rearProduct['rating_summary'] = $bundleItem['rear_rating_summary'];
+                        $bundleItemsForBatch[] = ['frontProduct' => $frontProduct, 'rearProduct' => $rearProduct];
+                    endforeach;
+                    echo $productListItemViewModel->getBundleListHtml(
+                        $bundleItemsForBatch,
+                        $block,
+                        $viewMode,
+                        $templateType,
+                        $imageDisplayArea,
+                        $showDescription
+                    );
+            ?>
+            <script type="text/javascript">
+            function changeBundlePrice(selectElement, unitRegularPrice, unitFinalPrice, partsCategory, isOfferProduct,
+                discountAmount, discountQty, frontProductId, rearProductId, type) {
+                const selectedQty = parseInt(selectElement.value);
+                if (type == 'front') {
+                    var currentProductId = frontProductId;
+                } else {
+                    var currentProductId = rearProductId;
+                }
+                var bundleBox = selectElement.closest('.product-box');
+                if (isOfferProduct == 'No') {
+                    var price = selectedQty * unitFinalPrice;
+                    var changedPrice = parseFloat(price).toFixed(2);
+                    var setPriceBox = bundleBox.querySelector('.set-price-box.id-' + currentProductId);
+                    var setOfElement = setPriceBox.querySelector('.set-of');
+                    setOfElement.textContent = 'Set of ' + selectedQty + ':';
+                    var setOfPriceElement = setPriceBox.querySelector('.set-of-price');
+                    setOfPriceElement.textContent = changedPrice;
+                    var bundleSetPriceBox = document.querySelector('.bundle-set-price-box.id-' + frontProductId + '-' +
+                        rearProductId);
+                    var frontPriceSection = document.querySelector('.front-price-section.id-' + frontProductId);
+                    var rearPriceSection = document.querySelector('.rear-price-section.id-' + rearProductId);
+                    var frontSelectedPrice = frontPriceSection.querySelector('.set-of-price').textContent;
+                    var rearSelectedPrice = rearPriceSection.querySelector('.set-of-price').textContent;
+                    frontSelectedPrice = frontSelectedPrice.replace(/,/g, '');
+                    rearSelectedPrice = rearSelectedPrice.replace(/,/g, '');
+                    frontSelectedPrice = parseFloat(frontSelectedPrice);
+                    rearSelectedPrice = parseFloat(rearSelectedPrice);
+                    var frontSelectedQty = document.querySelector('.front-qty-select-' + frontProductId).querySelector(
+                        ':checked').value;
+                    var rearSelectedQty = document.querySelector('.rear-qty-select-' + rearProductId).querySelector(
+                        ':checked').value;
+                    var bundleSetPrice = frontSelectedPrice + rearSelectedPrice;
+                    bundleSetPrice = parseFloat(bundleSetPrice).toFixed(2);
+                    var bundleSetQty = parseFloat(frontSelectedQty) + parseFloat(rearSelectedQty);
+                    bundleSetPriceBox.querySelector('.set-of').textContent = 'Set of ' + bundleSetQty + ':';
+                    bundleSetPriceBox.querySelector('.bundle-set-of-price').textContent = bundleSetPrice;
+                } else {
+                    if (selectedQty >= discountQty) {
+                        var price = selectedQty * unitFinalPrice;
+                        var discount = (discountAmount / 100) * unitFinalPrice * discountQty;
+                        if (selectedQty % discountQty === 0) {
+                            var discountTimes = selectedQty / discountQty;
+                            discount = discount * discountTimes;
+                        } else {
+                            var discountTimes = 1;
+                            discount = discount * discountTimes;
+                        }
+                        price = price - discount;
+                    } else {
+                        var price = selectedQty * unitFinalPrice;
+                    }
+                    var changedPrice = parseFloat(price).toFixed(2);
+                    var setPriceBox = bundleBox.querySelector('.set-price-box.id-' + currentProductId);
+                    var setOfElement = setPriceBox.querySelector('.set-of');
+                    if (setOfElement) setOfElement.textContent = 'Set of ' + selectedQty + ':';
+                    var setOfPriceElement = setPriceBox.querySelector('.set-of-price');
+                    if (setOfPriceElement) setOfPriceElement.textContent = changedPrice;
+                    var bundleSetPriceBox = document.querySelector('.bundle-set-price-box.id-' + frontProductId + '-' +
+                        rearProductId);
+                    var frontPriceSection = document.querySelector('.front-price-section.id-' + frontProductId);
+                    var rearPriceSection = document.querySelector('.rear-price-section.id-' + rearProductId);
+                    var frontSelectedPrice = frontPriceSection.querySelector('.set-of-price').textContent;
+                    var rearSelectedPrice = rearPriceSection.querySelector('.set-of-price').textContent;
+                    frontSelectedPrice = frontSelectedPrice.replace(/,/g, '');
+                    rearSelectedPrice = rearSelectedPrice.replace(/,/g, '');
+                    frontSelectedPrice = parseFloat(frontSelectedPrice);
+                    rearSelectedPrice = parseFloat(rearSelectedPrice);
+                    var frontSelectedQty = document.querySelector('.front-qty-select-' + frontProductId).querySelector(
+                        ':checked').value;
+                    var rearSelectedQty = document.querySelector('.rear-qty-select-' + rearProductId).querySelector(
+                        ':checked').value;
+                    var bundleSetPrice = frontSelectedPrice + rearSelectedPrice;
+                    bundleSetPrice = parseFloat(bundleSetPrice).toFixed(2);
+                    var bundleSetQty = parseFloat(frontSelectedQty) + parseFloat(rearSelectedQty);
+                    var setOfElement = bundleSetPriceBox.querySelector('.set-of');
+                    if (setOfElement) setOfElement.textContent = 'Set of ' + bundleSetQty + ':';
+                    var bundleSetOfPriceElement = bundleSetPriceBox.querySelector('.bundle-set-of-price');
+                    if (bundleSetOfPriceElement) bundleSetOfPriceElement.textContent = bundleSetPrice;
+
+                }
+            }
+            </script>
+            <?php else : ?>
+            <?php
+                    /** @var \Magento\Catalog\Model\Product $product */
+                    foreach (array_values($productCollection->getItems()) as $i => $product):
+                        if ($i < $eagerLoadImagesCount) {
+                            $product->setData('image_custom_attributes', ['loading' => 'eager', 'fetchpriority' => 'high']);
+                        }
+                       $optionTextString = $product->getName(); 
+                        ?>
+            <li class="flex flex-col li-search h-full" data-lookup="<?php echo strtolower($optionTextString); ?>">
+                <?= $productListItemViewModel->getItemHtml(
+                                $product,
+                                $block,
+                                $viewMode,
+                                $templateType,
+                                $imageDisplayArea,
+                                $showDescription
+                            ); ?>
+            </li>
+            <?php endforeach; ?>
+            <script type="text/javascript">
+            function changePrice(selectElement, unitRegularPrice, unitFinalPrice, partsCategory, isOfferProduct,
+                discountAmount, discountQty, productId) {
+                const formatter = new Intl.NumberFormat('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                });
+                const selectedQty = parseInt(selectElement.value);
+                if (isOfferProduct == 'No') {
+                    var price = selectedQty * unitFinalPrice;
+                    var changedPrice = formatter.format(price);
+                    var setPriceBox = document.querySelector('.set-price-box.id-' + productId);
+                    setPriceBox.querySelector('.set-of').textContent = 'Set of ' + selectedQty + ':';
+                    setPriceBox.querySelector('.set-of-price').textContent = changedPrice;
+                } else {
+                    if (selectedQty >= discountQty) {
+                        var price = selectedQty * unitFinalPrice;
+                        var discount = (discountAmount / 100) * unitFinalPrice * discountQty;
+                        if (selectedQty % discountQty === 0) {
+                            var discountTimes = selectedQty / discountQty;
+                            discount = discount * discountTimes;
+                        } else {
+                            var discountTimes = 1;
+                            discount = discount * discountTimes;
+                        }
+                        price = price - discount;
+                    } else {
+                        var price = selectedQty * unitFinalPrice;
+                    }
+                    var changedPrice = formatter.format(price);
+                    var setPriceBox = document.querySelector('.set-price-box.id-' + productId);
+                    setPriceBox.querySelector('.set-of').textContent = 'Set of ' + selectedQty + ':';
+                    setPriceBox.querySelector('.set-of-price').textContent = changedPrice;
+                }
+            }
+            </script>
+            <?php endif; ?>
+        </ul>
+    </div>
+    <?= $block->getChildBlock('toolbar')->setIsBottom(true)->toHtml() ?>
+</section>
+<?php endif; ?>
+<?php if ($buyTyreSearchPopup) : ?>
+<?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Magento_Catalog::product/buy-tyre-search-popup.phtml")->toHtml(); ?>
+<?php endif; ?>
+
+<div class="sliebar">
+    <div id="fully-fitted-price"
+        class="fitment-drawer-panel fixed inset-x-0 bottom-0 z-[9999] overflow-hidden bg-white transform translate-y-full transition-transform ease-out duration-300">
+        <div class="container-theme w-full py-4 lg:py-6 h-full flex flex-col overflow-hidden">
+
+            <div class="tyre-sidebar-content-list hidden flex flex-col flex-1 overflow-hidden">
+                <div class="flex-shrink-0 pb-4 mb-3 border-b border-border-color relative">
+                    <h3 class="text-lg md:text-2xl font-extrabold text-gray-900">
+                        <?php echo __('Fully Fitted') ?> <span class="text-theme-blue"><?php echo __('Price per tyre') ?></span>
+                    </h3>
+                    <button type="button" onclick="CLoseFittedPrice()"
+                        class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:text-gray-800 transition-all absolute top-0 right-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto drawer-scrollbar content-center">
+                    <div class="bg-white">
+                        <p class="text-base md:text-lg mb-3 font-medium">
+                            <?php echo __('There are NO EXTRAS to pay on the day of your visit - in relation to the tyre fitting.') ?>
+                        </p>
+                        <p class="uppercase mb-3"><?php echo __('The following is included in the price,') ?></p>
+                        <ul class="flex flex-col gap-3">
+                            <li class="flex items-start gap-2">
+                                <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                                    <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                <?php echo __('VAT') ?>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                                    <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                <?php echo __('Fitting (Bead lock wheel etc. excluded)') ?>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                                    <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                <?php echo __('Balancing') ?>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                                    <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                <?php echo __('New rubber valve (standard valve only)') ?>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                                    <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                <?php echo __('Delivery to installer') ?>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                                    <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                <?php echo __('Disposal of old tyres') ?>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                                    <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                <?php echo __('On purchase of 4 tyres, 1 FREE scheduled instance of tyre rotation every 20,000kms per year') ?>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="battery-sidebar-content hidden flex flex-col flex-1 overflow-hidden">
+                <div class="flex-shrink-0 pb-4 mb-3 border-b border-border-color relative">
+                    <h3 class="text-lg md:text-2xl font-extrabold text-gray-900">
+                        <?php echo __('Price Incl.') ?> <span class="text-theme-blue"><?php echo __('Replacement per battery') ?></span>
+                    </h3>
+                    <button type="button" onclick="CLoseFittedPrice()"
+                        class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:text-gray-800 transition-all absolute top-0 right-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto drawer-scrollbar">
+                    <div class="bg-white py-3">
+                        <p class="text-base md:text-lg mb-3 font-medium">
+                            <?php echo __('There are NO EXTRAS to pay on the day of your visit - in relation to the battery fitting.') ?>
+                        </p>
+                        <p class="uppercase mb-3"><?php echo __('The following is included in the price:') ?></p>
+                        <ul class="flex flex-col gap-3">
+                            <li class="flex items-start gap-2">
+                                <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                                    <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                <?php echo __('VAT') ?>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                                    <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                <?php echo __('Fitting') ?>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="min-w-[18px] border border-[#cccccc29] flex-shrink-0 w-5 h-5 rounded-full bg-theme-blue/15 flex items-center justify-center mt-[3px] md:mt-[2px]">
+                                    <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                <?php echo __('Delivery to installer') ?>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div id="fully-fitted-price-overlay" onclick="CLoseFittedPrice()"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-all ease-out duration-300">
+    </div>
+</div>
+
+<script>
+function OpenFittedPrice(partsCategory) {
+    console.log("Opening fitted price for category:", partsCategory);
+    document.getElementById("fully-fitted-price").classList.remove("translate-y-full");
+    document.getElementById("fully-fitted-price-overlay").classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+    if (partsCategory == 'Tyres') {
+        console.log("Opening fitted price for Tyres");
+        document.querySelector('.tyre-sidebar-content-list').classList.remove('hidden');
+        document.querySelector('.battery-sidebar-content').classList.add('hidden');
+    }
+    if (partsCategory == 'Battery') {
+        document.querySelector('.tyre-sidebar-content-list').classList.add('hidden');
+        document.querySelector('.battery-sidebar-content').classList.remove('hidden');
+    }
+}
+
+function CLoseFittedPrice() {
+    document.getElementById("fully-fitted-price").classList.add("translate-y-full");
+    document.getElementById("fully-fitted-price-overlay").classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+

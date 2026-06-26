@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @category   Ecomteck
+ * @package    Ecomteck_StorePickup
+ * @author     ecomteck@gmail.com
+ * @website    http://www.ecomteck.com
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <carriers>
+            <storepickup>
+                <active>1</active>
+                <sallowspecific>0</sallowspecific>
+                <price>0</price>
+                <model>Ecomteck\StorePickup\Model\Carrier\StorePickup</model>
+                <name>Fixed</name>
+                <title>In Store Pickup</title>
+                <specificerrmsg>Sorry, but we can't pickup at any our stores. Please choose other shipping method.</specificerrmsg>
+                <sort_order>99999999</sort_order>
+            </storepickup>
+        </carriers>
+
+    </default>
+</config>

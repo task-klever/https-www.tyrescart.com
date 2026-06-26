@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * @category   Ecomteck
+ * @package    Ecomteck_StorePickup
+ * @author     ecomteck@gmail.com
+ * @website    http://www.ecomteck.com
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="core_layout_render_element">
+        <observer name="add_pickup_info_to_order_page" instance="Ecomteck\StorePickup\Observer\Adminhtml\BlockObserver" />
+    </event>
+</config>

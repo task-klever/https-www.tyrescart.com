@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!-- Shipping Address: city as dropdown -->
+    <type name="Hyva\Checkout\Model\Form\EntityForm\EavAttributeShippingAddressForm">
+        <arguments>
+            <argument name="entityFormModifiers" xsi:type="array">
+                <item name="with_city_select" sortOrder="250" xsi:type="object">
+                    Klever\CheckoutCityDropdown\Model\Form\EntityFormModifier\WithCitySelectModifier
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Billing Address: city as dropdown -->
+    <type name="Hyva\Checkout\Model\Form\EntityForm\EavAttributeBillingAddressForm">
+        <arguments>
+            <argument name="entityFormModifiers" xsi:type="array">
+                <item name="with_city_select" sortOrder="250" xsi:type="object">
+                    Klever\CheckoutCityDropdown\Model\Form\EntityFormModifier\WithCitySelectModifier
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+</config>

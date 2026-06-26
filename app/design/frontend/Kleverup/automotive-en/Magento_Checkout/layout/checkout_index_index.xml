@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+
+    <body>
+         <!-- Restore Header and Footer -->
+        <referenceContainer name="header.container" remove="false"/>
+        <referenceContainer name="footer-container" remove="true"/>
+
+        <!-- Move checkout content inside main content -->
+        <move element="checkout.root" destination="content" after="-"/>
+        
+        <!-- Remove the global breadcrumbs -->
+        <referenceBlock name="breadcrumbs" remove="true"/>
+
+        <!-- Remove Hyvä checkout breadcrumbs -->
+        <referenceBlock name="hyva.checkout.breadcrumbs" remove="true"/>
+        
+        <!-- Remove any other breadcrumbs block you see in template hints -->
+        <!-- <referenceBlock name="checkout.breadcrumbs" remove="true"/> -->
+    </body>
+</page>

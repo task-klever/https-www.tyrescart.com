@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="prince_faqgroup" resource="default" engine="innodb">
+        <column xsi:type="text" name="footer_slugs" nullable="true" comment="Footer Page Slugs (comma-separated URL slugs where this FAQ group shows in footer)"/>
+        <column xsi:type="varchar" name="url_key" nullable="true" length="255" comment="URL Key Slug"/>
+        <column xsi:type="varchar" name="meta_title" nullable="true" length="255" comment="Meta Title"/>
+        <column xsi:type="text" name="meta_description" nullable="true" comment="Meta Description"/>
+        <index referenceId="PRINCE_FAQGROUP_URL_KEY" indexType="btree">
+            <column name="url_key"/>
+        </index>
+    </table>
+    <table name="prince_faq" resource="default" engine="innodb">
+        <column xsi:type="varchar" name="url_key" nullable="true" length="255" comment="URL Key Slug"/>
+        <column xsi:type="varchar" name="meta_title" nullable="true" length="255" comment="Meta Title"/>
+        <column xsi:type="text" name="meta_description" nullable="true" comment="Meta Description"/>
+        <index referenceId="PRINCE_FAQ_URL_KEY" indexType="btree">
+            <column name="url_key"/>
+        </index>
+    </table>
+</schema>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @category   Ecomteck
+ * @package    Ecomteck_StorePickup
+ * @author     ecomteck@gmail.com
+ * @website    http://www.ecomteck.com
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Api/etc/extension_attributes.xsd">
+    <extension_attributes for="Magento\Checkout\Api\Data\ShippingInformationInterface">
+        <attribute code="pickup_store" type="string"/>
+        <attribute code="pickup_date" type="string"/>
+        <attribute code="pickup_time" type="string"/>
+        <attribute code="vin_number" type="string"/>
+        <attribute code="plate" type="string"/>
+        <attribute code="make" type="string"/>
+        <attribute code="model" type="string"/>
+        <attribute code="year" type="string"/>
+    </extension_attributes>
+</config>

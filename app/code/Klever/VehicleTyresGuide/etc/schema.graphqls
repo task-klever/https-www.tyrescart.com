@@ -1,0 +1,200 @@
+type Query {
+    kleverVehicleMakes(
+        region:   String  @doc(description: "Filter by region code e.g. ae, sa, gb")
+        ordering: String  @doc(description: "slug (default), -slug, name, -name")
+        limit:    Int     @doc(description: "Max results, up to 500")
+        offset:   Int     @doc(description: "Pagination offset, default 0")
+    ): KleverVehicleMakesResult
+        @resolver(class: "Klever\\VehicleTyresGuide\\Model\\Resolver\\Makes")
+        @doc(description: "List all vehicle makes available in the fitment database")
+
+    kleverVehicleModels(
+        make:     String! @doc(description: "Make slug e.g. toyota, bmw")
+        region:   String
+        ordering: String  @doc(description: "slug (default), -slug, name, -name")
+        limit:    Int
+        offset:   Int
+    ): KleverVehicleModelsResult
+        @resolver(class: "Klever\\VehicleTyresGuide\\Model\\Resolver\\Models")
+        @doc(description: "List models for a given make")
+
+    kleverVehicleYears(
+        make:  String! @doc(description: "Make slug")
+        model: String! @doc(description: "Model slug")
+    ): KleverVehicleYearsResult
+        @resolver(class: "Klever\\VehicleTyresGuide\\Model\\Resolver\\Years")
+        @doc(description: "List production years available for a make and model")
+
+    kleverVehicleModifications(
+        make:   String! @doc(description: "Make slug")
+        model:  String! @doc(description: "Model slug")
+        year:   Int!    @doc(description: "Production year e.g. 2020")
+        region: String
+    ): KleverVehicleModificationsResult
+        @resolver(class: "Klever\\VehicleTyresGuide\\Model\\Resolver\\Modifications")
+        @doc(description: "Full tyre and wheel specs for a specific make, model and year")
+
+    kleverVehicleGenerations(
+        make:  String! @doc(description: "Make slug")
+        model: String! @doc(description: "Model slug")
+    ): KleverVehicleGenerationsResult
+        @resolver(class: "Klever\\VehicleTyresGuide\\Model\\Resolver\\Generations")
+        @doc(description: "Generation groups derived from start and end year ranges")
+
+    kleverVehicleSearch(
+        width:  Int! @doc(description: "Tyre width in mm e.g. 245")
+        height: Int! @doc(description: "Tyre aspect ratio e.g. 60")
+        rim:    Int! @doc(description: "Rim diameter in inches e.g. 18")
+    ): KleverVehicleSearchResult
+        @resolver(class: "Klever\\VehicleTyresGuide\\Model\\Resolver\\SearchByTireSize")
+        @doc(description: "Find vehicles compatible with a given tyre size")
+}
+
+# ── Makes ──────────────────────────────────────────────────────────────────────
+
+type KleverVehicleMakesResult {
+    data: [KleverVehicleMake]!
+    meta: KleverVehicleMeta!
+}
+type KleverVehicleMake {
+    slug: String
+    name: String
+}
+
+# ── Models ─────────────────────────────────────────────────────────────────────
+
+type KleverVehicleModelsResult {
+    data: [KleverVehicleModel]!
+    meta: KleverVehicleMeta!
+}
+type KleverVehicleModel {
+    slug:        String
+    name:        String
+    year_ranges: [String]
+}
+
+# ── Years ──────────────────────────────────────────────────────────────────────
+
+type KleverVehicleYearsResult {
+    data: [KleverVehicleYear]!
+    meta: KleverVehicleMeta!
+}
+type KleverVehicleYear {
+    slug: Int
+    name: Int
+}
+
+# ── Modifications (full specs) ─────────────────────────────────────────────────
+
+type KleverVehicleModificationsResult {
+    data: [KleverVehicleModification]!
+    meta: KleverVehicleModificationsMeta!
+}
+type KleverVehicleModification {
+    slug:       String
+    name:       String
+    trim:       String
+    start_year: Int
+    end_year:   Int
+    is_stock:   Boolean
+    make:       KleverVehicleMakeRef
+    model:      KleverVehicleModelRef
+    engine:     KleverVehicleEngine
+    front_wheel: KleverVehicleWheelSpec
+    rear_wheel:  KleverVehicleWheelSpec
+    fitment:    KleverVehicleFitment
+}
+type KleverVehicleMakeRef  { slug: String  name: String }
+type KleverVehicleModelRef { slug: String  name: String }
+
+type KleverVehicleEngine {
+    code:     String
+    fuel:     String
+    capacity: String
+    type:     String
+    drive:    String
+    power_hp: Int
+    power_kw: Int
+}
+type KleverVehicleWheelSpec {
+    rim:              String
+    rim_diameter:     Int
+    rim_width:        Float
+    rim_offset:       Int
+    tire_full:        String
+    tire:             String
+    tire_width:       Int
+    tire_aspect_ratio: Int
+    tire_construction: String
+    load_index:       Int
+    speed_index:      String
+    pressure_bar:     Float
+    pressure_psi:     String
+    pressure_kpa:     String
+    tire_width_mm:    Int
+    tire_diameter_mm: Int
+    tire_weight_kg:   String
+}
+type KleverVehicleFitment {
+    bolt_pattern:      String
+    pcd:               Int
+    stud_holes:        Int
+    centre_bore:       String
+    thread_size:       String
+    fasteners_type:    String
+    tightening_torque: String
+    rear_bolt_pattern: String
+    rear_pcd:          Int
+    rear_stud_holes:   Int
+    rear_centre_bore:  String
+}
+type KleverVehicleModificationsMeta {
+    count:  Int
+    fuels:  [String]
+    hp_min: Int
+    hp_max: Int
+}
+
+# ── Generations ────────────────────────────────────────────────────────────────
+
+type KleverVehicleGenerationsResult {
+    data: [KleverVehicleGeneration]!
+    meta: KleverVehicleMeta!
+}
+type KleverVehicleGeneration {
+    slug:        String
+    name:        String
+    start_year:  Int
+    end_year:    Int
+    years:       [Int]
+    year_ranges: [String]
+}
+
+# ── Tyre Size Search ───────────────────────────────────────────────────────────
+
+type KleverVehicleSearchResult {
+    status:  String
+    message: String
+    data:    [KleverVehicleSearchMatch]!
+}
+type KleverVehicleSearchMatch {
+    make_name:   String
+    make_slug:   String
+    model_name:  String
+    model_slug:  String
+    year_ranges: String
+    engine_code: String
+    is_stock:    Boolean
+    front_width: Int
+    front_height: Int
+    front_rim:   Int
+    rear_width:  Int
+    rear_height: Int
+    rear_rim:    Int
+}
+
+# ── Shared ─────────────────────────────────────────────────────────────────────
+
+type KleverVehicleMeta {
+    count: Int
+}

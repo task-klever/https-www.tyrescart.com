@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Auto-generate url_key on FAQ Group save -->
+    <type name="Mageprince\Faq\Api\FaqGroupRepositoryInterface">
+        <plugin name="klever_faq_group_url_key"
+                type="Klever\Faq\Plugin\FaqGroupUrlKeyPlugin"
+                sortOrder="10"/>
+    </type>
+    <!-- Auto-generate url_key on FAQ item save -->
+    <type name="Mageprince\Faq\Api\FaqRepositoryInterface">
+        <plugin name="klever_faq_url_key"
+                type="Klever\Faq\Plugin\FaqUrlKeyPlugin"
+                sortOrder="10"/>
+    </type>
+</config>

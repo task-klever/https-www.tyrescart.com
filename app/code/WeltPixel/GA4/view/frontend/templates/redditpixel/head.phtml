@@ -1,0 +1,23 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \WeltPixel\GA4\Block\RedditPixel\Common */
+
+/** @var \WeltPixel\GA4\Helper\RedditPixelTracking $redditPixelHelper */
+$redditPixelHelper = $this->helper('WeltPixel\GA4\Helper\RedditPixelTracking');
+$cspNonceProvider = $redditPixelHelper->getCspNonceProvider();
+$redditPixelTrackingCode = $block->getRedditPixelTrackingCode();
+?>
+<?php if ($block->isRedditPixelTrackingEnabled()) : ?>
+    <?php
+    $pattern = '/<script(.*)>/';
+    $replacement = '<script ${1}> if (window.ga4AllowServices) {';
+
+    $redditPixelTrackingCode =  str_replace('</script>', '} </script>', preg_replace($pattern, $replacement, $redditPixelTrackingCode));
+
+    if ($cspNonceProvider) {
+        $redditPixelTrackingCode = str_replace('<script', '<script nonce="' . $cspNonceProvider->generateNonce() . '" ', $redditPixelTrackingCode);
+    }
+
+    /* @noEscape */ echo $redditPixelTrackingCode;
+    ?>
+<?php endif; ?>

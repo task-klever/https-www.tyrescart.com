@@ -1,0 +1,30 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+
+// The container accessory serves as a replacement for a XML container, allowing the seamless transfer
+// of the parent block to its children, ensuring they possess all the necessary data.
+$parent = $block->getParentBlock();
+?>
+<?php if ($parent): ?>
+    <?php foreach ($block->getChildNames() as $child): ?>
+        <?php $child = $block->getChildBlock($child) ?>
+        <?php if ($child): ?>
+            <?php
+                /* Propagates the parent element to the child, ensuring seamless inheritance for just the first level. */
+                /* Transfers the responsibility of passing it further down the family tree to the child. */
+            ?>
+            <?= $child->addData($parent->getData())->toHtml() ?>
+        <?php endif ?>
+    <?php endforeach ?>
+<?php endif ?>

@@ -1,0 +1,97 @@
+<?xml version="1.0" ?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <columns name="brand_columns">
+        <column name="tab1_title">
+            <settings>
+                <label>Tab 1 Title</label>
+                <sortable>true</sortable>
+                <filter>text</filter>
+            </settings>
+        </column>
+        <column name="tab1_description">
+            <settings>
+                <label>Tab 1 Description</label>
+                <sortable>true</sortable>
+                <filter>text</filter>
+            </settings>
+        </column>
+
+        <column name="tab2_title">
+            <settings>
+                <label>Tab 2 Title</label>
+                <sortable>true</sortable>
+                <filter>text</filter>
+            </settings>
+        </column>
+        <column name="tab2_description">
+            <settings>
+                <label>Tab 2 Description</label>
+                <sortable>true</sortable>
+                <filter>text</filter>
+            </settings>
+        </column>
+
+        <column name="tab3_title">
+            <settings>
+                <label>Tab 3 Title</label>
+                <sortable>true</sortable>
+                <filter>text</filter>
+            </settings>
+        </column>
+        <column name="tab3_description">
+            <settings>
+                <label>Tab 3 Description</label>
+                <sortable>true</sortable>
+                <filter>text</filter>
+            </settings>
+        </column>
+
+        <column name="tab4_title">
+            <settings>
+                <label>Tab 4 Title</label>
+                <sortable>true</sortable>
+                <filter>text</filter>
+            </settings>
+        </column>
+        <column name="tab4_description">
+            <settings>
+                <label>Tab 4 Description</label>
+                <sortable>true</sortable>
+                <filter>text</filter>
+            </settings>
+        </column>
+
+        <column name="tab5_title">
+            <settings>
+                <label>Tab 5 Title</label>
+                <sortable>true</sortable>
+                <filter>text</filter>
+            </settings>
+        </column>
+        <column name="tab5_description">
+            <settings>
+                <label>Tab 5 Description</label>
+                <sortable>true</sortable>
+                <filter>text</filter>
+            </settings>
+        </column>
+
+        <column name="topbanner_image">
+            <settings>
+                <label>Top Banner</label>
+                <sortable>false</sortable>
+                <filter>text</filter>
+                <bodyTmpl>Magento_Ui/grid/cells/html</bodyTmpl>
+            </settings>
+        </column>
+
+        <column name="bottombanner_image">
+            <settings>
+                <label>Bottom Banner</label>
+                <sortable>false</sortable>
+                <filter>text</filter>
+                <bodyTmpl>Magento_Ui/grid/cells/html</bodyTmpl>
+            </settings>
+        </column>
+    </columns>
+</listing>

@@ -1,0 +1,31 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Checkout\Model\Form\AbstractEntityFormElement;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+
+/** @var AbstractEntityFormElement $element */
+$element = $block->getData('element');
+
+// Get all form element attributes
+$attributes = $element->getAttributes();
+?>
+<label
+    for="<?= $escaper->escapeHtmlAttr($attributes['id'] ?? $element->getId()) ?>"
+    class="<?= $escaper->escapeHtmlAttr($element->renderClass(['label'], 'label')) ?> text-sm text-slate-700"
+>
+    <span>
+        <?= $escaper->escapeHtml(__($element->getLabel())) ?>
+    </span>
+</label>

@@ -1,0 +1,11 @@
+<?php
+/** @var \Mirasvit\Dashboard\Ui\DashboardDataProvider $block */
+?>
+
+<script>
+    var REPORT_MODE = "DASHBOARD";
+
+    var REPORT_DASHBOARD_CONFIG = <?= /* @noEscape */ $block->jsonEncode($block->getConfig()) ?>;
+    var REPORT_DASHBOARD_SAVE_URL = '<?= $block->escapeUrl($block->getApiSaveUrl()) ?>';
+    var REPORT_DASHBOARD_REQUEST_URL = '<?= $block->escapeUrl($block->getApiRequestUrl()) ?>';
+</script>

@@ -1,0 +1,526 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ */
+
+declare(strict_types=1);
+
+use Magento\Theme\Block\Html\Breadcrumbs;
+use Magento\Framework\Escaper;
+use Magento\Framework\App\ObjectManager;
+/** @var Escaper $escaper */
+/** @var Breadcrumbs $block */
+
+$crumbs = $block->getCrumbs();
+if (!is_array($crumbs)) {
+    $crumbs = [];
+}
+
+$fullAction = $block->getRequest()->getFullActionName();
+$pathInfo = $block->getRequest()->getPathInfo();
+$objectManager = ObjectManager::getInstance();
+$request = $objectManager->get(\Magento\Framework\App\RequestInterface::class);
+// Only inject blog crumbs if crumbs are empty or page is blog or page is brand
+// Vehicles brand listing page
+if ($fullAction === 'vehicles_vehicles_index') {
+
+     $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'tyres' => [
+            'label' => __('Tyres'),
+            'title' => __('Tyres'),
+            'link'  => $block->getUrl('tyres'),
+            'first' => false,
+            'last'  => false
+        ],
+        'cars' => [
+            'label' => __('Cars'),
+            'title' => __('Cars'),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+}
+
+// Vehicles brand detail page
+elseif ($fullAction === 'vehicles_vehicles_make') {
+
+    
+
+     $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'tyres' => [
+            'label' => __('Tyres'),
+            'title' => __('Tyres'),
+            'link'  => $block->getUrl('tyres'),
+            'first' => false,
+            'last'  => false
+        ],
+        'cars' => [
+            'label' => __('Cars'),
+            'title' => __('Cars'),
+            'link'  => $block->getUrl('tyres/cars'),
+            'first' => false,
+            'last'  => false
+        ],
+        'brand_detail' => [
+            'label' => ucfirst($request->getParam('make')),
+            'title' => ucfirst($request->getParam('make')),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+}
+ elseif ($fullAction === 'vehicles_vehicles_model') {
+    $make = ucfirst($block->getRequest()->getParam('make'));   // e.g. Acura
+    $model = strtoupper($block->getRequest()->getParam('model')); // e.g. MDX
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'tyres' => [
+            'label' => __('Tyres'),
+            'title' => __('Tyres'),
+            'link'  => $block->getUrl('tyres'),
+            'first' => false,
+            'last'  => false
+        ],
+        'cars' => [
+            'label' => __('Cars'),
+            'title' => __('Cars'),
+            'link'  => $block->getUrl('tyres/cars'),
+            'first' => false,
+            'last'  => false
+        ],
+        'make' => [
+            'label' => __($make),
+            'title' => __($make),
+            'link'  => $block->getUrl('tyres/cars/' . strtolower($make)),
+            'first' => false,
+            'last'  => false
+        ],
+        'model' => [
+            'label' => __($model),
+            'title' => __($model),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+}
+// Category Page
+elseif ($fullAction === 'catalog_category_view') {
+    $registry = $objectManager->get(\Magento\Framework\Registry::class);
+    $category = $registry->registry('current_category');
+
+    if ($category) {
+        $crumbs = [
+            'home' => [
+                'label' => __('Home'),
+                'title' => __('Go to Home Page'),
+                'link'  => $block->getUrl(''),
+                'first' => true,
+                'last'  => false
+            ]
+        ];
+
+        $pathIds = $category->getPathIds();
+        foreach ($pathIds as $id) {
+            // Skip root category (Default Category) and current category
+            if ($id <= 1 || $id == $category->getId()) continue;
+
+            $parentCategory = $objectManager->create(\Magento\Catalog\Model\Category::class)
+                ->setStoreId($category->getStoreId())
+                ->load($id);
+
+            // Skip Default Category by name check (optional extra safeguard)
+            if ($parentCategory && $parentCategory->getId() && $parentCategory->getName() != 'Default Category') {
+                $crumbs[$parentCategory->getId()] = [
+                    'label' => __($parentCategory->getName()),
+                    'title' => __($parentCategory->getName()),
+                    'link'  => $parentCategory->getUrl(),
+                    'first' => false,
+                    'last'  => false
+                ];
+            }
+        }
+
+        // Current category
+        $crumbs['current'] = [
+            'label' => __($category->getName()),
+            'title' => __($category->getName()),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ];
+    }
+}
+// Brand Listing Page
+elseif ($fullAction === 'brand_index_index') {
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'brand' => [
+            'label' => __('Tyre Brands'),
+            'title' => __('Shop by Brand'),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+}
+// Brand Detail / Post Page
+elseif ($fullAction === 'brand_brand_view') {
+    
+
+     $coreRegistry = $objectManager->get('Magento\Framework\Registry');
+    $brand = $coreRegistry->registry('current_brand');
+        $pageTitle = $brand->getName();
+
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'brand' => [
+            'label' => __('Shop by Brand'),
+            'title' => __('Shop by Brand'),
+            'link'  => $block->getUrl('brand'),
+            'first' => false,
+            'last'  => false
+        ],
+        'current' => [
+            'label' => $pageTitle,
+            'title' => $pageTitle,
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+}
+elseif ($fullAction === 'brand_brand_patternview') {
+    $pageTitle = $block->getLayout()->getBlock('page.main.title');
+    
+    $brandPatternObj = $objectManager->get('MGS\Brand\Model\PatternmanagementFactory');
+    $urlKey = $block->getRequest()->getParam('pattern_key') ?? '';
+    $brandPatternCollection = $brandPatternObj->create()->getCollection()->addFieldToFilter('url_key', $urlKey)->getFirstItem();
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'shopbybrand' => [
+            'label' => __('Shop By Brand'),
+            'title' => __('Shop By Brand'),
+            'link'  => $block->getUrl('brand'),
+            'first' => false,
+            'last'  => false
+        ]
+    ];
+
+    if (!empty($brandPatternCollection)) {
+        $crumbs['brand'] = [
+            'label' => __($brandPatternCollection->getBrand()),
+            'title' => __($brandPatternCollection->getBrand()),
+            'link'  => $block->getUrl('brand/' . strtolower($brandPatternCollection->getBrand())),
+            'first' => false,
+            'last'  => false
+        ];
+    }
+
+   if (!empty($brandPatternCollection)) {
+        $crumbs['pattern'] = [
+            'label' => __($brandPatternCollection->getPattern()),
+            'title' => __($brandPatternCollection->getPattern()),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ];
+    }
+}
+// Blog Listing Page
+elseif ($fullAction === 'blog_index_index') {
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'blog' => [
+            'label' => __('Blog'),
+            'title' => __('Blog'),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+}
+// Blog Post Page
+elseif ($fullAction === 'blog_post_view') {
+    $pageTitle = $block->getLayout()->getBlock('page.main.title');
+
+    $coreRegistry = $objectManager->get('Magento\Framework\Registry');
+    $post = $coreRegistry->registry('current_post');
+        $pageTitlenew = $post->getTitle();
+
+
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'blog' => [
+            'label' => __('Blog'),
+            'title' => __('Blog'),
+            'link'  => $block->getUrl('blog'),
+            'first' => false,
+            'last'  => false
+        ],
+        'current' => [
+            'label' => $pageTitle ? $pageTitlenew : __('Current'),
+            'title' => $pageTitle ? $pageTitlenew : __('Current'),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+}elseif ($fullAction === 'contact_index_index') {
+
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'current' => [
+            'label' => __('Contact Us'),
+            'title' => __('Contact Us'),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+
+}elseif ($pathInfo === '/blog/tyres') {
+
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'current' => [
+            'label' => __('Tyres'),
+            'title' => __('Tyres'),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+
+}elseif ($pathInfo === '/blog/battery') {
+
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'current' => [
+            'label' => __('Battery'),
+            'title' => __('Battery'),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+
+}elseif ($pathInfo === '/blog/oil_change') {
+
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'current' => [
+            'label' => __('Oil Change'),
+            'title' => __('Oil Change'),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+
+}elseif ($pathInfo === '/blog/car-service') {
+
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'current' => [
+            'label' => __('Car Service'),
+            'title' => __('Car Service'),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+
+}elseif ($pathInfo === '/blog/news') {
+
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'current' => [
+            'label' => __('News'),
+            'title' => __('News'),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+
+}elseif ($fullAction === 'mpbannerslider_specialoffers_index') {
+
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'current' => [
+            'label' => __('Special Tyre Offers UAE'),
+            'title' => __('Special Tyre Offers UAE'),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+
+}elseif ($fullAction === 'storelocator_index_index') {
+
+    $crumbs = [
+        'home' => [
+            'label' => __('Home'),
+            'title' => __('Go to Home Page'),
+            'link'  => $block->getUrl(''),
+            'first' => true,
+            'last'  => false
+        ],
+        'current' => [
+            'label' => __('Store Locator'),
+            'title' => __('Store Locator'),
+            'link'  => '',
+            'first' => false,
+            'last'  => true
+        ]
+    ];
+    
+}elseif (empty($crumbs)) {
+    $pageTitle = $block->getLayout()->getBlock('page.main.title');
+    if ($pageTitle && $pageTitle->getPageTitle()) {
+        $crumbs = [
+            'home' => [
+                'label' => __('Home'),
+                'title' => __('Go to Home Page'),
+                'link'  => $block->getUrl(''),
+                'first' => true,
+                'last'  => false
+            ],
+            'current' => [
+                'label' => $pageTitle->getPageTitle(),
+                'title' => $pageTitle->getPageTitle(),
+                'link'  => '',
+                'first' => false,
+                'last'  => true
+            ]
+        ];
+    }
+}
+
+
+?>
+
+<?php if (!empty($crumbs)): ?>
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+    <div class="container-theme">
+        <ol class="items list-reset flex flex-wrap text-grey text-sm">
+            <?php foreach ($crumbs as $crumbName => $crumbInfo): ?>
+                <li class="item flex <?= $escaper->escapeHtmlAttr($crumbName) ?>">
+                <?php if (!$crumbInfo['first']): ?>
+                    <span aria-hidden="true" class="separator text-primary-lighter px-2">/</span>
+                <?php endif; ?>
+                <?php if (!empty($crumbInfo['link'])): ?>
+                    <a class="text-sm font-medium text-center text-theme-blue hover:text-theme-dark transition-colors duration-300"
+                       href="<?= $escaper->escapeUrl($crumbInfo['link']) ?>"
+                       <?php if (!empty($crumbInfo['title'])): ?>
+                           aria-label="<?= $escaper->escapeHtmlAttr($crumbInfo['title']) ?>"
+                       <?php endif; ?>
+                    ><?= $escaper->escapeHtml(__($crumbInfo['label'])) ?></a>
+                <?php elseif (!empty($crumbInfo['last'])): ?>
+                    <span class="text-sm font-medium text-theme-dark 111 [direction:ltr]" aria-current="page">
+                        <?= $escaper->escapeHtml(__($crumbInfo['label'])) ?>
+                    </span>
+                <?php else: ?>
+                    <?= $escaper->escapeHtml(__($crumbInfo['label'])) ?>
+                <?php endif; ?>
+                </li>
+            <?php endforeach; ?>
+        </ol>
+    </div>
+</nav>
+<?php endif; ?>

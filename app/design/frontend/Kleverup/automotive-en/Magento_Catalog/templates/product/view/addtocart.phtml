@@ -1,0 +1,361 @@
+<?php
+   /**
+    * Hyvä Themes - https://hyva.io
+    */
+   declare(strict_types=1);
+   use Hyva\Theme\Model\ViewModelRegistry;
+   use Hyva\Theme\ViewModel\HeroiconsOutline;
+   use Magento\Framework\Escaper;
+   use Magento\Framework\View\Element\Template;
+   /** @var Template $block */
+   /** @var Escaper $escaper */
+   /** @var ViewModelRegistry $viewModels */
+   /** @var HeroiconsOutline $heroicons */
+   $heroicons = $viewModels->require(HeroiconsOutline::class);
+   /** @var \Magento\Framework\Registry $registry */
+   $registry = \Magento\Framework\App\ObjectManager::getInstance()->get(\Magento\Framework\Registry::class);
+   /** @var \Magento\Catalog\Model\Product $product */
+   $product = $registry->registry('product');
+   /** @var string $formKey */
+   $formKey = \Magento\Framework\App\ObjectManager::getInstance()
+       ->get(\Magento\Framework\Data\Form\FormKey::class)
+       ->getFormKey();
+   /** @var array $customOptions */
+   $priceHelper = $this->helper(\Magento\Framework\Pricing\Helper\Data::class);
+   $customOptions = [];
+   $warrantyPrice = '';
+   if ($product) {
+       foreach ($product->getOptions() as $option) {
+           if ($option->getTitle() === 'Warranty') {
+               $customOptions['option_id'] = $option->getId();
+               foreach ($option->getValues() as $value) {
+           $price = $value->getPrice();
+           $priceType = $value->getPriceType();
+           $formattedPrice = '';
+           $symbolspan = ''; 
+   if ($priceType === 'percent') {
+       $basePrice = $product->getPrice();
+       $price = ($basePrice * $price) / 100;
+   }
+           if ($price != 0) {
+               $formattedPrice =   $priceHelper->currency($price, false, false) ;
+               $symbolspan = '<span class="currency-dirham"></span>';
+               $warrantyPrice = '<span class="price"><span class="currency-dirham"></span>&nbsp;'.$formattedPrice.'</span>';
+           }
+                   $customOptions['values'][] = [
+                       'id'    => $value->getId(),   // option_type_id
+                       'title' => $value->getTitle(),
+                       'price' => $formattedPrice,
+                       'symbol' => $symbolspan
+                   ];
+               }
+           }
+       }
+   }
+   $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+   $requestOb = $objectManager->get('Magento\Framework\App\RequestInterface');
+   $currentActionName = $requestOb->getFullActionName();
+   if (count($customOptions) === 0 || $currentActionName==='checkout_cart_configure' ) { ?>
+<button type="submit"
+   form="product_addtocart_form"
+   title="<?= $escaper->escapeHtmlAttr(__('Add to Cart')) ?>"
+   class="inline-flex items-center justify-center gap-2 px-6 py-2  text-white text-sm md:text-base font-medium rounded-[6px] bg-theme-blue hover:bg-black transition-colors duration-300"
+   id="product-addtocart-button"
+   data-addto="cart"
+   >
+   <?php /* <?= $heroicons->shoppingCartHtml('border-current'); ?> */ ?>
+   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="border-current" width="20" height="20" role="img">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+      <title>shopping-cart</title>
+   </svg>
+   <?php
+      $storeManager = \Magento\Framework\App\ObjectManager::getInstance()->get(\Magento\Store\Model\StoreManagerInterface::class);
+      $currencyCode = $storeManager->getStore()->getCurrentCurrencyCode();
+      $finalPrice = $product ? $product->getFinalPrice() : 0;
+      $partsCategory = $product && $product->getPartsCategory() ? $product->getAttributeText('parts_category') : '';
+      $defaultQty = ($partsCategory == 'Tyres') ? 4 : 1;
+      $formattedTotal = number_format($finalPrice * $defaultQty, 0);
+      ?>
+   <span class=""><?= $block->getData('is_cart_configure') ?
+      $escaper->escapeHtml(__('Update item')) :
+      $escaper->escapeHtml(__('Add to Cart')) ?> - <span class="currency-dirham"></span><span id="addtocart-btn-price"><?= $escaper->escapeHtml($formattedTotal) ?></span>
+   </span>
+</button>
+<?= $block->getChildHtml('', true) ?>
+<?php }else{?>
+<!-- Expose Warranty options and Form Key to JS -->
+<script>
+   window.warrantyOptions = <?= json_encode($customOptions) ?>;
+   window.formKey = '<?= $escaper->escapeJs($formKey) ?>';
+   window.productId = '<?= (int) $product->getId() ?>';
+</script>
+<?php if ($product && $product->getId()): ?>
+<?php /* <button 
+   type="button"
+   x-data
+   @click.prevent="$dispatch('open-warranty-popup', {productId: <?= (int) $product->getId() ?>})"
+class="btn btn-primary w-full"
+>
+<?= $escaper->escapeHtml(__('Add to Cart')) ?>
+</button> */ ?>
+<!--button class="btn btn-primary w-full" onclick="handleAddToCartClick()"><?= $escaper->escapeHtml(__('Add to Cart')) ?></button-->
+<div x-data="addToCartHandler()">
+   <button type="button"
+      class="btn btn-primary w-full flex items-center justify-center"
+      @click="handleAddToCartClick"
+      :disabled="loading">
+      <template x-if="loading">
+         <span class="flex items-center">
+            <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            Adding...
+         </span>
+      </template>
+      <template x-if="!loading">
+         <span><?= $escaper->escapeHtml(__('Add to Cart')) ?> - <span class="currency-dirham"></span><span id="addtocart-btn-price-warranty"><?= $escaper->escapeHtml($formattedTotal) ?></span></span>
+      </template>
+   </button>
+</div>
+<?php endif; ?>
+<?= $block->getChildHtml('', true) ?>
+<script>
+   function addToCartHandler() {
+       return {
+           loading: false,
+           async handleAddToCartClick() {
+               const qtyField = document.querySelector('select[name="qty"]');
+               const qty = qtyField ? parseInt(qtyField.value) || 1 : 1;
+               console.log("Selected quantity →", qty);
+               if (qty >= 4) {
+                   console.log('Quantity ≥ 5 → open warranty popup');
+                   if (typeof OpenModal === "function") {
+                       OpenModal();
+                   } else {
+                       console.warn("⚠️ OpenModal() not defined");
+                   }
+                   return;
+               }
+               console.log('Quantity below 5 → Add to Cart via AJAX');
+               const form = document.getElementById('product_addtocart_form');
+               if (!form) {
+                   console.error('Add to Cart form not found');
+                   return;
+               }
+               const formData = new FormData(form);
+               this.loading = true;
+               try {
+                   let response = await fetch('<?= $block->getUrl("checkout/cart/add") ?>', {
+                       method: 'POST',
+                       body: formData,
+                       headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                       credentials: 'same-origin'
+                   });
+                   if (response.ok) {
+                       console.log('✅ Product added to cart');
+                       // Reload minicart data
+                       window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
+                       // Open minicart
+                       window.dispatchEvent(new CustomEvent('toggle-cart', { detail: { isOpen: true } }));
+                   } else {
+                       alert("Failed to add product.");
+                   }
+               } catch (err) {
+                   console.error('Error adding to cart:', err);
+                   alert("An error occurred. Please try again.");
+               } finally {
+                   this.loading = false;
+               }
+           }
+       }
+   }
+</script>
+<script>
+   function OpenModal() {
+       document.getElementById("modal-name").classList.remove("translate-x-full");
+       document.getElementById("modal-name-overlay").classList.remove("hidden");
+       document.body.classList.add("overflow-hidden");
+   }
+   function ModalClose() {
+       document.getElementById("modal-name").classList.add("translate-x-full");
+       document.getElementById("modal-name-overlay").classList.add("hidden");
+       document.body.classList.remove("overflow-hidden");
+   }
+</script>
+<!-- Warranty Popup -->
+<div class="sliebar">
+   <div id="modal-name"
+      class="fixed top-0 right-0 h-full w-full md:w-[670px] max-w-full bg-white z-60 transform translate-x-full transition-transform ease-in-out duration-500 sm:duration-700">
+      <div class="tyre-sidebar-content">
+         <div class="flex items-center justify-between p-4 border-b border-border-color relative">
+            <h3
+               class="text-[1.2rem] md:text-[1.35rem] lg:text-[1.45rem] text-theme-dark font-bold relative uppercase">
+               Add to <span class="text-theme-blue">your order</span>
+            </h3>
+            <button type="button" onclick="ModalClose()" aria-label="Close minicart"
+               class="absolute top-0 right-2 p-4 mt-2 text-black transition-colors hover:text-theme-blue">
+               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                  stroke="currentColor" width="24" height="24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+               </svg>
+            </button>
+         </div>
+         <div x-data="warrantyPopup()" @open-warranty-popup.window="openPopup($event.detail.productId)" class="bg-white rounded-lg px-4 sm:px-4 py-4 sm:py-5" style="    height: calc(100vh - 60px);
+            overflow-y: auto;">
+            <div class="warrantry-box rounded-[10px] border-b-[6px] border-b-theme-blue border border-[#D9D9D9] shadow-lg p-4">
+               <div class="warranty-box-top flex flex-row gap-3 md:gap-6 items-center ">
+                  <div class="img">
+                     <img class="max-w-[90px] md:max-w-[136px]" src="<?php echo $this->getViewFileUrl('images/pages/warranty-img.jpg'); ?>" alt="">
+                  </div>
+                  <div class="info">
+                     <h3 class="h4 text-emerald-800 leading-[1.1] text-[1.1rem] md:text-[1.5rem]"><?= $escaper->escapeHtml(__('1 Year Extended Warranty Plan')) ?></h3>
+                     <div class="info-wrap">
+                        <div class="left-info">
+                           <div class="stars flex items-center">
+                              <span class="text-sm md:text-base text-black font-semibold">Form Dial A Tire</span>
+                           </div>
+                           <h4><?= $escaper->escapeHtml(__('')).' ' . $warrantyPrice ?></h4>
+                        </div>
+                        <div class="descktop-btn action-buttons hidden md:block">
+                           <div class="flex justify-start space-x-2 mt-2">
+                              <?php /* <button @click="closePopup" class="px-3 py-1 border rounded"><?= $escaper->escapeHtml(__('Cancel')) ?></button> */ ?>
+                              <button @click="selectOptionAndAdd('Yes')" class="z-10 group relative px-4 md:px-5 2xl:px-7 h-[40px] md:h-[50px] flex justify-center items-center uppercase text-theme-blue text-white hover:text-black font-semibold text-sm lg:text-base xl:text-lg transition-all duration-300 ease-in-out">
+                                 <span class="absolute transition-all w-full h-full  text-white group-hover:text-black bg-theme-blue group-hover:bg-[#ffc300] -z-10 border-x-4 border-theme-yellow group-hover:border-theme-blue -skew-x-12"></span>
+                                 <svg class="w-6 h-auto mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                                    </path>
+                                 </svg>
+                                 <?= $escaper->escapeHtml(__('Add Protection')) ?>
+                              </button>
+                              <button @click="selectOptionAndAdd('No')" class="z-10 group relative px-4 md:px-5 2xl:px-7 h-[40px] md:h-[50px] flex justify-center items-center uppercase text-theme-blue text-white hover:text-black font-semibold text-sm lg:text-base xl:text-lg transition-all duration-300 ease-in-out">
+                              <span class="absolute transition-all w-full h-full  text-white group-hover:text-black bg-theme-blue group-hover:bg-[#ffc300] -z-10 border-x-4 border-theme-yellow group-hover:border-theme-blue -skew-x-12"></span><?= $escaper->escapeHtml(__('No Thanks')) ?>
+                              </button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="mobile-btn action-buttons block md:hidden">
+                  <div class="flex justify-start space-x-2 mt-2 ml-2 mt-3">
+                     <?php /* <button @click="closePopup" class="px-3 py-1 border rounded"><?= $escaper->escapeHtml(__('Cancel')) ?></button> */ ?>
+                     <button @click="selectOptionAndAdd('Yes')" class="z-10 group relative px-4 md:px-5 2xl:px-7 h-[40px] md:h-[50px] flex justify-center items-center uppercase text-theme-blue text-white hover:text-black font-semibold text-sm lg:text-base xl:text-lg transition-all duration-300 ease-in-out">
+                        <span class="absolute transition-all w-full h-full  text-white group-hover:text-black bg-theme-blue group-hover:bg-[#ffc300] -z-10 border-x-4 border-theme-yellow group-hover:border-theme-blue -skew-x-12"></span>
+                        <svg class="w-6 h-auto mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                           </path>
+                        </svg>
+                        <?= $escaper->escapeHtml(__('Add Protection')) ?>
+                     </button>
+                     <button @click="selectOptionAndAdd('No')" class="z-10 group relative px-4 md:px-5 2xl:px-7 h-[40px] md:h-[50px] flex justify-center items-center uppercase text-theme-blue text-white hover:text-black font-semibold text-sm lg:text-base xl:text-lg transition-all duration-300 ease-in-out">
+                     <span class="absolute transition-all w-full h-full  text-white group-hover:text-black bg-theme-blue group-hover:bg-[#ffc300] -z-10 border-x-4 border-theme-yellow group-hover:border-theme-blue -skew-x-12"></span><?= $escaper->escapeHtml(__('No Thanks')) ?>
+                     </button>
+                  </div>
+               </div>
+               <div class="">
+                  <div x-show="loading" class="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
+                     <svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                     </svg>
+                  </div>
+                  <?php
+                     echo $this->getLayout()
+                         ->createBlock(\Magento\Cms\Block\Block::class)
+                         ->setBlockId('warranty-block') // Replace with your block identifier
+                         ->toHtml();
+                     ?>
+                  <template x-for="option in options" :key="option.id">
+                     <label class="flex items-center space-x-2 mb-2 hidden">
+                     <input type="radio" name="warranty" :value="option.id" x-model="selectedOption">
+                     <span x-text="option.title"></span>
+                     <span class="price" x-html="(option.price ? ' (+' + option.symbol + option.price + ')' : '')"></span>
+                     </label>
+                  </template>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+   <div id="modal-name-overlay" onclick="ModalClose()"
+      class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-all ease-in-out duration-500 sm:duration-700">
+   </div>
+</div>
+<script>
+   function warrantyPopup() {
+       return {
+           open: false,
+           loading: false,
+           productId: null,
+           selectedOption: null,
+           options: window.warrantyOptions.values || [],
+           openPopup(productId) {
+               console.log("call open Popup");    
+               this.productId = window.productId;
+               this.open = true;
+           },
+           closePopup() {
+               this.open = false;
+               this.selectedOption = null;
+           },
+            // New method to select option by title and add to cart
+       selectOptionAndAdd(optionTitle) {
+   		if(optionTitle.toLowerCase()=="yes"){
+           const option = this.options.find(o => o.title.toLowerCase() === optionTitle.toLowerCase());
+           if (!option) {
+               alert("Option not found.");
+               return;
+           }
+           this.selectedOption = option.id;
+           this.addToCart('Optionyes');
+   		}else{
+   			this.addToCart('Optionno');
+   		}
+       },
+           async addToCart(optionTitle) {
+   			/*
+               if (!this.selectedOption) {
+                   alert("Please select a warranty option.");
+                   return;
+               }
+   */
+               console.log("call add to cart");
+   			console.log(optionTitle);
+               this.loading = true;
+   const formnew = document.getElementById('product_addtocart_form');
+               let formData = new FormData(formnew);
+               formData.append('product', window.productId);
+               formData.append('form_key', window.formKey);
+   			if(optionTitle=='Optionyes'){
+               formData.append(`options[${window.warrantyOptions.option_id}]`, this.selectedOption);
+   			}
+   try{
+               let response = await fetch('<?= $block->getUrl("checkout/cart/add") ?>', {
+                   method: 'POST',
+                   body: formData,
+                   headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                   credentials: 'same-origin'
+               });
+               if (response.ok) {
+                   // Reload Hyvä minicart
+                   window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
+                   document.getElementById("modal-name").classList.add("translate-x-full");
+                   document.getElementById("modal-name-overlay").classList.add("hidden");
+                   document.body.classList.remove("overflow-hidden");
+                   this.closePopup();
+   // Open mini cart reliably
+           window.dispatchEvent(new CustomEvent('toggle-cart', { detail: { isOpen: true } }));
+               } else {
+                   alert("Failed to add product.");
+               }
+           }catch (err) {
+                   console.error(err);
+                   alert("An error occurred. Please try again.");
+               } finally {
+                   this.loading = false;
+               }
+           }
+       }
+   }
+</script>
+<?php } ?>

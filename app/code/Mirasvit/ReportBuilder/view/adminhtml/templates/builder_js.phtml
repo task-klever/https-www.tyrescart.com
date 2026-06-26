@@ -1,0 +1,12 @@
+<?php
+/** @var \Mirasvit\ReportBuilder\Block\Adminhtml\BuilderJs $block */
+?>
+<script>
+    var REPORT_BUILDER = true;
+    var REPORT_BUILDER_CONFIG = <?= $block->escapeHtml($block->jsonEncode($block->getConfig())) ?>;
+    var REPORT_BUILDER_DUPLICATE_URL = '<?= $block->escapeUrl($block->getDuplicateUrl()) ?>';
+    var REPORT_BUILDER_SAVE_URL = '<?= $block->escapeUrl($block->getSaveUrl()) ?>';
+    var REPORT_BUILDER_DELETE_URL = '<?= $block->escapeUrl($block->getDeleteUrl()) ?>';
+    var REPORT_BUILDER_SAVE_ENABLED = <?= $block->isSaveAllowed() ? true : false ?>;
+    var REPORT_BUILDER_SHARE_ENABLED = <?= $block->isShareAllowed() ? true : false ?>;
+</script>

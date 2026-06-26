@@ -1,0 +1,28 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+/** @var \Ecomteck\StoreLocator\Block\Adminhtml\Stores\Edit\Tab\AssignProducts $block */
+
+/** @var \Ecomteck\StoreLocator\Block\Adminhtml\Stores\Edit\Tab\Product $blockGrid */
+$blockGrid = $block->getBlockGrid();
+$gridJsObjectName = $blockGrid->getJsObjectName();
+?>
+<?= $block->getGridHtml() ?>
+<input type="hidden" name="store_products" id="in_store_products" data-form-part="ecomteck_storelocator_stores_form" value="" />
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "Ecomteck_StoreLocator/js/component/stores/assign-products": {
+                "selectedProducts": <?= /* @escapeNotVerified */ $block->getProductsJson() ?>,
+                "gridJsObjectName": <?= /* @escapeNotVerified */ '"' . $gridJsObjectName . '"' ?: '{}' ?>
+            }
+        }
+    }
+</script>
+<!-- @todo remove when "UI components" will support such initialization -->
+<script>
+    require('mage/apply/main').apply();
+</script>

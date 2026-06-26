@@ -1,0 +1,8 @@
+/.idea/
+/vendor/
+/dist
+/.docker
+/build
+.phpunit.result.cache
+composer.lock
+rootCA.pem

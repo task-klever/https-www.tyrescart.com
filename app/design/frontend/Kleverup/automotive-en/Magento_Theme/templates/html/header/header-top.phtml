@@ -1,0 +1,28 @@
+<?php
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$requestOb = $objectManager->get('Magento\Framework\App\RequestInterface');
+$currentActionName = $requestOb->getFullActionName();
+?>
+
+<?php /*
+<div class="header-panel py-2 text-white bg-gradient-to-r from-theme-blue to-[#5E7F65] 121212">
+    <div class="container-theme px-3 flex items-center justify-between">
+            <ul class="flex text-sm text-color-white items-center">
+                <li class="mr-4 pr-3">
+                <a href="/tabby-payment-options" class="flex items-center font-medium gap-x-2"><span><img class="max-w-[60px] h-auto" src="<?php echo $this->getViewFileUrl('images/tabby-header-logo.png'); ?>" alt=""></span> Buy In Installment</a>
+            </li>
+               <li class="hidden sm:flex"><a href="/mobile-tire-fitting" class="flex font-medium"><i class="icon icon-tyre-tag mr-2"></i>demo text</a></li>
+            </ul>
+       <ul class="social flex">
+        <li class=""><a class="header-top-number font-medium text-sm border-0 border-2 border-white/50 px-0 px-5 py-1 bg-[#0057a0]" href="tel:800214"> 
+            <span class="phone-icon phone-icon mr-1"><i class="icon icon-call text-white"></i></span> <span class="toll-text">Toll Free:</span> <span class="phone-number">800 214</span>
+        </a></li>
+        <li class="ml-3 hidden md:block"><a target="_blank" href="https://www.facebook.com/"><i class="icon icon-facebook"></i></a></li>
+         <li class="ml-3 hidden md:block"><a target="_blank" href="https://api.whatsapp.com/send/?phone=971505069575"><i class="icon icon-whatsapp"></i></a></li>
+          <li class="ml-3 hidden md:block"><a target="_blank" href="https://www.instagram.com/"><i class="icon icon-instagram"></i></a></li>
+       </ul>
+    </div>
+</div>
+*/ ?>

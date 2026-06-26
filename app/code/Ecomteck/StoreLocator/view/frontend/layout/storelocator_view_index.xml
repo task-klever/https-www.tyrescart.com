@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ecomteck_StoreLocator extension
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the MIT License
+ * that is bundled with this package in the file LICENSE
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/mit-license.php
+ *
+ * @category  Ecomteck
+ * @package   Ecomteck_StoreLocator
+ * @copyright 2016 Ecomteck
+ * @license   http://opensource.org/licenses/mit-license.php MIT License
+ * @author    Ecomteck
+ */
+ -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <title>StoreLocator</title>
+    </head>
+    <body>
+        <referenceBlock name="page.main.title" remove="true" />
+        <attribute name="class" value="storelocator"/>
+        <referenceContainer name="content">
+            <block class="Ecomteck\StoreLocator\Block\StoreDetail" name="storelocator.stores.detail" template="Ecomteck_StoreLocator::store_detail.phtml">
+                <block class="Ecomteck\StoreLocator\Block\ContactForm" name="ecomteck_stores_contact_form" template="Ecomteck_StoreLocator::contact-form.phtml" cacheable="false">
+                    <container name="form.additional.info" label="Form Additional Info"/>
+                </block>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

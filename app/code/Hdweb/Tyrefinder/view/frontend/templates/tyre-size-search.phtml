@@ -1,0 +1,280 @@
+<?php
+use Hyva\Theme\ViewModel\HyvaCsp;
+
+/** @var HyvaCsp $hyvaCsp */
+?>
+<div class="search search-full-tyre-by-size transition-all">
+    <form action="<?php echo $this->getBaseUrl() . 'tyres?'; ?>" class="tyre-size-search-full-form" id="tyre-size-search-full-form" method="GET">
+        <div class="tyre-size-search-full-form-selected-items pb-2 font-medium" id="tyre-size-search-full-form-selected-items">
+            <div class="text-left"><a class="front-selected-atag hidden"><i class="fonticon icon-xmark icon icon-cancel-1 remove-selected remove"></i><span class="front-selected"></span></a></div>
+            <div class="text-left pt-2"><a class="active rear-selected-atag hidden mt-1"><i class="fonticon icon-xmark icon icon-cancel-1 remove-selected remove"></i><span class="rear-selected"></span></a></div>
+        </div>
+        <div class="w-full flex flex-wrap mb-5 relative">
+            <input type="text" class="w-full border border-[#D9D9D9] h-[48px] rounded-lg ring-o outline-none focus:outline-none focus:ring-0 before-selected focus:border-theme-blue shadow-md" id="tyre-size-search-full-input" autocomplete="off" placeholder="Search Tyre Size e.g 1956515 or 195/65 R15" title="Search here">
+            <div class="overflow-auto w-full">
+                <ul class="search-full-tyre-by-sizeUL sizelist hidden custom-scroll-y grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-5" id="search-full-tyre-by-sizeUL">
+                </ul>
+                <button type="submit" class="btn-yellow hidden mt-5" id="full-search-tyresize-submit"><span>Search Tyres</span></button>
+            </div>
+            <div class="field field-error pt-4 w-full">
+                <div class="full-search-3-or-more messages hidden mx-auto" id="full-search-3-or-more">Please enter 3 or more characters</div>
+                <div class="full-search-no-result messages hidden mx-auto" id="full-search-no-result">No results found</div>
+                <div class="full-search-selection-limit messages hidden mx-auto" id="full-search-selection-limit">You can only select 2 items</div>
+            </div>
+            <input type="hidden" id="full-search-tyresize-width" name="width" value="" data-validate='{ "required": true }' data-msg-required="<?= $escaper->escapeHtmlAttr('You must select a size') ?>" />
+            <input type="hidden" id="full-search-tyresize-height" name="height" value="" />
+            <input type="hidden" id="full-search-tyresize-rim" name="rim" value="" />
+            <input type="hidden" id="full-search-tyresize-rear-width" name="width_rear" value="" />
+            <input type="hidden" id="full-search-tyresize-rear-height" name="height_rear" value="" />
+            <input type="hidden" id="full-search-tyresize-rear-rim" name="rim_rear" value="" />
+            <button type="submit" class="text-theme-blue absolute right-[10px] top-[10px]"><i class="icon icon-search text-md"></i></button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Your JavaScript code here
+        console.log('DOM fully loaded and parsed');
+
+        frontTyreSelection = document.querySelector('.front-tyre-selection');
+    });
+
+    var searchFullSelectedItems = document.getElementById('tyre-size-search-full-form-selected-items');
+    var tyrefinderFullSearchInput = document.getElementById('tyre-size-search-full-input');
+    var searchFullDropdownList = document.getElementById('search-full-tyre-by-sizeUL');
+    var searchFullCharLimitMsg = document.getElementById('full-search-3-or-more');
+    var searchFullNoResultMsg = document.getElementById('full-search-no-result');
+    var searchFullSelectionLimitMsg = document.getElementById('full-search-selection-limit');
+    var searchFullSubmitButton = document.getElementById('full-search-tyresize-submit');
+    var searchFullMaxSelections = 2;
+    let searchFullSelectedCount = 0;
+    let frontTyreSelection = '';
+    
+
+    function renderDropdown() {
+        if (searchFullSelectedCount === 2) {
+            searchFullSelectionLimitMsg.classList.remove('hidden');
+            var defaultError = document.querySelector('.search-full-tyre-by-size ul.messages');
+            if (defaultError) {
+                defaultError.classList.add('hidden');
+            }
+            return;
+        }
+        var searchFullValue = tyrefinderFullSearchInput.value.toLowerCase();
+
+        if (searchFullValue.length < 3) {
+            // Hide the default list when less than 3 characters
+            searchFullDropdownList.classList.add('hidden');
+            searchFullCharLimitMsg.classList.remove('hidden');
+            frontTyreSelection.classList.remove('hidden');
+            searchFullSubmitButton.classList.add('hidden');
+
+            var defaultError = document.querySelector('.search-full-tyre-by-size ul.messages');
+            if (defaultError) {
+                defaultError.classList.add('hidden');
+            }
+            searchFullNoResultMsg.classList.add('hidden');
+            return;
+        } else {
+            searchFullCharLimitMsg.classList.add('hidden');
+            frontTyreSelection.classList.add('hidden');
+            searchFullSubmitButton.classList.remove('hidden');
+        }
+
+        var listItems = searchFullDropdownList.getElementsByTagName('li');
+        let hasMatch = false;
+
+        for (let i = 0; i < listItems.length; i++) {
+            var listItem = listItems[i];
+            //var itemText = listItem.textContent.toLowerCase();
+            var itemText = listItem.getAttribute('data-lookup').toLowerCase();
+
+            if (itemText.includes(searchFullValue)) {
+                listItem.classList.remove('hidden');
+                hasMatch = true;
+            } else {
+                listItem.classList.add('hidden');
+            }
+        }
+
+        if (!hasMatch) {
+            // Show "No results found" message when no matches are found
+            searchFullNoResultMsg.classList.remove('hidden');
+            var defaultError = document.querySelector('.search-full-tyre-by-size ul.messages');
+            if (defaultError) {
+                defaultError.classList.add('hidden');
+            }
+        } else {
+            // Show the dropdown list for valid search input
+            searchFullDropdownList.classList.remove('hidden');
+            searchFullNoResultMsg.classList.add('hidden');
+        }
+    }
+
+        
+
+    tyrefinderFullSearchInput.addEventListener('input', renderDropdown);
+    tyrefinderFullSearchInput.addEventListener('focusout', function(event) {
+        searchFullCharLimitMsg.classList.add('hidden');
+        searchFullNoResultMsg.classList.add('hidden');
+        searchFullSelectionLimitMsg.classList.add('hidden');
+        if (searchFullSelectedCount > 0) {
+            tyrefinderFullSearchInput.setAttribute('placeholder', '');
+            tyrefinderFullSearchInput.classList.add('after-selected');
+            tyrefinderFullSearchInput.classList.remove('before-selected');
+        } else {
+            tyrefinderFullSearchInput.setAttribute('placeholder', 'Search Tyre Size e.g 1956515 or 195/65 R15');
+            tyrefinderFullSearchInput.classList.remove('after-selected');
+            tyrefinderFullSearchInput.classList.add('before-selected');
+        }
+    });
+
+    tyrefinderFullSearchInput.addEventListener('focus', function(event) {
+        if (searchFullSelectedCount > 0) {
+            tyrefinderFullSearchInput.setAttribute('placeholder', '');
+            tyrefinderFullSearchInput.classList.add('after-selected');
+            tyrefinderFullSearchInput.classList.remove('before-selected');
+        } else {
+            tyrefinderFullSearchInput.setAttribute('placeholder', 'Search Tyre Size e.g 1956515 or 195/65 R15');
+            tyrefinderFullSearchInput.classList.remove('after-selected');
+            tyrefinderFullSearchInput.classList.add('before-selected');
+        }
+    });
+
+    const searchFullCloseIcons = document.querySelectorAll('.search-full-tyre-by-size .icon.remove-selected');
+    searchFullCloseIcons.forEach(icon => {
+        icon.addEventListener('click', (event) => {
+            var selectedParent = event.target.parentNode;
+            selectedParent.classList.add('hidden');
+            selectedParent.querySelector('span').textContent = '';
+            const frontClass = selectedParent.classList.contains('front-selected-atag');
+            const rearClass = selectedParent.classList.contains('rear-selected-atag');
+            if (frontClass) {
+                var rearWidth = document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-width').value;
+                var rearHeight = document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-height').value;
+                var rearRim = document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-rim').value;
+                if (rearWidth != '' && rearHeight != '' && rearRim != '') {
+                    document.querySelector('.tyre-size-search-full-form #full-search-tyresize-width').value = rearWidth;
+                    document.querySelector('.tyre-size-search-full-form #full-search-tyresize-height').value = rearHeight;
+                    document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rim').value = rearRim;
+                    document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-width').value = '';
+                    document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-height').value = '';
+                    document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-rim').value = '';
+                    selectedParent.classList.remove('hidden');
+                    selectedParent.querySelector('.front-selected-atag span').textContent = rearWidth + '/' + rearHeight + ' R' + rearRim;;
+                    document.querySelector('.rear-selected-atag').classList.add('hidden');
+                    document.querySelector('.rear-selected-atag span').textContent = '';
+                } else {
+                    document.querySelector('.tyre-size-search-full-form #full-search-tyresize-width').value = '';
+                    document.querySelector('.tyre-size-search-full-form #full-search-tyresize-height').value = '';
+                    document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rim').value = '';
+                }
+            }
+            if (rearClass) {
+                document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-width').value = '';
+                document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-height').value = '';
+                document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-rim').value = '';
+            }
+            searchFullSelectedCount--;
+            if (searchFullSelectedCount > 0) {
+                tyrefinderFullSearchInput.setAttribute('placeholder', '');
+                tyrefinderFullSearchInput.classList.add('after-selected');
+                tyrefinderFullSearchInput.classList.remove('before-selected');
+                searchFullSubmitButton.classList.remove('hidden');
+            } else {
+                tyrefinderFullSearchInput.setAttribute('placeholder', 'Search Tyre Size e.g 1956515 or 195/65 R15');
+                tyrefinderFullSearchInput.classList.remove('after-selected');
+                tyrefinderFullSearchInput.classList.add('before-selected');
+                searchFullSubmitButton.classList.add('hidden');
+            }
+        });
+    });
+
+    function toggleSelection(item) {
+        if (searchFullSelectedItems.textContent.includes(item.textContent)) {
+            searchFullSelectedCount--;
+            document.querySelector('.tyre-size-search-full-form #full-search-tyresize-width').value = '';
+            document.querySelector('.tyre-size-search-full-form #full-search-tyresize-height').value = '';
+            document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rim').value = '';
+            document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-width').value = '';
+            document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-height').value = '';
+            document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-rim').value = '';
+        } else if (searchFullSelectedCount < searchFullMaxSelections) {
+            var width = item.getAttribute('data-width');
+            var height = item.getAttribute('data-height');
+            var rim = item.getAttribute('data-rim');
+            if (searchFullSelectedCount === 0) {
+                document.querySelector('.tyre-size-search-full-form #full-search-tyresize-width').value = width;
+                document.querySelector('.tyre-size-search-full-form #full-search-tyresize-height').value = height;
+                document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rim').value = rim;
+
+                searchFullSelectedItems.querySelector('.front-selected').textContent = 'Front Size Selection:' + width + '/' + height + ' R' + rim;
+                searchFullSelectedItems.querySelector('.front-selected-atag').classList.remove('hidden');
+
+                document.querySelector('.for-tire-finder').classList.add('hidden');
+            } else if (searchFullSelectedCount === 1) {
+                document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-width').value = width;
+                document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-height').value = height;
+                document.querySelector('.tyre-size-search-full-form #full-search-tyresize-rear-rim').value = rim;
+                searchFullSelectedItems.querySelector('.rear-selected').textContent = 'Rear Size Selection:' + width + '/' + height + ' R' + rim;
+                searchFullSelectedItems.querySelector('.rear-selected-atag').classList.remove('hidden');
+                document.querySelector('.for-tire-finder').classList.add('hidden');
+            }
+            searchFullSelectedCount++;
+        }
+        // Your selection logic here
+
+        // Show submit button when at least one size is selected
+        if (searchFullSelectedCount > 0) {
+            searchFullSubmitButton.classList.remove('hidden');
+        } else {
+            searchFullSubmitButton.classList.add('hidden');
+        }
+
+        // Clear the input value
+        tyrefinderFullSearchInput.value = '';
+
+        // Hide the dropdown list after selection
+        searchFullDropdownList.classList.add('hidden');
+
+        // Set focus to the input
+        tyrefinderFullSearchInput.focus();
+    }
+
+    var form = document.getElementById("tyre-size-search-full-form");
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        var widthValue = document.getElementById("full-search-tyresize-width").value;
+        var heightValue = document.getElementById("full-search-tyresize-height").value;
+        var rimValue = document.getElementById("full-search-tyresize-rim").value;
+
+        var rearWidthValue = document.getElementById("full-search-tyresize-rear-width").value;
+        var rearHeightValue = document.getElementById("full-search-tyresize-rear-height").value;
+        var rearRimValue = document.getElementById("full-search-tyresize-rear-rim").value;
+
+        if (widthValue && heightValue && rimValue) {
+            var baseUrl = "<?php echo $this->getBaseUrl(); ?>";
+            var selectedSizeFinderUrl = baseUrl + "tyres?" +
+                "width=" + encodeURIComponent(widthValue) +
+                "&height=" + encodeURIComponent(heightValue) +
+                "&rim=" + encodeURIComponent(rimValue);
+
+            if (rearWidthValue && rearHeightValue && rearRimValue) {
+                selectedSizeFinderUrl +=
+                    "&width_rear=" + encodeURIComponent(rearWidthValue) +
+                    "&height_rear=" + encodeURIComponent(rearHeightValue) +
+                    "&rim_rear=" + encodeURIComponent(rearRimValue) +
+                    "&product_list_limit=5000";
+            } else {
+                selectedSizeFinderUrl += "&width_rear=&height_rear=&rim_rear=";
+            }
+
+            window.location.href = selectedSizeFinderUrl;
+        }
+    });
+
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

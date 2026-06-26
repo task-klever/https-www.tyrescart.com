@@ -1,0 +1,35 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+?>
+
+<section class="section section-padding-sm checkout-page">
+<div class="flex flex-col lg:flex-row gap-5">
+    <div class="area-main w-full">
+        <div class="comn-col space-y-6 col-ver">
+            <div class="all-contect-information flex flex-col gap-3">
+             <?= $block->getChildHtml('column.main') ?>
+            <div class="shipping-payment-wrapper flex gap-3 items-start flex-col md:flex-row">
+             <?= $block->getChildHtml('column.center') ?>
+            </div>
+            </div> 
+        </div>
+    </div>
+    <div class="area-right checkout-summary w-full lg:w-[36%]">
+        <div class="comn-col bg-white rounded-[10px] border-b-[6px] border-b-black border border-[#D9D9D9] shadow-lg w-full lg:h-auto overflow-hidden space-y-3 pb-1">
+            <?= $block->getChildHtml('column.right') ?>
+            <?= $block->getChildHtml('hyva.checkout.navigation') ?>
+        </div>
+    </div>
+</div>
+</section>

@@ -1,0 +1,982 @@
+{"data": [
+        {
+            "slug": "acura",
+            "name": "Acura",
+            "name_en": "Acura",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/acura.png"
+        },
+        {
+            "slug": "alfa-romeo",
+            "name": "Alfa Romeo",
+            "name_en": "Alfa Romeo",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/alfa-romeo.png"
+        },
+        {
+            "slug": "aston-martin",
+            "name": "Aston Martin",
+            "name_en": "Aston Martin",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/aston-martin.png"
+        },
+        {
+            "slug": "audi",
+            "name": "Audi",
+            "name_en": "Audi",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/audi.png"
+        },
+        {
+            "slug": "baic",
+            "name": "BAIC",
+            "name_en": "BAIC",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/baic.png"
+        },
+        {
+            "slug": "bentley",
+            "name": "Bentley",
+            "name_en": "Bentley",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/bentley.png"
+        },
+        {
+            "slug": "bmw",
+            "name": "BMW",
+            "name_en": "BMW",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/bmw.png"
+        },
+        {
+            "slug": "bmw-alpina",
+            "name": "BMW Alpina",
+            "name_en": "BMW Alpina",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/bmw-alpina.png"
+        },
+        {
+            "slug": "borgward",
+            "name": "Borgward",
+            "name_en": "Borgward",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/borgward.png"
+        },
+        {
+            "slug": "brilliance",
+            "name": "Brilliance",
+            "name_en": "Brilliance",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/brilliance.png"
+        },
+        {
+            "slug": "bugatti",
+            "name": "Bugatti",
+            "name_en": "Bugatti",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/bugatti.png"
+        },
+        {
+            "slug": "byd",
+            "name": "BYD",
+            "name_en": "BYD",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/byd.png"
+        },
+        {
+            "slug": "cadillac",
+            "name": "Cadillac",
+            "name_en": "Cadillac",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/cadillac.png"
+        },
+        {
+            "slug": "changan",
+            "name": "Changan",
+            "name_en": "Changan",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/changan.png"
+        },
+        {
+            "slug": "chery",
+            "name": "Chery",
+            "name_en": "Chery",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/chery.png"
+        },
+        {
+            "slug": "chevrolet",
+            "name": "Chevrolet",
+            "name_en": "Chevrolet",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/chevrolet.png"
+        },
+        {
+            "slug": "chrysler",
+            "name": "Chrysler",
+            "name_en": "Chrysler",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/chrysler.png"
+        },
+        {
+            "slug": "citroen",
+            "name": "Citroën",
+            "name_en": "Citroën",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/citroen.png"
+        },
+        {
+            "slug": "cupra",
+            "name": "Cupra",
+            "name_en": "Cupra",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/cupra.png"
+        },
+        {
+            "slug": "daihatsu",
+            "name": "Daihatsu",
+            "name_en": "Daihatsu",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/daihatsu.png"
+        },
+        {
+            "slug": "dodge",
+            "name": "Dodge",
+            "name_en": "Dodge",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/dodge.png"
+        },
+        {
+            "slug": "dongfeng",
+            "name": "Dongfeng",
+            "name_en": "Dongfeng",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/dongfeng.png"
+        },
+        {
+            "slug": "dorcen",
+            "name": "Dorcen",
+            "name_en": "Dorcen",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/dorcen.png"
+        },
+        {
+            "slug": "ds",
+            "name": "DS",
+            "name_en": "DS",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/ds.png"
+        },
+        {
+            "slug": "exeed",
+            "name": "Exeed",
+            "name_en": "Exeed",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/exeed.png"
+        },
+        {
+            "slug": "faw",
+            "name": "FAW",
+            "name_en": "FAW",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/faw.png"
+        },
+        {
+            "slug": "ferrari",
+            "name": "Ferrari",
+            "name_en": "Ferrari",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/ferrari.png"
+        },
+        {
+            "slug": "fiat",
+            "name": "Fiat",
+            "name_en": "Fiat",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/fiat.png"
+        },
+        {
+            "slug": "fisker",
+            "name": "Fisker",
+            "name_en": "Fisker",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/fisker.png"
+        },
+        {
+            "slug": "ford",
+            "name": "Ford",
+            "name_en": "Ford",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/ford.png"
+        },
+        {
+            "slug": "forthing",
+            "name": "Forthing",
+            "name_en": "Forthing",
+            "regions": [
+                "medm"
+            ],
+            "logo": null
+        },
+        {
+            "slug": "foton",
+            "name": "Foton",
+            "name_en": "Foton",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/foton.png"
+        },
+        {
+            "slug": "gac",
+            "name": "GAC",
+            "name_en": "GAC",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/gac.png"
+        },
+        {
+            "slug": "geely",
+            "name": "Geely",
+            "name_en": "Geely",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/geely.png"
+        },
+        {
+            "slug": "genesis",
+            "name": "Genesis",
+            "name_en": "Genesis",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/genesis.png"
+        },
+        {
+            "slug": "geometry",
+            "name": "Geometry",
+            "name_en": "Geometry",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/geometry.png"
+        },
+        {
+            "slug": "gmc",
+            "name": "GMC",
+            "name_en": "GMC",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/gmc.png"
+        },
+        {
+            "slug": "great-wall",
+            "name": "Great Wall (GWM)",
+            "name_en": "Great Wall (GWM)",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/great-wall.png"
+        },
+        {
+            "slug": "haval",
+            "name": "Haval",
+            "name_en": "Haval",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/haval.png"
+        },
+        {
+            "slug": "honda",
+            "name": "Honda",
+            "name_en": "Honda",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/honda.png"
+        },
+        {
+            "slug": "hongqi",
+            "name": "Hongqi",
+            "name_en": "Hongqi",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/hongqi.png"
+        },
+        {
+            "slug": "hummer",
+            "name": "Hummer",
+            "name_en": "Hummer",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/hummer.png"
+        },
+        {
+            "slug": "hyundai",
+            "name": "Hyundai",
+            "name_en": "Hyundai",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/hyundai.png"
+        },
+        {
+            "slug": "ineos",
+            "name": "Ineos",
+            "name_en": "Ineos",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/ineos.png"
+        },
+        {
+            "slug": "infiniti",
+            "name": "Infiniti",
+            "name_en": "Infiniti",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/infiniti.png"
+        },
+        {
+            "slug": "iran-khodro",
+            "name": "Iran Khodro",
+            "name_en": "Iran Khodro",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/iran-khodro.png"
+        },
+        {
+            "slug": "isuzu",
+            "name": "Isuzu",
+            "name_en": "Isuzu",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/isuzu.png"
+        },
+        {
+            "slug": "jac",
+            "name": "JAC",
+            "name_en": "JAC",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/jac.png"
+        },
+        {
+            "slug": "jaecoo",
+            "name": "Jaecoo",
+            "name_en": "Jaecoo",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/jaecoo.png"
+        },
+        {
+            "slug": "jaguar",
+            "name": "Jaguar",
+            "name_en": "Jaguar",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/jaguar.png"
+        },
+        {
+            "slug": "jeep",
+            "name": "Jeep",
+            "name_en": "Jeep",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/jeep.png"
+        },
+        {
+            "slug": "jetour",
+            "name": "Jetour",
+            "name_en": "Jetour",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/jetour.png"
+        },
+        {
+            "slug": "kaiyi",
+            "name": "Kaiyi",
+            "name_en": "Kaiyi",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/kaiyi.png"
+        },
+        {
+            "slug": "kia",
+            "name": "Kia",
+            "name_en": "Kia",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/kia.png"
+        },
+        {
+            "slug": "lamborghini",
+            "name": "Lamborghini",
+            "name_en": "Lamborghini",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/lamborghini.png"
+        },
+        {
+            "slug": "land-rover",
+            "name": "Land Rover",
+            "name_en": "Land Rover",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/land-rover.png"
+        },
+        {
+            "slug": "lexus",
+            "name": "Lexus",
+            "name_en": "Lexus",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/lexus.png"
+        },
+        {
+            "slug": "lincoln",
+            "name": "Lincoln",
+            "name_en": "Lincoln",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/lincoln.png"
+        },
+        {
+            "slug": "lotus",
+            "name": "Lotus",
+            "name_en": "Lotus",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/lotus.png"
+        },
+        {
+            "slug": "lucid",
+            "name": "Lucid",
+            "name_en": "Lucid",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/lucid.png"
+        },
+        {
+            "slug": "luxgen",
+            "name": "Luxgen",
+            "name_en": "Luxgen",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/luxgen.png"
+        },
+        {
+            "slug": "lynk-and-co",
+            "name": "Lynk&Co",
+            "name_en": "Lynk&Co",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/lynk-and-co.png"
+        },
+        {
+            "slug": "mahindra",
+            "name": "Mahindra",
+            "name_en": "Mahindra",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/mahindra.png"
+        },
+        {
+            "slug": "maserati",
+            "name": "Maserati",
+            "name_en": "Maserati",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/maserati.png"
+        },
+        {
+            "slug": "maxus",
+            "name": "Maxus",
+            "name_en": "Maxus",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/maxus.png"
+        },
+        {
+            "slug": "maybach",
+            "name": "Maybach",
+            "name_en": "Maybach",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/maybach.png"
+        },
+        {
+            "slug": "mazda",
+            "name": "Mazda",
+            "name_en": "Mazda",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/mazda.png"
+        },
+        {
+            "slug": "mclaren",
+            "name": "McLaren",
+            "name_en": "McLaren",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/mclaren.png"
+        },
+        {
+            "slug": "mercedes",
+            "name": "Mercedes-Benz",
+            "name_en": "Mercedes-Benz",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/mercedes.png"
+        },
+        {
+            "slug": "mercedes-maybach",
+            "name": "Mercedes-Maybach",
+            "name_en": "Mercedes-Maybach",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/mercedes-maybach.png"
+        },
+        {
+            "slug": "mercury",
+            "name": "Mercury",
+            "name_en": "Mercury",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/mercury.png"
+        },
+        {
+            "slug": "mg",
+            "name": "MG",
+            "name_en": "MG",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/mg.png"
+        },
+        {
+            "slug": "mini",
+            "name": "MINI",
+            "name_en": "MINI",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/mini.png"
+        },
+        {
+            "slug": "mitsubishi",
+            "name": "Mitsubishi",
+            "name_en": "Mitsubishi",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/mitsubishi.png"
+        },
+        {
+            "slug": "nissan",
+            "name": "Nissan",
+            "name_en": "Nissan",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/nissan.png"
+        },
+        {
+            "slug": "omoda",
+            "name": "Omoda",
+            "name_en": "Omoda",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/omoda.png"
+        },
+        {
+            "slug": "opel",
+            "name": "Opel",
+            "name_en": "Opel",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/opel.png"
+        },
+        {
+            "slug": "ora",
+            "name": "Ora",
+            "name_en": "Ora",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/ora.png"
+        },
+        {
+            "slug": "peugeot",
+            "name": "Peugeot",
+            "name_en": "Peugeot",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/peugeot.png"
+        },
+        {
+            "slug": "polestar",
+            "name": "Polestar",
+            "name_en": "Polestar",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/polestar.png"
+        },
+        {
+            "slug": "porsche",
+            "name": "Porsche",
+            "name_en": "Porsche",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/porsche.png"
+        },
+        {
+            "slug": "proton",
+            "name": "Proton",
+            "name_en": "Proton",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/proton.png"
+        },
+        {
+            "slug": "ram",
+            "name": "Ram",
+            "name_en": "Ram",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/ram.png"
+        },
+        {
+            "slug": "renault",
+            "name": "Renault",
+            "name_en": "Renault",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/renault.png"
+        },
+        {
+            "slug": "rolls-royce",
+            "name": "Rolls-Royce",
+            "name_en": "Rolls-Royce",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/rolls-royce.png"
+        },
+        {
+            "slug": "rox",
+            "name": "Rox",
+            "name_en": "Rox",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/rox.png"
+        },
+        {
+            "slug": "saab",
+            "name": "Saab",
+            "name_en": "Saab",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/saab.png"
+        },
+        {
+            "slug": "seat",
+            "name": "Seat",
+            "name_en": "Seat",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/seat.png"
+        },
+        {
+            "slug": "seres",
+            "name": "Seres",
+            "name_en": "Seres",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/seres.png"
+        },
+        {
+            "slug": "skoda",
+            "name": "Skoda",
+            "name_en": "Skoda",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/skoda.png"
+        },
+        {
+            "slug": "skywell",
+            "name": "Skywell",
+            "name_en": "Skywell",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/skywell.png"
+        },
+        {
+            "slug": "smart",
+            "name": "Smart",
+            "name_en": "Smart",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/smart.png"
+        },
+        {
+            "slug": "soueast",
+            "name": "Soueast",
+            "name_en": "Soueast",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/soueast.png"
+        },
+        {
+            "slug": "ssangyong",
+            "name": "SsangYong",
+            "name_en": "SsangYong",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/ssangyong.png"
+        },
+        {
+            "slug": "subaru",
+            "name": "Subaru",
+            "name_en": "Subaru",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/subaru.png"
+        },
+        {
+            "slug": "suzuki",
+            "name": "Suzuki",
+            "name_en": "Suzuki",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/suzuki.png"
+        },
+        {
+            "slug": "tank",
+            "name": "Tank",
+            "name_en": "Tank",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/tank.png"
+        },
+        {
+            "slug": "tata",
+            "name": "Tata",
+            "name_en": "Tata",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/tata.png"
+        },
+        {
+            "slug": "tesla",
+            "name": "Tesla",
+            "name_en": "Tesla",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/tesla.png"
+        },
+        {
+            "slug": "toyota",
+            "name": "Toyota",
+            "name_en": "Toyota",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/toyota.png"
+        },
+        {
+            "slug": "vgv",
+            "name": "VGV",
+            "name_en": "VGV",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/vgv.png"
+        },
+        {
+            "slug": "vinfast",
+            "name": "VinFast",
+            "name_en": "VinFast",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/vinfast.png"
+        },
+        {
+            "slug": "volkswagen",
+            "name": "Volkswagen",
+            "name_en": "Volkswagen",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/volkswagen.png"
+        },
+        {
+            "slug": "volvo",
+            "name": "Volvo",
+            "name_en": "Volvo",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/volvo.png"
+        },
+        {
+            "slug": "voyah",
+            "name": "Voyah",
+            "name_en": "Voyah",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/voyah.png"
+        },
+        {
+            "slug": "wey",
+            "name": "Wey",
+            "name_en": "Wey",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/wey.png"
+        },
+        {
+            "slug": "zeekr",
+            "name": "Zeekr",
+            "name_en": "Zeekr",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/zeekr.png"
+        },
+        {
+            "slug": "zotye",
+            "name": "Zotye",
+            "name_en": "Zotye",
+            "regions": [
+                "medm"
+            ],
+            "logo": "https:\/\/wheel-api.klever.ae\/logos\/zotye.png"
+        }
+    ],
+    "meta": {
+        "count": 108,
+        "ordering": "slug",
+        "region": "medm",
+        "limit": null,
+        "offset": 0
+    }
+}

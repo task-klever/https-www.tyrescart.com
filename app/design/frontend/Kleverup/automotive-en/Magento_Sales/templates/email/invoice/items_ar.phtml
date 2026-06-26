@@ -1,0 +1,39 @@
+<?php
+/**
+ * Arabic version of invoice items email template
+ * Same as invoice/items.phtml but with Arabic column headers
+ */
+
+/** @var \Magento\Sales\Block\Order\Email\Invoice\Items $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+?>
+<?php $_invoice = $block->getInvoice() ?>
+<?php $_order   = $block->getOrder() ?>
+<?php if ($_invoice && $_order): ?>
+    <table class="email-items" dir="rtl">
+        <thead>
+            <tr>
+                <th class="item-info" style="text-align:right;">
+                    المنتجات
+                </th>
+                <th class="item-qty" style="text-align:center;">
+                    الكمية
+                </th>
+                <th class="item-subtotal" style="text-align:left;">
+                    المبلغ
+                </th>
+            </tr>
+        </thead>
+        <?php foreach ($_invoice->getAllItems() as $_item): ?>
+            <?php if (!$_item->getOrderItem()->getParentItem()): ?>
+                <tbody>
+                    <?= $block->getItemHtml($_item) ?>
+                </tbody>
+            <?php endif; ?>
+        <?php endforeach; ?>
+        <tfoot class="order-totals">
+            <?= $block->getChildHtml('invoice_totals') ?>
+        </tfoot>
+    </table>
+<?php endif; ?>

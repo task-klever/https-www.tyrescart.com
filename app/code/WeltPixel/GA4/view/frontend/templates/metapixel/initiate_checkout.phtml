@@ -1,0 +1,48 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \WeltPixel\GA4\Block\MetaPixel\InitiateCheckout */
+
+/** @var \WeltPixel\GA4\Helper\MetaPixelTracking $metaPixelHelper */
+$metaPixelHelper = $this->helper('WeltPixel\GA4\Helper\MetaPixelTracking');
+$cspNonceProvider = $metaPixelHelper->getCspNonceProvider();
+$eventId = $metaPixelHelper->getEventUID();
+?>
+<?php if ($metaPixelHelper->isMetaPixelTrackingEnabled() && $metaPixelHelper->shouldMetaPixelEventBeTracked(\WeltPixel\GA4\Model\Config\Source\MetaPixel\TrackingEvents::EVENT_INITIATE_CHECKOUT)) :
+?>
+<script <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        if (window.ga4AllowServices) {
+        fbq('track', 'InitiateCheckout', {
+            content_type: "product",
+            content_ids: [<?= /* @noEscape */ $block->getContentIds() ?>],
+            num_items: <?= /* @noEscape */ $block->getNumItems() ?>,
+            contents: <?= /* @noEscape */ $block->getContents() ?>,
+            value: <?= /* @noEscape */ $block->getValue() ?>,
+            currency: "<?= /* @noEscape */ $metaPixelHelper->getCurrencyCode() ?>"
+        },{
+            eventID: '<?= /* @noEscape */ $eventId ?>'
+        });
+    }
+</script>
+<?php endif; ?>
+
+<?php if ($metaPixelHelper->isServerSideTrackingEnabled() && $metaPixelHelper->shouldMetaServerSideEventBeTracked(\WeltPixel\GA4\Model\Config\Source\MetaPixel\TrackingEvents::EVENT_INITIATE_CHECKOUT)) : ?>
+    <script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        requirejs(['jquery'],
+            function  ($) {
+                $(document).ready(function() {
+                    var requestUrl = '<?php echo $block->escapeUrl($metaPixelHelper->getMetaSSTrackUrl()); ?>';
+                    $.post({
+                        url: requestUrl,
+                        global: false,
+                        data: {
+                            'eventID': '<?= /* @noEscape */ $eventId ?>',
+                            'eventName': 'InitiateCheckout',
+                            'eventIdentifier': '<?= /* @noEscape */ \WeltPixel\GA4\Model\Config\Source\MetaPixel\TrackingEvents::EVENT_INITIATE_CHECKOUT  ?>',
+                            'eventUrl': '<?= $block->escapeUrl($metaPixelHelper->getStoreCurrenUrl()) ?>',
+                            'quoteId': '<?=  /* @noEscape */ $block->getQuoteId() ?>'
+                        }
+                    });
+                });
+            });
+    </script>
+<?php endif; ?>

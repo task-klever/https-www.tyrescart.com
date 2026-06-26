@@ -1,0 +1,210 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Hyva\Theme\ViewModel\ProductListItem;
+use Hyva\Theme\ViewModel\ProductPage;
+use Hyva\Theme\ViewModel\Store;
+use Magento\Catalog\Block\Product\ReviewRendererInterface as ProductReviewRenderer;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+// phpcs:disable Generic.Files.LineLength.TooLong
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var Store $viewModelStore */
+$viewModelStore = $viewModels->require(Store::class);
+
+/** @var ProductPage $productViewModel */
+$productViewModel = $viewModels->require(ProductPage::class);
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+/** @var ProductListItem $productListItemViewModel */
+$productListItemViewModel = $viewModels->require(ProductListItem::class);
+
+$viewMode = 'grid';
+$imageDisplayArea = 'category_page_grid';
+$showDescription = false;
+
+$name = (string) $block->getName();
+$title = (string) $block->getTitle();
+$headingTag = $block->getData('heading_tag') ?: 'h3';
+$items = $block->getItems() ?? [];
+if (is_object($items) && $items instanceof Iterator) {
+    $items = iterator_to_array($items);
+}
+if (!$itemCount = count($items)) {
+    return '';
+}
+
+$sliderIndex = 1;
+$sliderItemRenderer = $block->getLayout()->getBlock('product_list_item')
+    ?: $block->getChildBlock('slider.item.template')
+    ?: $block->getLayout()->createBlock(Template::class);
+
+$hideRatingSummary = (bool) $block->getData('hide_rating_summary');
+$hideDetails       = (bool) $block->getData('hide_details');
+
+$sliderItemRenderer->setData('hide_details', $hideDetails);
+$sliderItemRenderer->setData('hide_rating_summary', $hideRatingSummary);
+$sliderItemRenderer->setData('item_relation_type', $block->getData('item_relation_type') ?: 'related');
+
+$sharedItemRendererTemplate = null;
+$isSharedItemRenderer       = $sliderItemRenderer !== $block->getChildBlock('slider.item.template');
+if ($isSharedItemRenderer && $block->getChildBlock('slider.item.template')) {
+    $sharedItemRendererTemplate = $sliderItemRenderer->getTemplate();
+    $sliderSpecificItemTemplate = $block->getChildBlock('slider.item.template')->getTemplate();
+    $sliderItemRenderer->setTemplate($sliderSpecificItemTemplate);
+}
+
+$sliderSectionClasses = $block->getData('maybe_purged_tailwind_section_classes') ?? 'section section-padding related-product-slider-section';
+
+?>
+<style>
+.related-product-swiper .swiper-container {
+    overflow: hidden;
+}
+/* Ensure arrows are visible above overflow:hidden */
+.related-product-swiper .swiper-button-next,
+.related-product-swiper .swiper-button-prev {
+    z-index: 10;
+}
+/* Force product card to vertical column layout inside slider */
+.related-product-swiper .swiper-slide .item.product-item {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+}
+.related-product-swiper .swiper-slide .product-wrap {
+    flex-direction: column !important;
+}
+.related-product-swiper .swiper-slide .product-left {
+    width: 100% !important;
+}
+.related-product-swiper .swiper-slide .product-right {
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid #eee !important;
+}
+/* Hide sidebar popups and battery modals inside slider */
+.related-product-swiper .swiper-slide .sliebar,
+.related-product-swiper .swiper-slide .popup-overlay {
+    display: none !important;
+}
+</style>
+<section class="relative <?= $escaper->escapeHtmlAttr($sliderSectionClasses) ?>"
+    role="group"
+    aria-roledescription="<?= $escaper->escapeHtmlAttr(__('Carousel')) ?>"
+    aria-label="<?= $escaper->escapeHtmlAttr(__('Carousel %1', $title)) ?>"
+>
+    <?php if ($items): ?>
+    <div class="container-theme">
+        <div class="section-title text-center">
+            <h3>Related <span class="text-theme-blue">Products</span></h3>
+        </div>
+    </div>
+
+    <div class="container-theme-custom">
+        <div class="related-product-swiper swiper-navigation-style-1 swiper-pagination-style-3">
+            <div class="slider swiper-container">
+                <div class="swiper-wrapper">
+                    <?php foreach ($items as $product): ?>
+                        <div class="swiper-slide" style="height:auto;"
+                             role="group"
+                             aria-label="<?= $escaper->escapeHtmlAttr(__('Item %1', $sliderIndex++)) ?>">
+                            <?= /** @noEscape */ $productListItemViewModel->getItemHtmlWithRenderer(
+                                $sliderItemRenderer,
+                                $product,
+                                $block,
+                                $viewMode,
+                                ProductReviewRenderer::SHORT_VIEW,
+                                $imageDisplayArea,
+                                $showDescription
+                            ) ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <div class="swiper-button-next related-slider-next"></div>
+                <div class="swiper-button-prev related-slider-prev"></div>
+            </div>
+            <div class="swiper-pagination-related"></div>
+        </div>
+    </div>
+
+    <script>
+    window.addEventListener("load", function () {
+        var el = document.querySelector(".related-product-swiper .slider");
+        if (el && typeof Swiper !== 'undefined') {
+            try {
+                // Remove sidebar/modal DOM from slides to prevent broken nesting
+                el.querySelectorAll('.sliebar, .popup-overlay, .product-single-modal').forEach(function(node) { node.remove(); });
+                // Remove inline scripts inside slides that reference removed elements
+                el.querySelectorAll('script').forEach(function(node) { node.remove(); });
+
+                new Swiper(el, {
+                    speed: 1000,
+                    loop: true,
+                    autoplay: {
+                        delay: 3000,
+                        waitForTransition: true,
+                        disableOnInteraction: true,
+                    },
+                    navigation: {
+                        nextEl: ".related-slider-next",
+                        prevEl: ".related-slider-prev",
+                    },
+                    pagination: {
+                        el: ".swiper-pagination-related",
+                        clickable: true,
+                    },
+                    breakpoints: {
+                        0: {
+                            slidesPerView: 1,
+                            spaceBetween: 10,
+                        },
+                        575: {
+                            slidesPerView: 2,
+                            spaceBetween: 10,
+                        },
+                        768: {
+                            slidesPerView: 3,
+                            spaceBetween: 10,
+                        },
+                        1024: {
+                            slidesPerView: 4,
+                            spaceBetween: 10,
+                        },
+                        1200: {
+                            slidesPerView: 4,
+                            spaceBetween: 15,
+                        }
+                    }
+                });
+            } catch(e) {
+                console.error('Related products Swiper init error:', e);
+            }
+        }
+    });
+    </script>
+
+    <?php endif; ?>
+</section>
+<?php
+
+if ($sharedItemRendererTemplate) {
+    $sliderItemRenderer->setTemplate($sharedItemRendererTemplate);
+}
+
+?>

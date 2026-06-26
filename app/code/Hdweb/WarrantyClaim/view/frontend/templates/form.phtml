@@ -1,0 +1,698 @@
+<?php
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\ReCaptcha;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Hyva\Theme\ViewModel\StoreConfig;
+
+/** @var HyvaCsp $hyvaCsp */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var \Hdweb\WarrantyClaim\Block\Form $block */
+
+$storeConfig = $viewModels->require(StoreConfig::class);
+$formId = 'warranty-claim-form';
+$recaptchaV3PublicKey = $storeConfig->getStoreConfig('recaptcha_frontend/type_recaptcha_v3/public_key');
+?>
+
+
+
+
+<section class="w-full py-6 md:py-8 lg:py-12 bg-[#f5faff] warranty-claim">
+<div class="mx-auto flex flex-wrap">
+  <div class="sec-title mb-3 md:mb-6 mx-auto">
+          <h2 class="text-[1.5rem] md:text-[1.65rem] lg:text-4xl text-theme-dark font-bold relative pb-3 md:pb-5">
+            <span class="w-[70px] md:w-[100px] border-b border-theme-blue bg-theme-blue absolute left-0 bottom-0">
+            </span>
+            <i class="icon icon-logo-icon mr-1 text-theme-blue"></i>Warranty <span class="text-theme-blue">Claim</span>
+          </h2>
+      </div>
+</div>
+      <div class="w-full flex mb-6">
+        <p class="w-full max-w-[1011px] mx-auto text-lg md:text-xl text-center">
+          Dear Valued Customer, By filling the form you agree to collect and process the below
+            information provided in order to resolve the claim raised.</p>
+      </div>
+
+
+
+  <div class="max-w-[1011px] mx-auto px-3">
+    <div class="bg-white rounded-[10px] border-b-[6px] border-b-theme-blue border border-[#D9D9D9] shadow-lg overflow-hidden">
+
+
+ <h4 class="text-lg font-semibold text-center bg-theme-blue p-2 text-white">
+            <?= __('End User Site Information') ?>
+          </h4>
+
+      <form id="warranty-claim-form"
+        action="<?= $block->escapeUrl($block->getFormAction()) ?>"
+        method="post"
+        enctype="multipart/form-data"
+        x-data="{...hyva.formValidation($el), ...initWarrantyForm()}"
+        @submit.prevent="submitWarrantyForm()"
+        class="space-y-2 md:space-y-4 lg:space-y-8 p-[1rem] md:p-[1.7rem] lg:p-[2.2rem] xl:p-[2.5rem]"
+        data-mage-init='{"validation":{}}'>
+
+      
+
+        <!-- Section: End User Site Information -->
+        <div>
+         
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            
+            <!-- Invoice Number -->
+            <div>
+              <label for="invoice_number" class="label text-gray-700">
+                <?= __('Invoice Number') ?> <span class="text-red-500">*</span>
+              </label>
+              <input type="text" name="invoice_number" id="invoice_number"
+                class="form-input"
+                data-validate='{"required":true}'>
+            </div>
+
+            <!-- Invoice Date -->
+            <div>
+              <label for="invoice_date" class="label text-gray-700">
+                <?= __('Invoice Date') ?> <span class="text-red-500">*</span>
+              </label>
+              <input type="date" name="invoice_date" id="invoice_date"
+                class="form-input"
+                data-validate='{"required":true}'>
+            </div>
+
+            <!-- Invoice Upload -->
+            <div class="relative">
+              <label for="invoice_image" class="label text-gray-700">
+                <?= __('Invoice') ?> <span class="text-red-500">*</span>
+              </label>
+              <div class="relative flex items-center">
+                <input type="file" name="invoice_image" id="invoice_image"
+                  class="form-input peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  accept=".jpg,.jpeg,.png,.pdf">
+                <div class="group form-input w-full flex items-center justify-between px-4 border border-border-color rounded-lg bg-blue-50 transition hover:bg-blue-100">
+                  <span id="file-chosen" class="text-gray-500 text-sm">No file chosen</span>
+                  <span class="px-3 py-1 bg-theme-blue group-hover:bg-theme-blue  text-xs rounded font-semibold text-white">Choose File</span>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 flex items-center gap-1 absolute mt-[3px]">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <?= __('Allowed formats: jpg, jpeg, png, pdf') ?>
+              </p>
+            </div>
+
+            <!-- Product Type -->
+            <div>
+              <label for="product_type" class="label text-gray-700">
+                <?= __('Product Type') ?> <span class="text-red-500">*</span>
+              </label>
+              <input type="text" name="product_type" id="product_type"
+                class="form-input"
+                data-validate='{"required":true}'>
+            </div>
+
+            <!-- Vehicle Plate -->
+            <div>
+              <label for="vehicle_plate" class="label text-gray-700">
+                <?= __('Vehicle Plate Number') ?> <span class="text-red-500">*</span>
+              </label>
+              <input type="text" name="vehicle_plate" id="vehicle_plate"
+                class="form-input"
+                data-validate='{"required":true}'>
+            </div>
+
+            <!-- Customer Name -->
+            <div>
+              <label for="customer_name" class="label text-gray-700">
+                <?= __('Customer Name') ?> <span class="text-red-500">*</span>
+              </label>
+              <input type="text" name="customer_name" id="customer_name"
+                class="form-input"
+                data-validate='{"required":true}'>
+            </div>
+
+            <!-- Phone -->
+            <div>
+              <label for="phone" class="label text-gray-700">
+                <?= __('Phone Number') ?> <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+               
+                <input type="text" id="phone" name="phone"
+                  class="pl-14 form-input"
+                  placeholder="<?= __('Phone Number') ?>"
+                  data-validate='{"required":true, "minlength":9, "maxlength":9}'
+                  x-data x-on:input="$el.value = $el.value.replace(/[^0-9]/g, '')">
+                  <span class="phone-prefix only-en">+971</span>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div>
+              <label for="email" class="label text-gray-700">
+                <?= __('Email') ?> <span class="text-red-500">*</span>
+              </label>
+              <input type="email" name="email" id="email"
+                class="form-input"
+                data-validate='{"required":true,"email":true}'>
+            </div>
+
+            <!-- Product Image 1 -->
+
+                 <div>
+              <label for="product_image1" class="label text-gray-700">
+                <?= __('Product Image 1') ?> <span class="text-red-500">*</span>
+              </label>
+              <div class="relative flex items-center">
+                <input type="file" name="product_image1" id="product_image1"
+                  class="form-input peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  accept=".jpg,.jpeg,.png,.pdf">
+                <div class="group form-input w-full flex items-center justify-between px-4 border border-border-color rounded-lg bg-blue-50 transition hover:bg-blue-100">
+                  <span id="file-chosen" class="text-gray-500 text-sm">No file chosen</span>
+                  <span class="px-3 py-1 bg-theme-blue group-hover:bg-theme-blue  text-xs rounded font-semibold text-white">Choose File</span>
+                </div>
+              </div>
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <!-- Product Image 2 -->
+   
+
+
+
+                             <div>
+              <label for="product_image2" class="label text-gray-700">
+                <?= __('Product Image 2') ?> <span class="text-red-500">*</span>
+              </label>
+              <div class="relative flex items-center">
+                <input type="file" name="product_image2" id="product_image2"
+                  class="form-input peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  accept=".jpg,.jpeg,.png,.pdf">
+                <div class="group form-input w-full flex items-center justify-between px-4 border border-border-color rounded-lg bg-blue-50 transition hover:bg-blue-100">
+                  <span id="file-chosen" class="text-gray-500 text-sm">No file chosen</span>
+                  <span class="px-3 py-1 bg-theme-blue group-hover:bg-theme-blue  text-xs rounded font-semibold text-white">Choose File</span>
+                </div>
+              </div>
+            </div>
+
+
+
+
+
+
+
+
+
+
+            <!-- Product Image 3 + Mileage -->
+            <div>
+      
+
+
+                  <label for="product_image3" class="label text-gray-700">
+                <?= __('Product Image 3') ?> <span class="text-red-500">*</span>
+              </label>
+              <div class="relative flex items-center">
+                <input type="file" name="product_image3" id="product_image3"
+                  class="form-input peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  accept=".jpg,.jpeg,.png,.pdf">
+                <div class="group form-input w-full flex items-center justify-between px-4 border border-border-color rounded-lg bg-blue-50 transition hover:bg-blue-100">
+                  <span id="file-chosen" class="text-gray-500 text-sm">No file chosen</span>
+                  <span class="px-3 py-1 bg-theme-blue group-hover:bg-theme-blue  text-xs rounded font-semibold text-white">Choose File</span>
+                </div>
+              </div>
+
+
+                
+
+              
+              <label for="current_millage" class="label text-gray-700 mt-4">
+                <?= __('Current Mileage') ?>
+              </label>
+              <input type="text" name="current_millage" id="current_millage"
+                class="form-input">
+            </div>
+
+            <!-- Comment -->
+            <div>
+              <label for="comment" class="label text-gray-700">
+                <?= __('Comment') ?>
+              </label>
+              <textarea name="comment" id="comment" rows="5"
+                class="form-input"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Magento Formkey -->
+        <?= $block->getBlockHtml('formkey') ?>
+
+        <!-- reCAPTCHA -->
+        <?php if ($recaptchaV3PublicKey): ?>
+        <div>
+          <?= $block->getBlockHtml(ReCaptcha::RECAPTCHA_INPUT_FIELD_BLOCK) ?>
+        </div>
+        <?php endif; ?>
+
+        <!-- Submit -->
+        <div class="text-center">
+ 
+
+          <button type="submit" class="mx-auto group relative px-4 md:px-5 2xl:px-7 h-[40px] md:h-[50px] flex justify-center items-center uppercase text-theme-blue text-white font-semibold text-sm lg:text-base xl:text-lg transition-all duration-300 ease-in-out" style="z-index: 1;">
+              <span class="absolute transition-all w-full h-full  text-white bg-theme-blue group-hover:bg-theme-yellow -z-10 border-x-4 border-theme-yellow group-hover:border-white -skew-x-12"></span> <?= __('Submit Claim') ?>
+                  </button>
+        </div>
+
+                 
+
+
+      </form>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+
+
+
+
+<section class="w-full py-5 md:py-8 lg:py-12 bg-white flex justify-center items-center">
+  <div class="faq-accordion max-w-[1202px] mx-auto px-3">
+
+  <div class=" w-full mx-auto mt-0 flex flex-wrap">
+      <div class="sec-title mb-3 md:mb-6 mx-auto">
+          <h2 class="text-[1.5rem] md:text-[1.65rem] lg:text-4xl text-theme-dark font-bold relative pb-3 md:pb-5">
+            <span class="w-[70px] md:w-[100px] border-b border-theme-blue bg-theme-blue absolute left-0 bottom-0">
+            </span>
+            <i class="icon icon-logo-icon mr-1 text-theme-blue"></i>FAQ
+          </h2>
+      </div>
+    </div>
+
+    <div 
+      class="rounded-2xl shadow-custom-blue bg-gradient-to-br from-[#e0fff6]/60 via-white to-[#d1f7ec]/60 p-3 md:p-8 lg:p-10 w-full"
+      x-data="{ active: 1 }"
+    >
+      <div class="divide-y divide-theme-blue/30">
+        
+        <!-- FAQ Item 1 -->
+        <div class="py-2 md:py-4">
+          <button 
+            @click="active === 1 ? active = null : active = 1"
+            class="flex w-full items-center justify-between cursor-pointer font-bold text-base md:text-lg text-theme-dark transition text-left"
+            :class="{ 'text-theme-blue': active === 1 }"
+          >
+            <span>Is There a Manufacturer Warranty on Tyres Purchased from Dial-a-Tire?</span>
+            <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 1 }">
+              <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </span>
+          </button>
+
+          <div
+            x-ref="faq1"
+            class="overflow-hidden transition-all duration-300 ease-in-out"
+            :style="active === 1 ? `max-height: ${$refs.faq1.scrollHeight}px` : 'max-height: 0px'"
+          >
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">
+             All tires sold by Dial-a-Tire or Sungate Tyres Trading have a manufacturer's limited warranty. The tyre limited warranty is given by tyre manufacturer for a period of one year depends upon their policy against manufacturing defect that will be determined by their authorized agents/representative in territory where tyres were purchased and authorized representatives updating these terms and conditions on their local website as well.
+            </p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">
+              This warranty applies only to the original tyre purchaser, and is not transferrable to any other party. L If buyer is using tyre size other than car manufacturer's recommendations, then it will be 100% buyer responsibility and Dial-a-Tire/Sungate Tyres Trading LLC will not bear any liability.
+            </p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 2 -->
+        <div class="py-2 md:py-4">
+          <button 
+            @click="active === 2 ? active = null : active = 2"
+            class="flex w-full items-center justify-between cursor-pointer font-bold text-base md:text-lg text-theme-dark transition text-left"
+            :class="{ 'text-theme-blue': active === 2 }"
+          >
+            <span>What Is the Claim Procedure for Tyre Warranty at Dial-a-Tire?</span>
+            <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 2 }">
+              <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </span>
+          </button>
+
+          <div
+            x-ref="faq2"
+            class="overflow-hidden transition-all duration-300 ease-in-out"
+            :style="active === 2 ? `max-height: ${$refs.faq2.scrollHeight}px` : 'max-height: 0px'"
+          >
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Claim procedure for tyre limited warranty:</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Tyres must be submitted with original invoice of purchase.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Tyre will be sent for inspection by authorized personal of manufacturing agent.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Complete inspection process can take 2 to 3 weeks' time.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">The final decision after investigation will be made by Manufacturer's authorized personnel,</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Customer may have to buy new tyres while the claim tyres sent for Inspection to Manufacturing agent.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">If manufacturer agent approves the claim and compensate then the same compensated amount will be refunded to the customer.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Tyre compensation shall be made according to the percentage of tyre consumed.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 3 -->
+        <div class="py-2 md:py-4">
+          <button 
+            @click="active === 3 ? active = null : active = 3"
+            class="flex w-full items-center justify-between cursor-pointer font-bold text-base md:text-lg text-theme-dark transition text-left"
+            :class="{ 'text-theme-blue': active === 3 }"
+          >
+            <span>What Types of Tyre Warranty Claims Are Not Accepted?</span>
+            <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 3 }">
+              <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </span>
+          </button>
+
+          <div
+            x-ref="faq3"
+            class="overflow-hidden transition-all duration-300 ease-in-out"
+            :style="active === 3 ? `max-height: ${$refs.faq3.scrollHeight}px` : 'max-height: 0px'"
+          >
+              <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">A Claim involve any one of below categories will not be accepted.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Damage of tyres, tubes and flaps caused by improper use or storage.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Tyres used beyond the original tread life.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Tyres that have been repaired, recapped or reclaimed.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Incorrect tyre size and load rating according to vehicle specification.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Tyre damage because of misalignment, wheel imbalance,tyres rotation on regular basis, defective brakes or shock absorbers, under inflation or over inflation or other improper maintenance, overloading, oll or chemical action, fire, use of tyre chain, use of racing or other competition events, wreck or collision, using flat tyre, Improper application of tire size and/or specification, willful damage or abuse, Mechanical Irregularities in the vehicle or wheel, such as bent wheel assemblies, incorrect wheel size, worn or faulty components.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Damage resulting by improper material used to repair,</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Tyre damaged from road hazards like puncture, through cut, impact break, stone drill or bruise etc.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Any other damage caused by buyer's or user's act or omission not in conformity with manufacturer's specifications or instructions.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 4 -->
+        <div class="py-2 md:py-4">
+          <button 
+            @click="active === 4 ? active = null : active = 4"
+            class="flex w-full items-center justify-between cursor-pointer font-bold text-base md:text-lg text-theme-dark transition text-left"
+            :class="{ 'text-theme-blue': active === 4 }"
+          >
+            <span>What Is the Car Battery Warranty Policy at Dial-a-Tire?</span>
+            <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 4 }">
+              <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </span>
+          </button>
+
+          <div
+            x-ref="faq4"
+            class="overflow-hidden transition-all duration-300 ease-in-out"
+            :style="active === 4 ? `max-height: ${$refs.faq4.scrollHeight}px` : 'max-height: 0px'"
+          >
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Car Batteries Warranty Policy:</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">All our car batteries have warranty from battery manufacturer. Their warranty period of Car Batteries is 12 Months from the date of purchase, if more than 12 Months then will mention on invoice as an additional note. During the warranty period if the car battery fails then buyer will bring car battery in our point of sale and buyer will pay the cost to bring that battery as seller will not pay any transportation cost.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Buyer will deliver the defective car battery in its immaculate form, without drainage of electrolytes and not violating the uprightness of car manufacturer's marking for finding the reason of failure. Car Battery warranty will be calculated on Pro-rata basis.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 5 -->
+        <div class="py-2 md:py-4">
+          <button 
+            @click="active === 5 ? active = null : active = 5"
+            class="flex w-full items-center justify-between cursor-pointer font-bold text-base md:text-lg text-theme-dark transition text-left"
+            :class="{ 'text-theme-blue': active === 5 }"
+          >
+            <span>What Battery Warranty Claims Are Not Accepted?</span>
+            <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 5 }">
+              <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </span>
+          </button>
+
+          <div
+            x-ref="faq5"
+            class="overflow-hidden transition-all duration-300 ease-in-out"
+            :style="active === 5 ? `max-height: ${$refs.faq5.scrollHeight}px` : 'max-height: 0px'"
+          >
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">A Battery claim involve any one of below categories will not be accepted.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Buyer is not able to provide original invoice.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Contravention the probity of manufacturer label on car battery.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Inattentive damage to battery case, wrenching or liquefy the leads.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Detonation of car battery due to the breakage of internal electrical circuit.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Presenting the car battery with drained electrolytes.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">The charging voltages in car's electrical circuit are vary from permitted one.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Use of car battery not for intended purpose or wrong choice of battery for this car.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">By using the battery on a car with imperfect electrical equipment.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Prolonged storage of the car or very minimal car usage.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">The marking on the car battery is not same as on warranty card.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 6 -->
+        <div class="py-2 md:py-4">
+          <button 
+            @click="active === 6 ? active = null : active = 6"
+            class="flex w-full items-center justify-between cursor-pointer font-bold text-base md:text-lg text-theme-dark transition text-left"
+            :class="{ 'text-theme-blue': active === 6 }"
+          >
+            <span>Is There a Warranty on Services Provided by Dial-a-Tire?</span>
+            <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 6 }">
+              <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </span>
+          </button>
+
+          <div
+            x-ref="faq6"
+            class="overflow-hidden transition-all duration-300 ease-in-out"
+            :style="active === 6 ? `max-height: ${$refs.faq6.scrollHeight}px` : 'max-height: 0px'"
+          >
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">
+              There is no warranty on services like wheel alignment, wheel balancing or any other mechanical service done at Dial-a-Tire/Sungate Tyres Trading LLC. We will hand over the car after fixing the services issue to customer. Dial-a-Tire/Sungate Tyres will not be responsible for any kind of issues that will occur to the car after handing it over to the client.
+            </p>
+          </div>
+        </div>
+
+
+           <!-- FAQ Item 7 -->
+        <div class="py-2 md:py-4">
+          <button 
+            @click="active === 7 ? active = null : active = 7"
+            class="flex w-full items-center justify-between cursor-pointer font-bold text-base md:text-lg text-theme-dark transition text-left"
+            :class="{ 'text-theme-blue': active === 7 }"
+          >
+            <span>What Is the Warranty Policy for Spare Parts at Dial-a-Tire?</span>
+            <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 7 }">
+              <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </span>
+          </button>
+
+          <div
+            x-ref="faq6"
+            class="overflow-hidden transition-all duration-300 ease-in-out"
+            :style="active === 7 ? `max-height: ${$refs.faq6.scrollHeight}px` : 'max-height: 0px'"
+          >
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">There is no warranty on aftermarket parts or used parts.</p>      
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">If parts are original, then will have the warranty from authorized parts distributor in selling territory not from Dial-a-Tire side.</p>
+          </div>
+        </div>
+
+             <!-- FAQ Item 8 -->
+        <div class="py-2 md:py-4">
+          <button 
+            @click="active === 8 ? active = null : active = 8"
+            class="flex w-full items-center justify-between cursor-pointer font-bold text-base md:text-lg text-theme-dark transition text-left"
+            :class="{ 'text-theme-blue': active === 8 }"
+          >
+            <span>Can I Return or Exchange Items Purchased from Dial-a-Tire?</span>
+            <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 8 }">
+              <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </span>
+          </button>
+
+          <div
+            x-ref="faq6"
+            class="overflow-hidden transition-all duration-300 ease-in-out"
+            :style="active === 8 ? `max-height: ${$refs.faq6.scrollHeight}px` : 'max-height: 0px'"
+          >
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Returns or exchange of any item without original invoice cannot be accepted.</p>      
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Returns are accepted within one week after delivery for full refund or exchange.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Eligible items can be returned and will be refunded back to your original form of payment within 10 working days after submitting your return.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">If you paid through credit card, then you will get refund in same credit card used during purchase.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Buyer will bear all return shipping costs and fees.</p>
+            <p class="mt-3 text-theme-dark/80 text-base md:text-lg pl-1">Dial-a-Tire/Sungate Tyres Trading LLC reserve the right to reject a return or recompense if tyres have been mounted, driven, unpacked, damaged or items used in any other way by the buyer.</p>
+          </div>
+        </div>
+
+      </div>
+
+
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Fallback JS if Alpine isn't loaded -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof Alpine === 'undefined') {
+    // hide all contents initially
+    document.querySelectorAll('.accordion-content-fallback').forEach(function(c){ c.style.display = 'none'; });
+
+    document.querySelectorAll('.js-accordion-title').forEach(function(btn){
+      btn.addEventListener('click', function () {
+        // next sibling is the content div
+        var content = btn.nextElementSibling;
+        if (!content) return;
+        var isOpen = content.style.display === 'block';
+        // close others
+        document.querySelectorAll('.accordion-content-fallback').forEach(function(cc){ cc.style.display = 'none'; });
+        document.querySelectorAll('.js-accordion-title').forEach(function(b){ b.setAttribute('aria-expanded','false'); });
+        if (!isOpen) {
+          content.style.display = 'block';
+          btn.setAttribute('aria-expanded','true');
+        } else {
+          content.style.display = 'none';
+          btn.setAttribute('aria-expanded','false');
+        }
+      });
+    });
+  }
+});
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+
+
+
+
+<script>
+
+
+function initWarrantyForm() {
+    return {
+        submitWarrantyForm() {
+            this.validate()
+                .then(() => {
+                    const $form = document.querySelector('#<?= $escaper->escapeJs($formId) ?>');
+
+                    if ('<?= $recaptchaV3PublicKey ?>' !== '') {
+                        <?= $block->getBlockHtml(ReCaptcha::RECAPTCHA_SCRIPT_TOKEN_BLOCK); ?>
+                        const checkCaptchaAndSubmit = () => {
+                            const response = $form.querySelector('[name="g-recaptcha-response"]').value;
+                            if (response) {
+                                $form.submit();
+                            } else {
+                                setTimeout(checkCaptchaAndSubmit, 200);
+                            }
+                        };
+                        checkCaptchaAndSubmit();
+                    } else {
+                        $form.submit();
+                    }
+                })
+                .catch((invalid) => {
+                    if (invalid.length > 0) invalid[0].focus();
+                });
+        }
+    }
+}
+
+// Optional: Automatically open the date picker on focus
+    document.getElementById('invoice_date').addEventListener('click', function() {
+      this.showPicker?.(); // only supported in some modern browsers
+    });
+
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+<script>
+  document.getElementById("invoice_image").addEventListener("change", function () {
+    const fileName = this.files[0] ? this.files[0].name : "No file chosen";
+    document.getElementById("file-chosen").textContent = fileName;
+  });
+
+
+  document.getElementById("product_image1").addEventListener("change", function () {
+    const fileName = this.files[0] ? this.files[0].name : "No file chosen";
+    document.getElementById("file-chosen2").textContent = fileName;
+  });
+
+    document.getElementById("product_image2").addEventListener("change", function () {
+    const fileName = this.files[0] ? this.files[0].name : "No file chosen";
+    document.getElementById("file-chosen3").textContent = fileName;
+  });
+    document.getElementById("product_image3").addEventListener("change", function () {
+    const fileName = this.files[0] ? this.files[0].name : "No file chosen";
+    document.getElementById("file-chosen4").textContent = fileName;
+  });
+
+
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+
+
+<style>
+  .phone-prefix {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+}
+.shadow-custom-blue {
+    box-shadow: 0px 2px 3px 1px rgba(0, 87, 160, 0.4);
+}
+</style>
+
+
+

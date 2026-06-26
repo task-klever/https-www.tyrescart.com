@@ -1,0 +1,906 @@
+<?php
+   $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+   $bannerHelper = $objectManager->get(\Mageplaza\BannerSlider\Helper\Data::class);
+   $mediaURL = $objectManager->get('Magento\Store\Model\StoreManagerInterface')
+       ->getStore()
+       ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+   $baseUrl = $this->getBaseUrl();
+?>
+
+<section class="section top-banner">
+   <div class="img_wrp w-full pb-[78%] md:pb-[31.5%] h-0 z-0 relative">
+      <figure class="absolute inset-0">
+         <picture>
+            <source srcset="<?php echo $mediaURL; ?>images/alloy-banner.webp" alt="Top Banner" type="image/webp" media="(max-width: 767px)" width="767" height="500">
+            <source srcset="<?php echo $mediaURL; ?>images/alloy-banner.webp" alt="Top Banner" type="image/webp" media="(min-width: 768px)" width="1920" height="950">
+            <img fetchpriority="high" class="w-full h-full object-cover object-bottom" src="<?php echo $mediaURL; ?>images/alloy-banner.webp" alt="Top Banner" width="767" height="500">
+         </picture>
+      </figure>
+   </div>
+   <div class="top-info-bar w-full bg-gradient-to-b from-black/40 via-black/60 to-black/75 py-2 md:py-4 left-0 bottom-0 absolute">
+      <div class="container-theme">
+         <div class="flex flex-wrap items-center justify-between">
+            <div class="flex items-center justify-center gap-2 flex-1 px-2 md:px-4 py-1 relative after:content-none md:after:content-[''] after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-5 after:border-r after:border-dashed after:border-white/25">
+               <svg class="w-4 h-4 text-yellow-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+               </svg>
+               <span class="text-white text-[11px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap"><?php echo __('OEM Approved') ?></span>
+            </div>
+            <div class="flex items-center justify-center gap-2 flex-1 px-2 md:px-4 py-1 relative after:content-none md:after:content-[''] after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-5 after:border-r after:border-dashed after:border-white/25">
+               <svg class="w-4 h-4 text-white/80 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10"/>
+                  <circle cx="12" cy="12" r="3"/>
+                  <line x1="12" y1="2" x2="12" y2="9"/>
+                  <line x1="12" y1="15" x2="12" y2="22"/>
+                  <line x1="2" y1="12" x2="9" y2="12"/>
+                  <line x1="15" y1="12" x2="22" y2="12"/>
+                  <line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/>
+                  <line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/>
+                  <line x1="19.07" y1="4.93" x2="14.83" y2="9.17"/>
+                  <line x1="9.17" y1="14.83" x2="4.93" y2="19.07"/>
+               </svg>
+               <span class="text-white text-[11px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap"><?php echo __('Fits 98% Of Wheels') ?></span>
+            </div>
+            <div class="flex items-center justify-center gap-2 flex-1 px-2 md:px-4 py-1 relative after:content-none md:after:content-[''] after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-5 after:border-r after:border-dashed after:border-white/25">
+               <span class="text-[10px] font-black text-white/90 border border-white/40 px-1 leading-tight tracking-tight flex-shrink-0">GB</span>
+               <span class="text-white text-[11px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap"><?php echo __('Made In Britain') ?></span>
+            </div>
+            <div class="flex items-center justify-center gap-2 flex-1 px-2 md:px-4 py-1">
+               <svg class="w-4 h-4 text-yellow-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C6.48 2 2 6.48 2 12c0 5.52 4.48 10 10 10 1.1 0 2-.9 2-2 0-.54-.21-1.03-.54-1.4-.32-.36-.52-.85-.52-1.35 0-1.1.9-2 2-2h2.35C19.76 15.25 22 12.85 22 10c0-4.42-4.48-8-10-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 8 6.5 8 8 8.67 8 9.5 7.33 11 6.5 11zm3-4C8.67 7 8 6.33 8 5.5S8.67 4 9.5 4s1.5.67 1.5 1.5S10.33 7 9.5 7zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 4 14.5 4s1.5.67 1.5 1.5S15.33 7 14.5 7zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 8 17.5 8s1.5.67 1.5 1.5S18.33 11 17.5 11z"/>
+               </svg>
+               <span class="text-white text-[11px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap"><?php echo __('15 Colours') ?></span>
+            </div>
+         </div>
+      </div>
+   </div>
+</section>
+<div class="w-full bg-gradient-to-b from-[#1a1a1a] to-[#111] py-3 md:py-4">
+   <div class="container-theme flex items-center justify-center gap-4">
+      <a href="<?php echo $escaper->escapeUrl($baseUrl . 'rim-protectors'); ?>" class="border border-theme-blue inline-flex items-center justify-center px-4 md:px-7 py-2.5 bg-theme-blue hover:bg-black text-white text-xs md:text-sm font-bold uppercase tracking-wide transition-colors duration-300 rounded-full">
+      <?php echo __('Shop AlloyGators') ?>
+      </a>
+      <a href="<?php echo $escaper->escapeUrl($baseUrl . 'alloygator/colours'); ?>" class="inline-flex items-center justify-center px-4 md:px-7 py-2.5 bg-transparent border border-theme-blue text-white hover:bg-theme-blue hover:text-white text-xs md:text-sm font-bold uppercase tracking-wide transition-colors duration-300 rounded-full">
+      <?php echo __('Pick Your Colour') ?>
+      </a>
+   </div>
+</div>
+<section class="section section-padding protect-your-alloy">
+   <div class="flex items-center px-3 xl:px-0">
+      <div class="hidden xl:block w-1/4">
+         <div class="img_wrp w-full pb-[69.4%] relative">
+            <div class="absolute inset-0">
+               <picture>
+                  <source srcset="<?php echo $mediaURL; ?>images/right-car.webp" alt="Top Banner" type="image/webp">
+                  <img loading="lazy" class="max-w-[80%] ml-auto" src="<?php echo $mediaURL; ?>images/right-car.webp" alt="Top Banner">
+               </picture>
+            </div>
+         </div>
+      </div>
+      <div class="flex-1 md:w-1/2 text-center">
+         <div class="section-title text-center">
+            <h3><?php echo __('Protect Your Alloy Wheels') ?> <span class="text-theme-blue"><?php echo __('Kerb Damage') ?></span></h3>
+         </div>
+         <p class="text-gray-500 text-sm md:text-base leading-relaxed mb-6 md:mb-8 max-w-lg mx-auto">
+            <?php echo __('Professional-grade rim protectors that save you thousands in repair costs while enhancing your vehicle\'s style. Join over one million drivers who never worry about parking again.') ?>
+         </p>
+         <a href="<?php echo $escaper->escapeUrl($baseUrl . 'rim-protectors'); ?>" class="inline-flex items-center justify-center px-4 md:px-8 py-3.5 rounded-md bg-black hover:bg-theme-blue text-white text-xs md:text-sm font-bold uppercase tracking-wide transition-colors duration-300">
+         <?php echo __('Start Protecting Your Wheels Today!') ?>
+         </a>
+         <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6 md:mt-10">
+            <a href="<?php echo $escaper->escapeUrl($baseUrl . 'car-battery?brand=Amaron&mgs_brand=Amaron'); ?>" class="group bg-white rounded-[10px] border border-border-color shadow-[0_2px_16px_rgba(0,0,0,0.07)] hover:border-theme-blue transition-all duration-300 flex items-center justify-center py-3 cursor-pointer">
+            <img src="<?php echo $mediaURL; ?>images/amaron-battery.png" alt="Amaron Battery" class="max-h-[46px] md:max-h-[36px] xl:max-h-[40px] w-auto object-contain transition-transform duration-300 group-hover:scale-110">
+            </a>
+            <a href="<?php echo $escaper->escapeUrl($baseUrl . 'car-battery?brand=Solite'); ?>" class="group bg-white rounded-[10px] border border-border-color shadow-[0_2px_16px_rgba(0,0,0,0.07)] hover:border-theme-blue transition-all duration-300 flex items-center justify-center py-3 cursor-pointer">
+            <img src="<?php echo $mediaURL; ?>images/solite_1.jpg" alt="Solite Battery" class="max-h-[46px] md:max-h-[36px] xl:max-h-[40px] w-auto object-contain transition-transform duration-300 group-hover:scale-110">
+            </a>
+            <a href="<?php echo $escaper->escapeUrl($baseUrl . 'car-battery?brand=Volcan'); ?>"  class="group bg-white rounded-[10px] border border-border-color shadow-[0_2px_16px_rgba(0,0,0,0.07)] hover:border-theme-blue transition-all duration-300 flex items-center justify-center py-3 cursor-pointer">
+            <img src="<?php echo $mediaURL; ?>images/volcan_1.png" alt="Volcan Battery" class="max-h-[46px] md:max-h-[36px] xl:max-h-[40px] w-auto object-contain transition-transform duration-300 group-hover:scale-110">
+            </a>
+            <a href="<?php echo $escaper->escapeUrl($baseUrl . 'car-battery?brand=Varta'); ?>"  class="group bg-white rounded-[10px] border border-border-color shadow-[0_2px_16px_rgba(0,0,0,0.07)] hover:border-theme-blue transition-all duration-300 flex items-center justify-center py-3 cursor-pointer">
+            <img src="<?php echo $mediaURL; ?>images/varta-battery.jpg" alt="Varta Battery" class="max-h-[46px] md:max-h-[36px] xl:max-h-[40px] w-auto object-contain transition-transform duration-300 group-hover:scale-110">
+            </a>
+            <a href="<?php echo $escaper->escapeUrl($baseUrl . 'car-battery?brand=Bosch'); ?>"  class="group bg-white rounded-[10px] border border-border-color shadow-[0_2px_16px_rgba(0,0,0,0.07)] hover:border-theme-blue transition-all duration-300 flex items-center justify-center py-3 cursor-pointer">
+            <img src="<?php echo $mediaURL; ?>images/bosch_1.png" alt="Bosch Battery" class="max-h-[46px] md:max-h-[36px] xl:max-h-[40px] w-auto object-contain transition-transform duration-300 group-hover:scale-110">
+            </a>
+         </div>
+      </div>
+      <div class="hidden xl:block w-1/4">
+         <div class="img_wrp w-full pb-[69.4%] relative">
+            <div class="absolute inset-0">
+               <picture>
+                  <source srcset="<?php echo $mediaURL; ?>images/left-car.webp" alt="Top Banner" type="image/webp">
+                  <img loading="lazy" class="max-w-[80%] mr-auto" src="<?php echo $mediaURL; ?>images/left-car.webp" alt="Top Banner">
+               </picture>
+            </div>
+         </div>
+      </div>
+   </div>
+</section>
+<section class="section protect-matter">
+   <div class="grid grid-cols-1 md:grid-cols-3 gap-[2px]">
+      <a href="<?php echo $escaper->escapeUrl($baseUrl . 'rim-protectors'); ?>" class="group relative overflow-hidden block h-[260px] md:h-[300px] lg:h-[340px]">
+         <img src="<?php echo $mediaURL; ?>images/shop-cat-protect.webp" alt="<?php echo __('Protect What Matters') ?>" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-100 transition-opacity duration-500"></div>
+         <div class="absolute bottom-0 right-0 p-6 md:p-8">
+            <h4 class="text-white font-bold text-xl md:text-2xl leading-tight mb-1"><?php echo __('Protect What Matters') ?></h4>
+            <p class="text-white/80 text-sm font-semibold mb-4"><?php echo __('from Â£74.95') ?></p>
+            <span class="inline-flex items-center justify-center px-5 py-2 bg-theme-blue hover:bg-black rounded-md text-white text-sm font-bold uppercase tracking-wide transition-colors duration-300">
+            <?php echo __('Shop Now') ?>
+            </span>
+         </div>
+      </a>
+      <a href="<?php echo $escaper->escapeUrl($baseUrl . 'rim-protectors'); ?>" class="group relative overflow-hidden block h-[260px] md:h-[300px] lg:h-[340px]">
+         <img src="<?php echo $mediaURL; ?>images/enhance-your-adventure.webp" alt="<?php echo __('Enhance Your Adventure') ?>" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-100 transition-opacity duration-500"></div>
+         <div class="absolute bottom-0 right-0 p-6 md:p-8">
+            <h4 class="text-white font-bold text-xl md:text-2xl leading-tight mb-1"><?php echo __('Enhance Your Adventure') ?></h4>
+            <p class="text-white/80 text-sm font-semibold mb-4"><?php echo __('from Â£74.95') ?></p>
+            <span class="inline-flex items-center justify-center px-5 py-2 bg-theme-blue hover:bg-black rounded-md text-white text-sm font-bold uppercase tracking-wide transition-colors duration-300">
+            <?php echo __('Shop Now') ?>
+            </span>
+         </div>
+      </a>
+      <a href="<?php echo $escaper->escapeUrl($baseUrl . 'rim-protectors'); ?>" class="group relative overflow-hidden block h-[260px] md:h-[300px] lg:h-[340px]">
+         <img src="<?php echo $mediaURL; ?>images/customise-your-identity.webp" alt="<?php echo __('Customise Your Identity') ?>" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-100 transition-opacity duration-500"></div>
+         <div class="absolute bottom-0 right-0 p-6 md:p-8">
+            <h4 class="text-white font-bold text-xl md:text-2xl leading-tight mb-1"><?php echo __('Customise Your Identity') ?></h4>
+            <p class="text-white/80 text-sm font-semibold mb-4"><?php echo __('from Â£74.95') ?></p>
+            <span class="inline-flex items-center justify-center px-5 py-2 bg-theme-blue hover:bg-black rounded-md text-white text-sm font-bold uppercase tracking-wide transition-colors duration-300">
+            <?php echo __('Shop Now') ?>
+            </span>
+         </div>
+      </a>
+   </div>
+</section>
+<section class="section section-padding premium-wheel-protection pb-0 z-30">
+   <div class="container-theme">
+      <div class="max-w-[1000px] mx-auto rounded-2xl border-[3px] border-theme-blue p-3 md:p-10 shadow-xl">
+         <div class="flex justify-center mb-6">
+            <img src="<?php echo $mediaURL; ?>images/alloygator-logo-lg.jpg" alt="Alloygator Logo" class="h-11 w-auto object-contain">
+         </div>
+         <div class="section-title text-center">
+            <h3><?php echo __('Premium Wheel Protection') ?> <span class="text-theme-blue"><?php echo __('That Actually Works') ?></span></h3>
+         </div>
+         <p class="text-center text-gray-500 text-sm md:text-base leading-relaxed max-w-2xl mx-auto mb-5 md:mb-10">
+            <?php echo __('AlloyGator wheel protectors are designed to absorb impacts that would otherwise damage your alloy wheels. Made from super-tough nylon composite, they create a protective barrier between your wheel and the kerb.') ?>
+         </p>
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center mb-3 md:mb-10">
+            <ul class="flex flex-col gap-5">
+               <li class="flex items-center gap-4">
+                  <span class="flex-shrink-0 w-8 h-8 rounded-full bg-[#9dc41a]/15 flex items-center justify-center mt-0.5 border">
+                     <svg class="w-4 h-4" style="color:#9dc41a;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                     </svg>
+                  </span>
+                  <span class="text-gray-800 font-semibold text-sm md:text-base leading-snug"><?php echo __('Super-tough nylon composite with UV stabiliser') ?></span>
+               </li>
+               <li class="flex items-center gap-4">
+                  <span class="flex-shrink-0 w-8 h-8 rounded-full bg-[#9dc41a]/15 flex items-center justify-center mt-0.5 border">
+                     <svg class="w-4 h-4" style="color:#9dc41a;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                     </svg>
+                  </span>
+                  <span class="text-gray-800 font-semibold text-sm md:text-base leading-snug"><?php echo __('Fits between wheel and tyre with secure locking mechanism') ?></span>
+               </li>
+               <li class="flex items-center gap-4">
+                  <span class="flex-shrink-0 w-8 h-8 rounded-full bg-[#9dc41a]/15 flex items-center justify-center mt-0.5 border">
+                     <svg class="w-4 h-4" style="color:#9dc41a;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                     </svg>
+                  </span>
+                  <span class="text-gray-800 font-semibold text-sm md:text-base leading-snug"><?php echo __('MIRA and TUV certified for quality and safety') ?></span>
+               </li>
+               <li class="flex items-center gap-4">
+                  <span class="flex-shrink-0 w-8 h-8 rounded-full bg-[#9dc41a]/15 flex items-center justify-center mt-0.5 border">
+                     <svg class="w-4 h-4" style="color:#9dc41a;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                     </svg>
+                  </span>
+                  <span class="text-gray-800 font-semibold text-sm md:text-base leading-snug"><?php echo __('15 colours to match or accent your vehicle') ?></span>
+               </li>
+            </ul>
+            <div class="flex items-center justify-center">
+               <img src="<?php echo $mediaURL; ?>images/alloygator-tool-kit.webp" alt="<?php echo __('alloygator Part Kit') ?>" class="max-h-[180px] md:max-h-[220px] w-auto object-contain">
+            </div>
+         </div>
+         <div class="text-center">
+            <a href="<?php echo $escaper->escapeUrl($baseUrl . 'rim-protectors'); ?>" class="inline-flex items-center justify-center px-4 md:px-8 py-3.5 rounded-md bg-theme-blue hover:bg-black text-white text-xs md:text-base font-bold uppercase tracking-wide transition-colors duration-300">
+            <?php echo __('Start Protecting Your Wheels Today!') ?>
+            </a>
+         </div>
+      </div>
+   </div>
+</section>
+<section class="section section-padding why-alloygator -mt-[37px] md:-mt-[70px] z-20" style="background-image:url('<?php echo $mediaURL; ?>images/alloygator-box-banner.webp');">
+   <div class="absolute inset-0 bg-[#0000008f] z-20"></div>
+   <div class="container-theme relative z-50">
+      <div class="section-title text-center mt-8 md:mt-14 text-white">
+         <h3> <?php echo __('Why') ?> <span class="text-theme-blue"> <?php echo __('AlloyGator?') ?></span></h3>
+         <p><?php echo __('Our premium wheel protectors offer benefits that no other solution can match') ?></p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 max-w-[1200px] mx-auto">
+         <div class="bg-white rounded-2xl py-6 px-3 flex flex-col items-center text-center shadow-[0_4px_24px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.18)] hover:-translate-y-1 transition-all duration-300">
+            <div class="mb-5">
+               <img src="<?php echo $mediaURL; ?>images/alloygator-logo.png" alt="AlloyGator" class="h-12 w-auto object-contain mx-auto">
+            </div>
+            <h4 class="text-sm md:text-base font-black uppercase tracking-wide mb-3"><?php echo __('Fits 98% Of Wheels') ?></h4>
+            <p class="text-gray-500 text-sm leading-relaxed"><?php echo __('Engineered for almost every make and model from 12" to 24" wheels.') ?></p>
+         </div>
+         <div class="bg-white rounded-2xl py-6 px-3 flex flex-col items-center text-center shadow-[0_4px_24px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.18)] hover:-translate-y-1 transition-all duration-300">
+            <div class="mb-5">
+               <img src="<?php echo $mediaURL; ?>images/alloygator-logo.png" alt="AlloyGator" class="h-12 w-auto object-contain mx-auto">
+            </div>
+            <h4 class="text-sm md:text-base font-black uppercase tracking-wide mb-3"><?php echo __('15 Colour Options') ?></h4>
+            <p class="text-gray-500 text-sm leading-relaxed"><?php echo __('Match or contrast with your car\'s personality for protection with style.') ?></p>
+         </div>
+         <div class="bg-white rounded-2xl py-6 px-3 flex flex-col items-center text-center shadow-[0_4px_24px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.18)] hover:-translate-y-1 transition-all duration-300">
+            <div class="mb-5">
+               <img src="<?php echo $mediaURL; ?>images/alloygator-logo.png" alt="AlloyGator" class="h-12 w-auto object-contain mx-auto">
+            </div>
+            <h4 class="text-sm md:text-base font-black uppercase tracking-wide mb-3"><?php echo __('OEM Approved') ?></h4>
+            <p class="text-gray-500 text-sm leading-relaxed"><?php echo __('Trusted by CitroÃ«n, Toyota, Peugeot and leading manufacturers worldwide.') ?></p>
+         </div>
+         <div class="bg-white rounded-2xl py-6 px-3 flex flex-col items-center text-center shadow-[0_4px_24px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.18)] hover:-translate-y-1 transition-all duration-300">
+            <div class="mb-5">
+               <img src="<?php echo $mediaURL; ?>images/alloygator-logo.png" alt="AlloyGator" class="h-12 w-auto object-contain mx-auto">
+            </div>
+            <h4 class="text-sm md:text-base font-black uppercase tracking-wide mb-3"><?php echo __('DIY Or Pro Fitting') ?></h4>
+            <p class="text-gray-500 text-sm leading-relaxed"><?php echo __('Easy install at home using our premium tools or by our network of trained 5-Star Fitters.') ?></p>
+         </div>
+      </div>
+   </div>
+</section>
+<section class="section section-padding benefits-at-glance bg-[#f5f5f5]">
+   <div class="container-theme">
+      <div class="section-title text-center mb-2">
+         <h3> <?php echo __('Benefits at a') ?> <span class="text-theme-blue">  <?php echo __('Glance') ?></span></h3>
+         <p><?php echo __('Drive Confidently, Save Money, Protect your alloys') ?></p>
+      </div>
+      <div class="flex flex-col gap-0 md:grid md:grid-cols-2 md:gap-x-6 md:gap-y-0 md:items-start lg:grid-cols-[1fr_minmax(300px,_420px)_1fr] lg:gap-0 lg:items-center">
+         <div class="order-2 lg:order-1 w-full max-w-[360px] mx-auto md:max-w-none">
+            <div class="text-center px-4 py-5 lg:py-7">
+               <div class="flex justify-center mb-3">
+                  <img src="<?php echo $mediaURL; ?>images/tyrescart-batch-icon.webp" alt="" class="w-12 h-12 object-contain drop-shadow-sm" loading="lazy" width="48" height="48">
+               </div>
+               <h3 class="text-xs md:text-lg font-black uppercase tracking-[0.18em] text-gray-800 mb-2"><?php echo __('Cost Sheild') ?></h3>
+               <p class="text-gray-500 text-xs md:text-sm leading-relaxed max-w-[260px] mx-auto"><?php echo __('Cuts yearly wheel-repair spending from hundreds to virtually zero, keeping more hard-earned cash for holidays and family treats.') ?></p>
+            </div>
+            <div class="border-t border-dashed border-theme-blue mx-auto mx-6 w-[50%]"></div>
+            <div class="text-center px-4 py-5 lg:py-7">
+               <div class="flex justify-center mb-3">
+                  <img src="<?php echo $mediaURL; ?>images/tyrescart-batch-icon.webp" alt="" class="w-12 h-12 object-contain drop-shadow-sm" loading="lazy" width="48" height="48">
+               </div>
+               <h3 class="text-xs md:text-lg font-black uppercase tracking-[0.18em] text-gray-800 mb-2"><?php echo __('Style Match') ?></h3>
+               <p class="text-gray-500 text-xs md:text-sm leading-relaxed max-w-[260px] mx-auto"><?php echo __('Colour-matched options blend seamlessly with alloys, remaining virtually invisible while complementing personal tastes and factory finishes.') ?></p>
+            </div>
+            <div class="border-t border-dashed border-theme-blue mx-auto mx-6 w-[50%]"></div>
+            <div class="text-center px-4 py-5 lg:py-7">
+               <div class="flex justify-center mb-3">
+                  <img src="<?php echo $mediaURL; ?>images/tyrescart-batch-icon.webp" alt="" class="w-12 h-12 object-contain drop-shadow-sm" loading="lazy" width="48" height="48">
+               </div>
+               <h3 class="text-xs md:text-lg font-black uppercase tracking-[0.18em] text-gray-800 mb-2"><?php echo __('Stress-Free') ?></h3>
+               <p class="text-gray-500 text-xs md:text-sm leading-relaxed max-w-[260px] mx-auto"><?php echo __('Glide into narrow bays and kerbs without flinching; AlloyGators absorbs every accidental scrape.') ?></p>
+            </div>
+         </div>
+         <div class="order-1 lg:order-2 md:col-span-2 lg:col-span-1 w-full max-w-[420px] mx-auto lg:px-4 xl:px-6">
+            <div class="relative border-[3px] md:border-4 border-theme-blue overflow-hidden bg-white">
+               <img loading="lazy" src="<?php echo $mediaURL; ?>images/alloy-wheel-benefits.webp" alt="<?php echo __('AlloyGator Wheel Protection â€” Before and After') ?>" class="w-full h-auto block object-cover" width="420" height="420">
+            </div>
+         </div>
+         <div class="order-3 w-full max-w-[360px] mx-auto md:max-w-none">
+            <div class="text-center px-4 py-5 lg:py-7">
+               <div class="flex justify-center mb-3">
+                  <img src="<?php echo $mediaURL; ?>images/tyrescart-batch-icon.webp" alt="" class="w-12 h-12 object-contain drop-shadow-sm" loading="lazy" width="48" height="48">
+               </div>
+               <h3 class="text-xs md:text-lg font-black uppercase tracking-[0.18em] text-gray-800 mb-2"><?php echo __('Resale Boost') ?></h3>
+               <p class="text-gray-500 text-xs md:text-sm leading-relaxed max-w-[260px] mx-auto"><?php echo __('Keep alloys pristine, impress buyers and dealers, and add value to your part-exchange offer.') ?></p>
+            </div>
+            <div class="border-t border-dashed border-theme-blue mx-auto mx-6 w-[50%]"></div>
+            <div class="text-center px-4 py-5 lg:py-7">
+               <div class="flex justify-center mb-3">
+                  <img src="<?php echo $mediaURL; ?>images/tyrescart-batch-icon.webp" alt="" class="w-12 h-12 object-contain drop-shadow-sm" loading="lazy" width="48" height="48">
+               </div>
+               <h3 class="text-xs md:text-lg font-black uppercase tracking-[0.18em] text-gray-800 mb-2"><?php echo __('Season Proof') ?></h3>
+               <p class="text-gray-500 text-xs md:text-sm leading-relaxed max-w-[260px] mx-auto"><?php echo __('Engineered to withstand winter salt, acid rain and summer heat, preventing clear-coat corrosion during every season.') ?></p>
+            </div>
+            <div class="border-t border-dashed border-theme-blue mx-auto mx-6 w-[50%]"></div>
+            <div class="text-center px-4 py-5 lg:py-7">
+               <div class="flex justify-center mb-3">
+                  <img src="<?php echo $mediaURL; ?>images/tyrescart-batch-icon.webp" alt="" class="w-12 h-12 object-contain drop-shadow-sm" loading="lazy" width="48" height="48">
+               </div>
+               <h3 class="text-xs md:text-lg font-black uppercase tracking-[0.18em] text-gray-800 mb-2"><?php echo __('British Build') ?></h3>
+               <p class="text-gray-500 text-xs md:text-sm leading-relaxed max-w-[260px] mx-auto"><?php echo __('Engineered and manufactured in the Midlands using ISO-certified polymers for durability on Britain\'s potholes, grit and damp climate.') ?></p>
+            </div>
+         </div>
+      </div>
+      <div class="text-center mt-0 md:mt-5">
+         <a href="https://www.tyrescart.com/en/alloygator" class="inline-flex items-center justify-center px-4 md:px-8 py-3.5 rounded-md  bg-theme-blue hover:bg-black text-white text-xs md:text-base font-bold uppercase tracking-wide transition-colors duration-300">
+         <?php echo __('Start Protecting Your Wheels Today!') ?>
+         </a>
+      </div>
+   </div>
+</section>
+<section class="section pick-your-color">
+   <div class="grid grid-cols-1 md:grid-cols-3 gap-[2px]">
+      <a href="<?php echo $escaper->escapeUrl($baseUrl . 'rim-protectors'); ?>" class="group relative overflow-hidden block h-[300px] md:h-[320px] lg:h-[360px]">
+         <img loading="lazy" src="<?php echo $mediaURL; ?>images/pick-your-colour.webp" alt="<?php echo __('Pick Your Colour') ?>" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+         <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/25 transition-opacity duration-500"></div>
+         <div class="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
+            <p class="text-[#d4a517] text-[11px] font-black uppercase tracking-[0.22em] mb-1.5"><?php echo __('Step 1') ?></p>
+            <h4 class="text-white font-black text-2xl md:text-3xl lg:text-[1.45rem] uppercase mb-2">
+               <?php echo __('Pick') ?><br><?php echo __('Your Colour') ?>
+            </h4>
+            <p class="text-white/70 text-xs md:text-sm leading-relaxed mb-5 max-w-[260px]">
+               <?php echo __('Choose from 15 vibrant colours to match or accent your vehicle\'s style.') ?>
+            </p>
+            <span class="self-start self-start inline-flex items-center justify-center px-5 py-2 bg-theme-blue hover:bg-white rounded-md text-white hover:text-black text-sm font-bold uppercase tracking-wide transition-colors duration-300">
+            <?php echo __('Buy Now') ?>
+            </span>
+         </div>
+      </a>
+      <a href="<?php echo $escaper->escapeUrl($baseUrl . 'rim-protectors'); ?>" class="group relative overflow-hidden block h-[300px] md:h-[320px] lg:h-[360px]">
+         <img loading="lazy" src="<?php echo $mediaURL; ?>images/install-with-confidence.webp" alt="<?php echo __('Install With Confidence') ?>" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+         <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/25 transition-opacity duration-500"></div>
+         <div class="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
+            <p class="text-[#d4a517] text-[11px] font-black uppercase tracking-[0.22em] mb-1.5"><?php echo __('Step 2') ?></p>
+            <h4 class="text-white font-black text-2xl md:text-3xl lg:text-[1.45rem] uppercase mb-2">
+               <?php echo __('Install') ?><br><?php echo __('With Confidence') ?>
+            </h4>
+            <p class="text-white/70 text-xs md:text-sm leading-relaxed mb-5 max-w-[260px]">
+               <?php echo __('DIY with our comprehensive guide or let a certified fitter handle it for you.') ?>
+            </p>
+            <span class="self-start self-start inline-flex items-center justify-center px-5 py-2 bg-theme-blue hover:bg-white rounded-md text-white hover:text-black text-sm font-bold uppercase tracking-wide transition-colors duration-300">
+            <?php echo __('Buy Now') ?>
+            </span>
+         </div>
+      </a>
+      <a href="<?php echo $escaper->escapeUrl($baseUrl . 'rim-protectors'); ?>" class="group relative overflow-hidden block h-[300px] md:h-[320px] lg:h-[360px]">
+         <img loading="lazy" src="<?php echo $mediaURL; ?>images/drive-protected.webp" alt="<?php echo __('Drive Protected') ?>" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+         <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/25 transition-opacity duration-500"></div>
+         <div class="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
+            <p class="text-[#d4a517] text-[11px] font-black uppercase tracking-[0.22em] mb-1.5"><?php echo __('Step 3') ?></p>
+            <h4 class="text-white font-black text-2xl md:text-3xl lg:text-[1.45rem] uppercase mb-2">
+               <?php echo __('Drive') ?><br><?php echo __('Protected') ?>
+            </h4>
+            <p class="text-white/70 text-xs md:text-sm leading-relaxed mb-5 max-w-[260px]">
+               <?php echo __('Enjoy the road with peace of mind, knowing your wheels are safeguarded.') ?>
+            </p>
+            <span class="self-start self-start inline-flex items-center justify-center px-5 py-2 bg-theme-blue hover:bg-white rounded-md text-white hover:text-black text-sm font-bold uppercase tracking-wide transition-colors duration-300">
+            <?php echo __('Buy Now') ?>
+            </span>
+         </div>
+      </a>
+   </div>
+</section>
+<section class="section section-padding real-customer-reviews bg-white [direction:ltr]"
+   x-data="{ swiper: null }"
+   x-init="swiper = new Swiper($refs.reviewSlider, {
+   speed: 800,
+   loop: true,
+   autoplay: { delay: 3000, disableOnInteraction: true },
+   pagination: { el: $refs.reviewPagination, clickable: true },
+   breakpoints: {
+   0:    { slidesPerView: 1, spaceBetween: 16 },
+   768:  { slidesPerView: 1, spaceBetween: 20 },
+   1024: { slidesPerView: 1, spaceBetween: 20 }
+   }
+   })"
+   @mouseenter="swiper && swiper.autoplay.stop()"
+   @mouseleave="swiper && swiper.autoplay.start()"
+   >
+   <div class="container-theme">
+      <div class="flex justify-center mb-3">
+         <img src="<?php echo $mediaURL; ?>images/alloygator-logo-lg.jpg" alt="Tyrescart Logo" class="h-11 w-auto object-contain">
+      </div>
+      <div class="section-title text-center mb-2">
+         <h3> <?php echo __('Real Customer') ?> <span class="text-theme-blue"> <?php echo __('Reviews') ?></span></h3>
+      </div>
+      <div class="relative max-w-[850px] mx-auto mt-6">
+         <div class="swiper-container overflow-hidden" x-ref="reviewSlider">
+            <div class="swiper-wrapper !items-stretch">
+               <div class="swiper-slide !h-auto">
+                  <div class="relative p-5 pt-10 text-center border-2 border-theme-blue rounded-[10px] h-full flex flex-col justify-end">
+                     <div class="absolute left-1/2 -translate-x-1/2 top-0 inline-flex items-center justify-center w-14 h-10 bg-theme-blue">
+                        <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                           <path d="M11.192 15.757c0-.88-.23-1.618-.69-2.217-.326-.412-.768-.683-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16-.95.1-1.95.76-3 .66-1.06 1.514-1.88 2.56-2.46l-1.5-1.84C7.27 6.67 6.04 7.67 5.04 9c-1 1.3-1.6 2.69-1.8 4.16-.2 1.46-.04 2.72.47 3.78.51 1.06 1.3 1.85 2.39 2.36 1.09.51 2.22.57 3.41.18 1.18-.4 2.02-1.15 2.52-2.26.32-.72.48-1.52.48-2.4zm10 0c0-.88-.23-1.618-.69-2.217-.326-.412-.768-.683-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16-.95.1-1.95.76-3 .66-1.06 1.514-1.88 2.56-2.46l-1.5-1.84c-2.18 1.27-3.41 2.27-4.41 3.6-1 1.3-1.6 2.69-1.8 4.16-.2 1.46-.04 2.72.47 3.78.51 1.06 1.3 1.85 2.39 2.36 1.09.51 2.22.57 3.41.18 1.18-.4 2.02-1.15 2.52-2.26.32-.72.48-1.52.48-2.4z"/>
+                        </svg>
+                     </div>
+                     <div class="flex items-center justify-center gap-1 mb-2 mt-3">
+                        <?php for ($i = 0; $i < 5; $i++): ?>
+                        <svg class="w-5 h-5 md:w-6 md:h-6 text-[#9dc41a]" fill="currentColor" viewBox="0 0 20 20">
+                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        <?php endfor; ?>
+                     </div>
+                     <p class="text-gray-600 text-[0.675rem] italic leading-relaxed mb-4">
+                        <?php echo __('"My saving has been AlloyGators. These simple devices fit between the rim and the tyre and take the brunt of the kerbing. Garages in the AlloyGator fitter network can usually fit them while you wait. It takes less than an hour. You can do it yourself if you\'re confident and save about Â£40 but if you\'re not I wouldn\'t recommend it. There\'s a knack to getting it right and when well fitted they stay in place and provide the protection you need. I prefer the black but they come in a wide range of colours so you don\'t have to be understated if you don\'t want to. And let\'s be honest, its not always your driving you have to worry about. In my case there are three other family members who might not fess up when they have whacked the wheels."') ?>
+                     </p>
+                     <p class="text-black text-sm md:text-base font-black uppercase font-semibold">
+                        <?php echo __('Mark Goodier - Radio Presenter &amp; Founder Chairman Wisebuddah') ?>
+                     </p>
+                  </div>
+               </div>
+               <div class="swiper-slide !h-auto">
+                  <div class="relative p-5 pt-10 text-center border-2 border-theme-blue rounded-[10px] h-full flex flex-col justify-end">
+                     <div class="absolute left-1/2 -translate-x-1/2 top-0 inline-flex items-center justify-center w-14 h-10 bg-theme-blue">
+                        <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                           <path d="M11.192 15.757c0-.88-.23-1.618-.69-2.217-.326-.412-.768-.683-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16-.95.1-1.95.76-3 .66-1.06 1.514-1.88 2.56-2.46l-1.5-1.84C7.27 6.67 6.04 7.67 5.04 9c-1 1.3-1.6 2.69-1.8 4.16-.2 1.46-.04 2.72.47 3.78.51 1.06 1.3 1.85 2.39 2.36 1.09.51 2.22.57 3.41.18 1.18-.4 2.02-1.15 2.52-2.26.32-.72.48-1.52.48-2.4zm10 0c0-.88-.23-1.618-.69-2.217-.326-.412-.768-.683-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16-.95.1-1.95.76-3 .66-1.06 1.514-1.88 2.56-2.46l-1.5-1.84c-2.18 1.27-3.41 2.27-4.41 3.6-1 1.3-1.6 2.69-1.8 4.16-.2 1.46-.04 2.72.47 3.78.51 1.06 1.3 1.85 2.39 2.36 1.09.51 2.22.57 3.41.18 1.18-.4 2.02-1.15 2.52-2.26.32-.72.48-1.52.48-2.4z"/>
+                        </svg>
+                     </div>
+                     <div class="flex items-center justify-center gap-1 mb-2 mt-3">
+                        <?php for ($i = 0; $i < 5; $i++): ?>
+                        <svg class="w-5 h-5 md:w-6 md:h-6 text-[#9dc41a]" fill="currentColor" viewBox="0 0 20 20">
+                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        <?php endfor; ?>
+                     </div>
+                     <p class="text-gray-600 text-[0.675rem] italic leading-relaxed mb-4">
+                        <?php echo __('"I have lost count of the number of cars I have put AlloyGators on and they have genuinely saved me thousands over the years. How do I know this? The one I did not get around to fitting them on, a Range Rover, a certain family member (who shall remain nameless) did all four rims in a week! The wheel refurb cost added up to Â£500."') ?>
+                     </p>
+                     <p class="text-black text-sm md:text-base font-black uppercase font-semibold">
+                        <?php echo __('Quentin Wilson - Motoring Journalist and Broadcaster') ?>
+                     </p>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div x-ref="reviewPagination" class="flex justify-center mt-6 gap-2 review-pagination"></div>
+      <?php /*
+         <div class="review-us-on mt-6">
+                     <div class="flex flex-wrap items-center justify-center gap-6 mb-3">
+                           <a href="https://www.trustpilot.com" target="_blank" rel="noopener noreferrer"
+                  class="inline-flex items-center gap-2 border border-[#00b67a] rounded px-3 py-2 hover:bg-[#00b67a]/5 transition-colors duration-200">
+                                 <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                     <rect width="24" height="24" fill="#00b67a"/>
+                     <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="white"/>
+                  </svg>
+                  <span class="text-xs font-semibold text-gray-800"><?php echo __('Review us on') ?></span>
+      <span class="text-xs font-bold" style="color:#00b67a;">Trustpilot</span>
+      </a>
+      <img src="<?php echo $mediaURL; ?>images/google-review-allygator.png" alt="" class="h-[80px] w-auto">
+   </div>
+   <p class="text-center text-sm font-medium text-gray-800 max-w-[750px] mx-auto leading-relaxed">
+      <?php echo __("AlloyGator customers don't just come backâ€”they bring others with them. Drivers trust our wheel protection to keep their vehicles sharp and damage-free. With thousands of reviews on") ?>
+      <span class="text-[#4285F4]">G</span><span class="text-[#EA4335]">o</span><span class="text-[#FBBC05]">o</span><span class="text-[#4285F4]">g</span><span class="text-[#34A853]">l</span><span class="text-[#EA4335]">e</span>
+      <?php echo __('and other') ?>
+      <span class="font-bold text-[#00b67a]"><?php echo __('Trusted') ?></span>
+      <?php echo __('platforms, you can count on proven quality. Join the AlloyGator family today!') ?>
+   </p>
+   </div>
+   */ ?>
+   </div>
+</section>
+
+<?php /*
+   <section class="section section-padding google-reviews bg-white [direction:ltr] pt-0"
+      x-data="{ swiper: null }"
+      x-init="swiper = new Swiper($refs.googleSlider, {
+         speed: 700,
+         loop: true,
+         autoplay: { delay: 3000, disableOnInteraction: true },
+         pagination: { el: $refs.googlePagination, clickable: true },
+         breakpoints: {
+            0:    { slidesPerView: 1, spaceBetween: 16 },
+            640:  { slidesPerView: 2, spaceBetween: 15 },
+            1024: { slidesPerView: 3, spaceBetween: 15 }
+         }
+      })"
+      @mouseenter="swiper && swiper.autoplay.stop()"
+      @mouseleave="swiper && swiper.autoplay.start()"
+   >
+      <div class="container-theme">
+         <div class="swiper-container overflow-hidden" x-ref="googleSlider">
+            <div class="swiper-wrapper !items-stretch">
+                           <div class="swiper-slide !h-auto">
+                  <div class="h-full flex flex-col border border-gray-200 rounded-xl p-5 bg-white shadow-sm">
+                                       <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                                                   <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                              <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                           </div>
+                           <div>
+                              <p class="text-sm font-bold text-gray-900 leading-tight"><?php echo __('Martin A') ?></p>
+<div class="flex items-center gap-0.5 mt-0.5">
+   <?php for ($i = 0; $i < 5; $i++): ?>
+   <svg class="w-3.5 h-3.5 text-[#FBBC05]" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+   </svg>
+   <?php endfor; ?>
+</div>
+<p class="text-[11px] text-gray-400 mt-0.5"><?php echo __('The whole process from start to finish...') ?></p>
+</div>
+</div>
+<div class="w-7 h-7 rounded-full bg-[#EA4335] flex items-center justify-center flex-shrink-0">
+   <span class="text-white text-xs font-bold leading-none">G</span>
+</div>
+</div>
+<p class="text-gray-600 text-xs leading-relaxed">
+   <?php echo __('"The whole process from start to finish proves there is still great customer service out there. Unfortunately the gator could not be put onto my car, Dan sent through the returns form and postage slip. Unsurprisingly Royal Mail lost the return on tracked!. Dan stepped in to help chase and sort out the issue. Cannot recommend these guys enough. Many thanks."') ?>
+</p>
+</div>
+</div>
+<div class="swiper-slide !h-auto">
+   <div class="h-full flex flex-col border border-gray-200 rounded-xl p-5 bg-white shadow-sm">
+      <div class="flex items-start justify-between mb-3">
+         <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+               <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+               </svg>
+            </div>
+            <div>
+               <p class="text-sm font-bold text-gray-900 leading-tight"><?php echo __('Gill I') ?></p>
+               <div class="flex items-center gap-0.5 mt-0.5">
+                  <?php for ($i = 0; $i < 5; $i++): ?>
+                  <svg class="w-3.5 h-3.5 text-[#FBBC05]" fill="currentColor" viewBox="0 0 20 20">
+                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                  <?php endfor; ?>
+               </div>
+               <p class="text-[11px] text-gray-400 mt-0.5"><?php echo __('I have a great looking bumper car') ?> &#x1F697;</p>
+            </div>
+         </div>
+         <div class="w-7 h-7 rounded-full bg-[#EA4335] flex items-center justify-center flex-shrink-0">
+            <span class="text-white text-xs font-bold leading-none">G</span>
+         </div>
+      </div>
+      <p class="text-gray-600 text-xs leading-relaxed">
+         <?php echo __('"I have the most beautiful alloy wheels but sadly really soft having too be doubly careful parking and kerbing ..Tried most things but the AlloyGators are the best strong and absorbs the bangs a good few times before they need replacing. Only banged them once but my partner lots off times ((he\'s a better driver than me &#x1F602;&#x1F602;&#x1F602;&#x1F602;&#x1F602;)) so thank you AlloyGator for allowing my car too now be a number car."') ?>
+      </p>
+   </div>
+</div>
+<div class="swiper-slide !h-auto">
+   <div class="h-full flex flex-col border border-gray-200 rounded-xl p-5 bg-white shadow-sm">
+      <div class="flex items-start justify-between mb-3">
+         <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+               <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+               </svg>
+            </div>
+            <div>
+               <p class="text-sm font-bold text-gray-900 leading-tight"><?php echo __('David Patmore') ?></p>
+               <div class="flex items-center gap-0.5 mt-0.5">
+                  <?php for ($i = 0; $i < 5; $i++): ?>
+                  <svg class="w-3.5 h-3.5 text-[#FBBC05]" fill="currentColor" viewBox="0 0 20 20">
+                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                  <?php endfor; ?>
+               </div>
+               <p class="text-[11px] text-gray-400 mt-0.5"><?php echo __('Outstanding') ?></p>
+            </div>
+         </div>
+         <div class="w-7 h-7 rounded-full bg-[#EA4335] flex items-center justify-center flex-shrink-0">
+            <span class="text-white text-xs font-bold leading-none">G</span>
+         </div>
+      </div>
+      <p class="text-gray-600 text-xs leading-relaxed">
+         <?php echo __('"We have had our Gators on the car for 18 months ( 4th set, on different cars ) with no problems. The last trip to a hand car wash resulted in the paint being stripped off them! Informed AlloyGators of the experience, and they offered to replace them FOC as a goodwill gesture. Unbelievable service in this day and age! Cannot praise their customer service enough. 5 stars is not enough."') ?>
+      </p>
+   </div>
+</div>
+<div class="swiper-slide !h-auto">
+   <div class="h-full flex flex-col border border-gray-200 rounded-xl p-5 bg-white shadow-sm">
+      <div class="flex items-start justify-between mb-3">
+         <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+               <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+               </svg>
+            </div>
+            <div>
+               <p class="text-sm font-bold text-gray-900 leading-tight"><?php echo __('Bartlomiej Gomulkiewicz') ?></p>
+               <div class="flex items-center gap-0.5 mt-0.5">
+                  <?php for ($i = 0; $i < 5; $i++): ?>
+                  <svg class="w-3.5 h-3.5 text-[#FBBC05]" fill="currentColor" viewBox="0 0 20 20">
+                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                  <?php endfor; ?>
+               </div>
+               <p class="text-[11px] text-gray-400 mt-0.5"><?php echo __('Great Product') ?></p>
+            </div>
+         </div>
+         <div class="w-7 h-7 rounded-full bg-[#EA4335] flex items-center justify-center flex-shrink-0">
+            <span class="text-white text-xs font-bold leading-none">G</span>
+         </div>
+      </div>
+      <p class="text-gray-600 text-xs leading-relaxed">
+         <?php echo __('"Great product, looks very good and protects the rims, I have been using it in all my cars for many years. I highly recommend and encourage you to purchase."') ?>
+      </p>
+   </div>
+</div>
+<div class="swiper-slide !h-auto">
+   <div class="h-full flex flex-col border border-gray-200 rounded-xl p-5 bg-white shadow-sm">
+      <div class="flex items-start justify-between mb-3">
+         <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+               <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+               </svg>
+            </div>
+            <div>
+               <p class="text-sm font-bold text-gray-900 leading-tight"><?php echo __('Ishack Rawat') ?></p>
+               <div class="flex items-center gap-0.5 mt-0.5">
+                  <?php for ($i = 0; $i < 5; $i++): ?>
+                  <svg class="w-3.5 h-3.5 text-[#FBBC05]" fill="currentColor" viewBox="0 0 20 20">
+                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                  <?php endfor; ?>
+               </div>
+               <p class="text-[11px] text-gray-400 mt-0.5"><?php echo __('Great Service') ?></p>
+            </div>
+         </div>
+         <div class="w-7 h-7 rounded-full bg-[#EA4335] flex items-center justify-center flex-shrink-0">
+            <span class="text-white text-xs font-bold leading-none">G</span>
+         </div>
+      </div>
+      <p class="text-gray-600 text-xs leading-relaxed">
+         <?php echo __('"Good product. Excellent communication from AlloyGator. Bought the wrong colour, Exchange done with no quibble. Great service. Car appearance enhanced. Thanks Dan"') ?>
+      </p>
+   </div>
+</div>
+<div class="swiper-slide !h-auto">
+   <div class="h-full flex flex-col border border-gray-200 rounded-xl p-5 bg-white shadow-sm">
+      <div class="flex items-start justify-between mb-3">
+         <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+               <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+               </svg>
+            </div>
+            <div>
+               <p class="text-sm font-bold text-gray-900 leading-tight"><?php echo __('David Meiser') ?></p>
+               <div class="flex items-center gap-0.5 mt-0.5">
+                  <?php for ($i = 0; $i < 5; $i++): ?>
+                  <svg class="w-3.5 h-3.5 text-[#FBBC05]" fill="currentColor" viewBox="0 0 20 20">
+                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                  <?php endfor; ?>
+               </div>
+               <p class="text-[11px] text-gray-400 mt-0.5"><?php echo __('Excellent Product') ?></p>
+            </div>
+         </div>
+         <div class="w-7 h-7 rounded-full bg-[#EA4335] flex items-center justify-center flex-shrink-0">
+            <span class="text-white text-xs font-bold leading-none">G</span>
+         </div>
+      </div>
+      <p class="text-gray-600 text-xs leading-relaxed">
+         <?php echo __('"Excellent product and service cant recommend them highly enough. Excellent product and service"') ?>
+      </p>
+   </div>
+</div>
+</div>      </div>
+<div x-ref="googlePagination" class="flex justify-center mt-6 gap-2 google-pagination"></div>
+</div>
+</section>
+*/ ?>
+
+<div class="reduce-your-repair relative w-full bg-no-repeat bg-cover bg-center"
+   style="background-image: url('<?php echo $mediaURL; ?>images/reduce-your-repair-bills-to-zero.png');">
+   <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/85"></div>
+   <div class="relative z-10 container-theme py-16 md:py-24 text-center">
+      <p class="text-[#c9a84c] text-sm md:text-base font-medium tracking-wide mb-3">
+         <?php echo __('12 Month Warranty on all products') ?>
+      </p>
+      <h2 class="text-white text-2xl md:text-5xl  font-black uppercase mb-10 md:mb-14">
+         <?php echo __('Reduce Your') ?><br><?php echo __('Repair Bills To Zero') ?>
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-10 md:gap-6 text-center">
+         <div>
+            <div class="w-16 h-1 bg-[#9dc41a] mb-4 mx-auto"></div>
+            <p class="text-white text-5xl md:text-6xl font-black leading-none mb-3"><?php echo __('£120') ?></p>
+            <p class="text-white text-xs font-bold uppercase tracking-widest mb-3"><?php echo __('Average Cost of Wheel Refurb') ?></p>
+            <p class="text-gray-300 text-sm leading-relaxed"><?php echo __('One kerb kiss and you\'re already paying more than our full 4-wheel kit.') ?></p>
+         </div>
+         <div>
+            <div class="w-16 h-1 bg-[#c9a84c] mb-4 mx-auto"></div>
+            <p class="text-white text-5xl md:text-6xl font-black leading-none mb-3"><?php echo __('£380') ?></p>
+            <p class="text-white text-xs font-bold uppercase tracking-widest mb-3"><?php echo __('Typical Yearly Spend on Four Damaged Wheels') ?></p>
+            <p class="text-gray-300 text-sm leading-relaxed"><?php echo __("City drivers damage a rim about once a quarterâ€”our AlloyGator wipes that bill out.") ?></p>
+         </div>
+         <div>
+            <div class="w-16 h-1 bg-[#9dc41a] mb-4 mx-auto"></div>
+            <p class="text-white text-5xl md:text-6xl font-black leading-none mb-3"><?php echo __('£0') ?></p>
+            <p class="text-white text-xs font-bold uppercase tracking-widest mb-3"><?php echo __('Damage Repairs Once AlloyGators is Fitted') ?></p>
+            <p class="text-gray-300 text-sm leading-relaxed"><?php echo __('Fit AlloyGator once and every future scrape hits the guard, not your wheel') ?></p>
+         </div>
+      </div>
+   </div>
+</div>
+<section class="section section-padding alloy-faqs">
+   <div class="container-theme">
+      <div class="flex justify-center mb-6">
+         <img src="<?php echo $mediaURL; ?>images/alloygator-logo-lg.jpg" alt="Tyrescart Logo" class="h-11 w-auto object-contain">
+      </div>
+      <div class="section-title text-center">
+         <h3><?php echo __('Frequently') ?> <span class="text-theme-blue"><?php echo __('Asked Questions') ?></span></h3>
+         <p><?php echo __('Everything you need to know about AlloyGator wheel protectors.') ?></p>
+      </div>
+      <div 
+         class="rounded-[10px] shadow-custom-blue bg-gradient-to-br from-[#e0fff6]/60 via-white to-[#d1f7ec]/60 px-3 md:px-8 lg:px-10 py-1.5 md:py-4 lg:py-5 w-full border border-color"
+         x-data="{ active: 1 }"
+         >
+         <div class="divide-y divide-theme-blue/30">
+            <div class="py-2 md:py-4">
+               <button 
+                  @click="active === 1 ? active = null : active = 1"
+                  class="flex w-full items-center justify-between cursor-pointer font-medium text-base md:text-lg text-black transition text-left"
+                  :class="{ 'text-theme-blue': active === 1 }"
+                  >
+                  <span><?php echo __('How strong are AlloyGators?') ?></span>
+                  <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 1 }">
+                     <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                     </svg>
+                  </span>
+               </button>
+               <div
+                  x-ref="faq1"
+                  class="overflow-hidden transition-all duration-300 ease-in-out"
+                  :style="active === 1 ? `max-height: ${$refs.faq1.scrollHeight}px` : 'max-height: 0px'"
+                  >
+                  <p class="mt-3 text-theme-dark/80 text-base pl-1">
+                     <?php echo __("AlloyGators are made from a super tough nylon which is flexible but tough enough to give superior protection when getting heavy impact from hitting a kerb.") ?>
+                  </p>
+                  <p class="mt-3 text-theme-dark/80 text-base pl-1">
+                     <?php echo __("The AlloyGator is locked to the wheel over 360° using highly robust patented technology.") ?>
+                  </p>
+               </div>
+            </div>
+            <div class="py-2 md:py-4">
+               <button 
+                  @click="active === 2 ? active = null : active = 2"
+                  class="flex w-full items-center justify-between cursor-pointer font-medium text-base md:text-lg text-black transition text-left"
+                  :class="{ 'text-theme-blue': active === 2 }"
+                  >
+                  <span><?php echo __('Is the colour of AlloyGators permanent?') ?></span>
+                  <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 2 }">
+                     <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                     </svg>
+                  </span>
+               </button>
+               <div
+                  x-ref="faq2"
+                  class="overflow-hidden transition-all duration-300 ease-in-out"
+                  :style="active === 2 ? `max-height: ${$refs.faq2.scrollHeight}px` : 'max-height: 0px'"
+                  >
+                  <p class="mt-3 text-theme-dark/80 text-base pl-1">
+                     <?php echo __('Colour runs consistently throughout our AlloyGator wheel protectors, meaning that there is no damage to colour, even after impact with a kerb. We recommend you regularly clean your wheels and AlloyGators with normal car shampoo or universal wheel cleaners suitable for delicate finishes like chrome. Avoid harsh acid based cleaners and thick, brush-on tyre shines used by some hand car-washes.') ?>
+                  </p>
+               </div>
+            </div>
+            <div class="py-2 md:py-4">
+               <button 
+                  @click="active === 3 ? active = null : active = 3"
+                  class="flex w-full items-center justify-between cursor-pointer font-medium text-base md:text-lg text-black transition text-left"
+                  :class="{ 'text-theme-blue': active === 3 }"
+                  >
+                  <span><?php echo __('How do I fit my AlloyGators?') ?></span>
+                  <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 3 }">
+                     <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                     </svg>
+                  </span>
+               </button>
+               <div
+                  x-ref="faq3"
+                  class="overflow-hidden transition-all duration-300 ease-in-out"
+                  :style="active === 3 ? `max-height: ${$refs.faq3.scrollHeight}px` : 'max-height: 0px'"
+                  >
+                  <p class="mt-3 text-theme-dark/80 text-base pl-1"><?php echo __('You can fit AlloyGators yourself or get them fitted by one of our authorised AlloyGator fitters.') ?></p>
+                  <p class="mt-3 text-theme-dark/80 text-base pl-1">
+                     <?php echo __('If you have a rubber mallet and a car jack you are good to go! Make sure to check the suitability gauge against your wheels before attempting to fit your AlloyGators.') ?>
+                  </p>
+                  <p class="mt-3 text-theme-dark/80 text-base pl-1">
+                     <?php echo __('Follow the fitting instructions in the box or view our fitting video for a step by step guide') ?>
+                  </p>
+                  <p class="mt-3 text-theme-dark/80 text-base pl-1">
+                     <?php echo __('If you are interested in having your AlloyGators fitted by one our of fitting partners, head over to our find a fitter page to find your nearest AlloyGator fitter.') ?>
+                  </p>
+                  <p class="mt-3 text-theme-dark/80 text-base pl-1">
+                     <?php echo __("If you buy AlloyGators and 5 Star Fitting on our website you'll benefit from an extended warranty of 2 years.") ?>
+                  </p>
+               </div>
+            </div>
+            <div class="py-2 md:py-4">
+               <button 
+                  @click="active === 4 ? active = null : active = 4"
+                  class="flex w-full items-center justify-between cursor-pointer font-medium text-base md:text-lg text-black transition text-left"
+                  :class="{ 'text-theme-blue': active === 4 }"
+                  >
+                  <span><?php echo __('How do I remove my AlloyGators?') ?></span>
+                  <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 4 }">
+                     <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                     </svg>
+                  </span>
+               </button>
+               <div
+                  x-ref="faq4"
+                  class="overflow-hidden transition-all duration-300 ease-in-out"
+                  :style="active === 4 ? `max-height: ${$refs.faq4.scrollHeight}px` : 'max-height: 0px'"
+                  >
+                  <p class="mt-3 text-theme-dark/80 text-base pl-1">
+                     <?php echo __("To remove an AlloyGator, simply jack up the car, fully deflate the tyre, remove the plastic joining clip and carefully prise the profile up around the joint area.Firmly tap the face of the AlloyGator using a rubber mallet on the side which has the hole in it. This will then release the glue and open up the joint. Once the joint is open carefully prise the profile out of its seated position from the tyre side of the wheel, starting with the end without the hole and using a tyre lever or flat bladed screwdriver along the side and under the profile, prising in an upward motion. Once the end of the profile is free from the wheel and tyre then carefully pull it out from its position across the tyre wall in an outward motion in order to prevent any damage to the wheel from the stainless steel clips.") ?>
+                  </p>
+               </div>
+            </div>
+            <div class="py-2 md:py-4">
+               <button 
+                  @click="active === 5 ? active = null : active = 5"
+                  class="flex w-full items-center justify-between cursor-pointer font-medium text-base md:text-lg text-black transition text-left"
+                  :class="{ 'text-theme-blue': active === 5 }"
+                  >
+                  <span><?php echo __('Have AlloyGators been tested at speed?') ?></span>
+                  <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 5 }">
+                     <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                     </svg>
+                  </span>
+               </button>
+               <div
+                  x-ref="faq5"
+                  class="overflow-hidden transition-all duration-300 ease-in-out"
+                  :style="active === 5 ? `max-height: ${$refs.faq5.scrollHeight}px` : 'max-height: 0px'"
+                  >
+                  <p class="mt-3 text-theme-dark/80 text-base pl-1">
+                     <?php echo __('Our AlloyGators have been tested under normal driving conditions and within the legal speed limit. Head over to our Quality and Testing page to view our certifications.') ?>
+                  </p>
+               </div>
+            </div>
+            <div class="py-2 md:py-4">
+               <button
+                  @click="active === 6 ? active = null : active = 6"
+                  class="flex w-full items-center justify-between cursor-pointer font-medium text-base md:text-lg text-black transition text-left"
+                  :class="{ 'text-theme-blue': active === 6 }"
+                  >
+                  <span><?php echo __('Are AlloyGators recyclable?') ?></span>
+                  <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 6 }">
+                     <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                     </svg>
+                  </span>
+               </button>
+               <div
+                  x-ref="faq6"
+                  class="overflow-hidden transition-all duration-300 ease-in-out"
+                  :style="active === 6 ? `max-height: ${$refs.faq6.scrollHeight}px` : 'max-height: 0px'"
+                  >
+                  <p class="mt-3 text-theme-dark/80 text-base pl-1">
+                     <?php echo __('Yes, AlloyGators are recyclable and we advise to put your AlloyGator cut offs in your recycling bin.') ?>
+                  </p>
+               </div>
+            </div>
+            <div class="py-2 md:py-4">
+               <button
+                  @click="active === 7 ? active = null : active = 7"
+                  class="flex w-full items-center justify-between cursor-pointer font-medium text-base md:text-lg text-black transition text-left"
+                  :class="{ 'text-theme-blue': active === 7 }"
+                  >
+                  <span><?php echo __('Will fitting AlloyGators affect my insurance?') ?></span>
+                  <span class="ml-2 transition-transform duration-300" :class="{ 'rotate-180': active === 7 }">
+                     <svg class="w-5 h-5 text-theme-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                     </svg>
+                  </span>
+               </button>
+               <div
+                  x-ref="faq7"
+                  class="overflow-hidden transition-all duration-300 ease-in-out"
+                  :style="active === 7 ? `max-height: ${$refs.faq7.scrollHeight}px` : 'max-height: 0px'"
+                  >
+                  <p class="mt-3 text-theme-dark/80 text-base pl-1">
+                     <?php echo __('Our AlloyGators are not deemed a performance enhancing product and fitting them to your vehicle should not affect your vehicle insurance premium, however we would recommend you speak to your insurance company to discuss your own individual requirements.') ?>
+                  </p>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</section>
+
+

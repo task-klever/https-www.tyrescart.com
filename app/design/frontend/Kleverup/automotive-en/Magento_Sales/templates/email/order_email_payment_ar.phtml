@@ -1,0 +1,25 @@
+<?php
+/**
+ * Arabic translation for payment method in order emails
+ */
+$_order = $block->getOrder();
+
+$translations = [
+    'Cash on Delivery' => 'الدفع عند الاستلام',
+    'Check / Money order' => 'شيك / حوالة مالية',
+    'Check / Money Order' => 'شيك / حوالة مالية',
+    'Bank Transfer Payment' => 'الدفع بالتحويل البنكي',
+    'Credit Card' => 'بطاقة ائتمان',
+    'Debit Card' => 'بطاقة خصم',
+    'PayPal' => 'باي بال',
+    'Apple Pay' => 'أبل باي',
+    'Tabby' => 'تابي',
+    'Tamara' => 'تمارا',
+];
+
+$paymentMethod = '';
+if ($_order->getPayment()) {
+    $paymentMethod = $_order->getPayment()->getMethodInstance()->getTitle();
+}
+
+echo $block->escapeHtml(isset($translations[$paymentMethod]) ? $translations[$paymentMethod] : $paymentMethod);

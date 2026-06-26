@@ -1,0 +1,27 @@
+{
+  "name": "ecomteck/storelocator",
+  "description": "This is a storelocator store locator extension for magento2",
+  "type": "magento2-module",
+  "version": "2.0.7",
+  "license": "MIT",
+  "keywords": ["magento", "magento2", "storelocator", "store locator", "google maps"],
+  "homepage": "https:/ecomteck.com/magento2-storelocator-extension",
+  "authors": [
+    {
+      "name": "Ecomteck",
+      "email": "ecomteck@gmail.com",
+      "homepage": "https://ecomteck.com",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": "7.0.2|7.0.4|~7.0.6|~7.1.0",
+    "magento/product-community-edition": "^2.1.0"
+  },
+  "autoload": {
+    "files": [ "registration.php" ],
+    "psr-4": {
+      "Ecomteck\\StoreLocator\\": ""
+    }
+  }
+}

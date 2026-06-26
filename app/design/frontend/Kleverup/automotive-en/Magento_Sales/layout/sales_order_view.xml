@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="customer_account"/>
+    <update handle="sales_order_item_renderers"/>
+    <update handle="sales_order_item_price"/>
+    <update handle="sales_order_info_links"/>
+    <body>
+      <referenceBlock name="breadcrumbs" remove="false"/>
+
+    <referenceBlock name="breadcrumbs">
+        <!-- Home -->
+        <action method="addCrumb">
+            <argument name="crumbName" xsi:type="string">home</argument>
+            <argument name="crumbInfo" xsi:type="array">
+                <item name="label" xsi:type="string">Home</item>
+                <item name="title" xsi:type="string">Go to Home Page</item>
+                <item name="link" xsi:type="string">{{baseUrl}}</item>
+            </argument>
+        </action>
+
+        <!-- My Account -->
+        <action method="addCrumb">
+            <argument name="crumbName" xsi:type="string">my_account</argument>
+            <argument name="crumbInfo" xsi:type="array">
+                <item name="label" xsi:type="string">My Account</item>
+                <item name="title" xsi:type="string">My Account</item>
+                <item name="link" xsi:type="string">{{baseUrl}}customer/account/</item>
+            </argument>
+        </action>
+
+        <!-- My Orders -->
+        <action method="addCrumb">
+            <argument name="crumbName" xsi:type="string">my_orders</argument>
+            <argument name="crumbInfo" xsi:type="array">
+                <item name="label" xsi:type="string">My Orders</item>
+                <item name="title" xsi:type="string">My Orders</item>
+                <item name="link" xsi:type="string">{{baseUrl}}sales/order/history/</item>
+            </argument>
+        </action>
+
+        <!-- View Order -->
+        <action method="addCrumb">
+            <argument name="crumbName" xsi:type="string">view_order</argument>
+            <argument name="crumbInfo" xsi:type="array">
+                <item name="label" xsi:type="string">View Order</item>
+                <item name="title" xsi:type="string">View Order</item>
+            </argument>
+        </action>
+    </referenceBlock>
+    </body>
+</page>

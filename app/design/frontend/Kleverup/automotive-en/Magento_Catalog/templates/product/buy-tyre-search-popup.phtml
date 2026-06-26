@@ -1,0 +1,412 @@
+<?php 
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    $makeImageOb = $objectManager->get('Magento\Framework\View\Asset\Repository');
+    $makeImageURL = $makeImageOb->getUrl("Hdweb_Vehicles::images/logo/");
+
+ ?>
+<div 
+    x-data="{
+        fetchBuyTyreSearchModalContent(event) {
+            const responseData = event.detail.data;
+            this.$refs.ajaxContent.innerHTML = responseData.html;
+        }
+    }"
+    x-init="Object.assign($data, hyva.modal())"
+    @hyva-modal-show.window="if ($event.detail.dialog === 'buy-tyre-search') fetchBuyTyreSearchModalContent($event)"
+>
+    <div x-cloak x-bind="overlay('buy-tyre-search')" x-spread="overlay('buy-tyre-search')" class="buy-tyre-search-modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-30">
+        <div x-ref="buy-tyre-search" role="dialog" class="bg-white rounded-lg p-6 max-w-md w-full">
+            <div class="modal-head text-center">
+                <span class="product-name text-primary text-md md:text-2xl font-medium uppercase"></span>
+            </div>
+            <div class="ajax-response" x-ref="ajaxContent">
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function buyTyreSearchModal() {
+    return {
+        async openbuyTyreSearchModal(width, height, rim, productName, hasSuggestedSize) {
+            try {
+                // Show loader
+                document.getElementById('klever-loader').classList.remove('hidden');
+
+                // Fetch content
+                const data = await this.fetchTyreData(width, height, rim);
+
+                if (data.status === 'success') {
+                    // Set product name
+                    document.querySelector('#item-size .product-name').textContent = productName;
+
+                    const customTextEl = document.querySelector('#item-size .product-custom-text');
+
+                    if (customTextEl) {
+                        customTextEl.textContent = 'Check if Matching Front/Rear Tyre Size Available?';
+                        customTextEl.classList.add('hidden');
+
+                        // Remove any previous click handler
+                        customTextEl.onclick = null;
+
+                        // Attach click to open Specifications popup
+                        customTextEl.onclick = () => {
+                            // Close Buy Tyre sidebar
+                            ItemSize();
+
+                            // Open Specifications modal (from pasted.txt)
+                            SpecificationsOpenModal(width, height, rim);
+                        };
+
+                    }
+
+                    // Insert content
+                    document.querySelector('#item-size .tyre-popup-content').innerHTML = data.html;
+
+                    // Reset search input
+                    var searchInput = document.getElementById('item-size-search');
+                    if (searchInput) { searchInput.value = ''; }
+
+                    // Open sidebar
+                    document.getElementById("item-size").classList.remove("translate-y-full");
+                    document.getElementById("item-size-overlay").classList.remove("hidden");
+                    document.body.classList.add("overflow-hidden");
+                } else {
+                    console.error('Server error:', data.message);
+                }
+
+                document.getElementById('klever-loader').classList.add('hidden');
+            } catch (error) {
+                console.error('Fetch error:', error);
+                document.getElementById('klever-loader').classList.add('hidden');
+            }
+        },
+
+        async fetchTyreData(width, height, rim) {
+            const response = await fetch('<?php echo $this->getBaseUrl() . 'tyrefinder/ajax/buytyresearch'; ?>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: new URLSearchParams({
+                    form_key: hyva.getFormKey(),
+                    width: width,
+                    height: height,
+                    rim: rim,
+                    uenc: btoa(window.location.href)
+                }),
+                credentials: 'include'
+            });
+
+            return await response.json();
+        }
+    };
+}
+</script>
+
+
+
+
+
+<div class="fitment-bar-wrapper">
+<div id="item-size" class="fitment-drawer-panel fixed inset-x-0 bottom-0 z-[9999]  overflow-hidden bg-white transform translate-y-full transition-transform ease-out duration-300">
+    <div class="container-theme w-full flex flex-col overflow-hidden h-full py-4 lg:py-6">
+   <div class="flex-shrink-0">
+      <div class="flex items-center justify-between  border-b border-border-color relative mb-3 pb-4">
+         <h3 class="text-lg md:text-2xl font-extrabold text-gray-900 w-[94%] md:w-full">
+            <span class="product-name block [direction:ltr]"></span>
+            <span class="product-custom-text hidden block text-sm font-medium text-theme-blue mt-1 cursor-pointer hover:underline"></span>
+         </h3>
+         <button type="button" onclick="ItemSize()"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:text-gray-800 transition-all absolute top-0 right-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+         </button>
+      </div>
+   </div>
+   <div class="flex-shrink-0 mb-3">
+      <div class="relative">
+         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+         </svg>
+         <input type="text" id="item-size-search" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-theme-blue/20 focus:border-theme-blue transition-colors" placeholder="<?php echo __('Search by Make or Model...') ?>" oninput="filterTyrePopupContent(this.value)">
+      </div>
+   </div>
+   <div class="tyre-popup-content bg-gray-100 px-3 py-3 flex-1 overflow-y-auto drawer-scrollbar grid gap-x-5 grid-cols-1 lg:grid-cols-2 items-start content-start">
+      <!-- AJAX content will load here -->
+   </div>
+   </div>
+</div>
+<div id="item-size-overlay" onclick="ItemSize()" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-all ease-out duration-300"></div>
+</div>
+
+<div class="sliebar">
+    <div id="specifications-modal"
+        class="fixed top-0 right-0 h-full w-[447px] max-w-full bg-white z-60 transform translate-x-full transition-transform ease-in-out duration-500 sm:duration-700">
+        <div class="tyre-sidebar-content">
+            <div class="flex items-center justify-between p-4 border-b border-border-color relative">
+                <h3
+                    class="text-[1.2rem] md:text-[1.35rem] lg:text-[1.45rem] text-theme-dark font-bold relative uppercase">
+                    <?php echo __('Suggested') ?> <span class="text-theme-blue"><?php echo __('Sizes') ?></span>
+                </h3>
+                <button type="button" onclick="SpecificationsClose()" aria-label="Close minicart"
+                    class="absolute top-0 right-2 p-4 mt-2 text-black transition-colors hover:text-theme-blue">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" width="24" height="24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div
+                class="bg-white rounded-lg px-4 sm:px-4 py-4 sm:py-5 max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#d8e9f3] [&::-webkit-scrollbar-thumb]:bg-theme-blue dark:[&::-webkit-scrollbar-track]:bg-theme-blue dark:[&::-webkit-scrollbar-thumb]:bg-theme-blue">
+                <div id="specifications-content">Loading...</div>
+            </div>
+        </div>
+    </div>
+    <div id="specifications-modal-overlay" onclick="SpecificationsClose()"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-all ease-in-out duration-500 sm:duration-700">
+    </div>
+</div>
+
+
+<script>
+        function SpecificationsClose() {
+    document.getElementById("specifications-modal").classList.add("translate-x-full");
+    document.getElementById("specifications-modal-overlay").classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+}
+  function ItemOpen() {
+    document.getElementById("item-size").classList.remove("translate-y-full");
+    document.getElementById("item-size-overlay").classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+    // Reset search
+    var searchInput = document.getElementById('item-size-search');
+    if (searchInput) { searchInput.value = ''; filterTyrePopupContent(''); }
+  }
+
+  function filterTyrePopupContent(query) {
+    var items = document.querySelectorAll('#item-size .tyre-popup-content > div');
+    var q = query.toLowerCase().trim();
+    items.forEach(function(item) {
+        var text = item.textContent.toLowerCase();
+        item.style.display = (!q || text.indexOf(q) !== -1) ? '' : 'none';
+    });
+  }
+  function ItemSize() {
+    document.getElementById("item-size").classList.add("translate-y-full");
+    document.getElementById("item-size-overlay").classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+  }
+
+
+  // ✅ Close on ESC key press
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+      const sidebar = document.getElementById("item-size");
+      const overlay = document.getElementById("item-size-overlay");
+      // Only close if sidebar is open
+      if (!sidebar.classList.contains("translate-y-full")) {
+        ItemSize();
+      }
+    }
+  });
+
+  async function SpecificationsOpenModal(width, height, rim) {
+    document.getElementById("specifications-modal").classList.remove("translate-x-full");
+    document.getElementById("specifications-modal-overlay").classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+
+    document.getElementById("specifications-content").innerHTML =
+        `<div class="flex gap-10 items-center p-4 h-full w-full justify-center items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 sidebar-loading">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57 57" width="57" height="57" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="5" cy="50" r="5" style="animation: spinner-ball-triangle1 2.2s linear infinite"></circle>
+                <circle cx="27" cy="5" r="5" style="animation: spinner-ball-triangle2 2.2s linear infinite"></circle>
+                <circle cx="49" cy="50" r="5" style="animation: spinner-ball-triangle3 2.2s linear infinite"></circle>
+            </svg>
+            <span class="text-xl select-none">Loading...</span>
+        </div>`;
+
+    try {
+        const response = await fetch(
+            `/tyrefinder/ajax/getsuggestedsize?width=${width}&height=${height}&rim=${rim}`, {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+
+        const jsonResponse = await response.json();
+        const payload = jsonResponse.data;
+
+        if (!payload || payload.status !== "success" || !Array.isArray(payload.data) || payload.data.length === 0) {
+            document.getElementById("specifications-content").innerHTML =
+                "<p class='text-red-500'>No suggested sizes found.</p>";
+            return;
+        }
+
+        // Split OEM and Non-OEM
+        const oemMap = new Map();
+        const nonOemMap = new Map();
+
+        payload.data.forEach(item => {
+            const frontSize = `${item.front_width}/${item.front_height} R${item.front_rim}`;
+            const rearSize = `${item.rear_width}/${item.rear_height} R${item.rear_rim}`;
+            const key = frontSize + "_" + rearSize;
+
+            const record = {
+                frontSize,
+                rearSize,
+                make: item.make_name,
+                make_slug: item.make_slug,
+                model: item.model_name,
+                years: JSON.parse(item.year_ranges || "[]"), // array of year ranges
+                engine: item.engine_code || "",
+
+                // raw values for search URL
+                front_width: item.front_width,
+                front_height: item.front_height,
+                front_rim: item.front_rim,
+                rear_width: item.rear_width,
+                rear_height: item.rear_height,
+                rear_rim: item.rear_rim
+            };
+
+            if (item.is_stock == 1) {
+                if (!oemMap.has(key)) oemMap.set(key, []);
+                oemMap.get(key).push(record);
+            } else {
+                if (!nonOemMap.has(key)) nonOemMap.set(key, []);
+                nonOemMap.get(key).push(record);
+            }
+        });
+
+        let html = "";
+        const mediaURL = `<?php echo $makeImageURL; ?>`; // ✅ base media URL
+
+        // 🔹 Helper function: render section
+        function renderSection(map, isOem = true) {
+            if (map.size === 0) return "";
+
+            let sectionHtml = `<h3 class="font-bold text-lg ${isOem ? "mb-2 text-theme-blue" : "mt-2 mb-2"}">${isOem ? "OEM Sizes" : "Non-OEM Sizes"}</h3>`;
+
+            map.forEach((records) => {
+                const { frontSize, rearSize } = records[0];
+                const searchUrl = `/tyres?width=${records[0].front_width}&height=${records[0].front_height}&rim=${records[0].front_rim}&width_rear=${records[0].rear_width}&height_rear=${records[0].rear_height}&rim_rear=${records[0].rear_rim}&product_list_limit=5000`;
+
+                // Group models under makes
+                const makeMap = new Map();
+                records.forEach(r => {
+                    if (!makeMap.has(r.make)) {
+                        makeMap.set(r.make, { slug: r.make_slug, models: new Map() });
+                    }
+                    const modelMap = makeMap.get(r.make).models;
+                    if (!modelMap.has(r.model)) {
+                        modelMap.set(r.model, []);
+                    }
+                    modelMap.get(r.model).push(...r.years);
+                });
+
+                sectionHtml += `
+                    <div class="border rounded mb-2 hover:border-blue-200">
+                        <button class="w-full flex justify-between items-center p-2 text-left toggle-dropdown">
+                            <div class="text-base">
+                                <span class="font-semibold">Front:</span> ${frontSize}
+                                <span class="ml-3 font-semibold">Rear:</span> ${rearSize}
+                            </div>
+                            <span class="arrow">+</span>
+                        </button>
+                        <div class="hidden px-4 pb-3 text-sm text-gray-600 dropdown-content">
+                `;
+
+                // Print hierarchy (with image before make)
+                makeMap.forEach((data, make) => {
+                    sectionHtml += `<div class="flex justify-between items-center mb-3 pb-3 border-b border-dashed border-theme-blue gap-3">
+                                      <div class="" style="flex:0 0 auto;">
+                                         <div class="left-content">
+                                           <div class="brand-image flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 rounded-[6px] px-3 py-1 border border-blue-200 group-hover:border-blue-300 transition-colors">
+                                             <img src="${mediaURL}/${data.slug}.png" alt="${make}" class="w-8 h-auto"/>
+                                             <p class="ml-2 text-xs font-semibold uppercase text-gray-800 tracking-wide">${make}</p>
+                                           </div>
+                                          </div>
+                                       </div>
+                                       <div class="right-content">
+                                            <div class="brand-info-content flex gap-2 flex-wrap justify-end">
+
+                                       `;
+
+                    data.models.forEach((years, model) => {
+                        // make years unique
+                        const uniqYears = [...new Set(years)];
+                        sectionHtml += `  
+                                               <div class="model-year font-semibold text-gray-900 text-sm hover:text-theme-blue transition-colors text-center">
+                                                  <span>${model}</span>
+                                                  <span class="text-xs text-gray-500 block">${uniqYears.join(",")}</span>
+                                               </div>
+                                             `;
+                        // years.forEach(y => {
+                        //     sectionHtml += `<div class="ml-8">${y}</div>`;
+                        // });
+                    });
+
+                    sectionHtml += `</div></div></div>`;
+                });
+
+                sectionHtml += `
+                            <div class="mt-2">
+                                <a href="${searchUrl}" class="text-base text-theme-blue font-semibold cursor-pointer hover:text-theme-dark transition-all duration-300 ease-in-out">View Tyres</a>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+
+            return sectionHtml;
+        }
+
+        html += renderSection(oemMap, true);
+        html += renderSection(nonOemMap, false);
+
+        document.getElementById("specifications-content").innerHTML = html;
+
+        // Toggle dropdowns
+        document.querySelectorAll(".toggle-dropdown").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const content = this.nextElementSibling;
+                const arrow = this.querySelector(".arrow");
+                if (content.classList.contains("open")) {
+                    content.classList.remove("open");
+                    setTimeout(() => content.classList.add("hidden"), 300);
+                    arrow.textContent = "+";
+                } else {
+                    content.classList.remove("hidden");
+                    // Force reflow for transition
+                    void content.offsetWidth;
+                    content.classList.add("open");
+                    arrow.textContent = "−";
+                }
+            });
+        });
+
+    } catch (err) {
+        console.error("API fetch error:", err);
+        document.getElementById("specifications-content").innerHTML =
+            "<p class='text-red-500'>Error loading suggested sizes.</p>";
+    }
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

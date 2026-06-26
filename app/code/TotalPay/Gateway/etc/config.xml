@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <totalpay_checkout>
+                <model>TotalPay\Gateway\Model\Method\Checkout</model>
+                <title>TotalPay Checkout</title>
+                <active>0</active>
+                <order_status>payment_review</order_status>
+                <transaction_type>payment</transaction_type>
+                <shop_id>481305b8-xxxx-xxxx-xxxx-4a8510033d01</shop_id>
+                <shop_key>12345</shop_key>
+                <domain_checkout>https://checkout.totalpay.global/api/v1/session</domain_checkout>
+                <domain_gateway>https://checkout.totalpay.global/api/v1/payment/refund</domain_gateway>
+                <card>1</card>
+                <!-- <card_halva>0</card_halva>
+                <erip>0</erip>
+                <erip_service_no>99999999</erip_service_no>
+                <min_order_total>0.01</min_order_total>
+                <debug>0</debug>
+                <test_mode>1</test_mode>
+                <allowspecific>0</allowspecific>
+                <allow_specific_currency>0</allow_specific_currency> -->
+                <group>totalpay</group>
+            </totalpay_checkout>
+        </payment>
+    </default>
+</config>

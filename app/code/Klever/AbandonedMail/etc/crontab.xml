@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="klever_abandoned_mail_reset_flag" instance="Klever\AbandonedMail\Cron\ResetAbandonedFlag" method="execute">
+            <schedule>*/30 * * * *</schedule>
+        </job>
+    </group>
+</config>
+

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="purchase_order">
+        <column xsi:type="varchar" name="invoice_number" nullable="true" length="50" comment="Invoice Number"/>
+        <column xsi:type="date" name="invoice_date" nullable="true" comment="Invoice Date"/>
+        <column xsi:type="date" name="invoice_due_date" nullable="true" comment="Invoice Due Date"/>
+        <column xsi:type="date" name="payment_date" nullable="true" comment="Payment Date"/>
+        <column xsi:type="varchar" name="payemnt_term_days" nullable="true" length="50" comment="Payment Term Days"/>
+        <column xsi:type="varchar" name="invoice_status" nullable="true" length="10" comment="Invoice Status"/>
+        <column xsi:type="varchar" name="invoice_remarks" nullable="true" length="255" comment="Invoice Remarks"/>
+        <column xsi:type="text" name="invoice_upload" nullable="true" comment="Invoice Upload"/>
+        <column xsi:type="text" name="pickup_location" nullable="true" comment="Pickup Location"/>
+        <column xsi:type="text" name="dropoff_location" nullable="true" comment="Dropoff Location"/>
+        <column xsi:type="int" name="reference_po" nullable="true" comment="Reference PO"/>
+        <column xsi:type="text" name="comment" nullable="true" comment="Comment"/>
+    </table>
+</schema>

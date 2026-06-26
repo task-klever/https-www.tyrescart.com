@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <type name="Klever\CustomCart\Observer\CollectTotalsAfterCartUpdate">
+        <arguments>
+            <argument name="optionFactory" xsi:type="object">Magento\Quote\Model\Quote\Item\OptionFactory</argument>
+        </arguments>
+    </type>
+
+</config>

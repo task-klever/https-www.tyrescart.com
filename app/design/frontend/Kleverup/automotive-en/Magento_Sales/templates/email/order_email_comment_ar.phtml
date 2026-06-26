@@ -1,0 +1,22 @@
+<?php
+/**
+ * Order comment for email - Arabic
+ * Fetches the first customer comment from order status history
+ */
+$_order = $block->getOrder();
+$comment = '';
+
+// Get the first status history comment (customer comment saved during checkout)
+$historyCollection = $_order->getStatusHistoryCollection();
+if ($historyCollection && $historyCollection->getSize()) {
+    $items = $historyCollection->getItems();
+    $oldest = end($items);
+    if ($oldest && $oldest->getComment()) {
+        $comment = $oldest->getComment();
+    }
+}
+
+if ($comment):
+?>
+<?php echo $block->escapeHtml($comment); ?>
+<?php endif; ?>

@@ -1,0 +1,46 @@
+<?php
+/**
+ * Arabic version of order totals template
+ * Translates total labels to Arabic
+ */
+
+/**
+ * @var $block \Magento\Sales\Block\Order\Totals
+ */
+
+$arabicLabels = [
+    'Subtotal' => 'المجموع الفرعي',
+    'Shipping & Handling' => 'الشحن والتوصيل',
+    'Tax' => 'الضريبة',
+    'Grand Total' => 'المجموع الإجمالي',
+    'Discount' => 'الخصم',
+    'Shipping' => 'الشحن',
+    'Handling' => 'التوصيل',
+];
+?>
+<?php foreach ($block->getTotals() as $_code => $_total) : ?>
+    <?php if ($_total->getBlockName()) : ?>
+        <?= $block->getChildHtml($_total->getBlockName(), false) ?>
+    <?php else :?>
+    <?php
+        $label = $_total->getLabel();
+        $arLabel = $arabicLabels[(string)$label] ?? (string)$label;
+    ?>
+    <tr class="<?= $block->escapeHtmlAttr($_code) ?>">
+        <th scope="row" colspan="5" style="text-align:right;font-weight:800;font-family:'Montserrat',arial,tahoma">
+            <?php if ($_total->getStrong()) : ?>
+                <strong><?= $block->escapeHtml($arLabel) ?></strong>
+            <?php else : ?>
+                <?= $block->escapeHtml($arLabel) ?>
+            <?php endif ?>
+        </th>
+        <td <?= /* @noEscape */ $block->getValueProperties() ?> data-th="<?= $block->escapeHtmlAttr($arLabel) ?>" style="text-align:left;">
+            <?php if ($_total->getStrong()) : ?>
+                <strong><?= /* @noEscape */ $block->formatValue($_total) ?></strong>
+            <?php else : ?>
+                <?= /* @noEscape */ $block->formatValue($_total) ?>
+            <?php endif?>
+        </td>
+    </tr>
+    <?php endif; ?>
+<?php endforeach?>

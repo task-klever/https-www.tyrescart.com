@@ -1,0 +1,60 @@
+<?php
+/**
+ * Klever override of Mageprince FAQ main page - Hyva compatible.
+ * Shows only group boxes (cards) linking to their detail pages.
+ *
+ * @var $block \Mageprince\Faq\Block\Index\Index
+ * @var $escaper \Magento\Framework\Escaper
+ */
+use Mageprince\Faq\Model\Config\DefaultConfig;
+?>
+<?php if ($block->isEnable()): ?>
+    <?php $faqGroupCollection = $block->getFaqGroupCollection(); ?>
+    <?php if ($faqGroupCollection->getSize()): ?>
+        <?php
+        $faqUrl = $block->getConfig(DefaultConfig::FAQ_URL_CONFIG_PATH) ?: 'faq';
+        $baseUrl = $block->getBaseUrl();
+        ?>
+        <section class="section mageprince-faq-hyva py-5">
+            <?php if ($block->getTitle()): ?>
+                <h1 class="text-3xl font-bold mb-8"><?= $escaper->escapeHtml($block->getTitle()) ?></h1>
+            <?php endif; ?>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <?php foreach ($faqGroupCollection as $group): ?>
+                    <?php
+                    $groupUrlKey = $group->getData('url_key');
+                    $groupDetailUrl = $groupUrlKey ? $baseUrl . $faqUrl . '/' . $groupUrlKey : '#';
+                    $groupImageUrl = $group->getIcon()
+                        ? $block->getImageUrl($group->getIcon())
+                        : $block->getViewFileUrl('Mageprince_Faq::images/faq.png');
+                    $faqCount = $block->getFaqCollection($group->getId())->getSize();
+                    ?>
+                    <a href="<?= $escaper->escapeUrl($groupDetailUrl) ?>"
+                       class="group rounded-[10px] shadow-custom-blue bg-gradient-to-br from-[#e0fff6]/60 via-white to-[#d1f7ec]/60 border border-color p-5 md:p-6 flex flex-col items-center text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                        <span class="w-14 h-14 rounded-full flex items-center justify-center bg-white border border-gray-200 shadow-sm mb-3 group-hover:border-theme-blue/50 transition-colors">
+                            <img class="w-9 h-9 object-contain" src="<?= $escaper->escapeUrl($groupImageUrl) ?>" alt="<?= $escaper->escapeHtmlAttr($group->getGroupName()) ?>">
+                        </span>
+                        <h3 class="text-base font-bold text-gray-800 group-hover:text-theme-blue transition-colors mb-2">
+                            <?= $escaper->escapeHtml(__($group->getGroupName())) ?>
+                        </h3>
+                        <span class="text-sm text-gray-500">
+                            <?= $escaper->escapeHtml(__('%1 Questions', $faqCount)) ?>
+                        </span>
+                        <?php /*
+                        <span class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-theme-blue opacity-0 group-hover:opacity-100 transition-opacity">
+                            <?= $escaper->escapeHtml(__('View')) ?>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                        */ ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </section>
+    <?php else: ?>
+        <div>
+            <h1><?= $escaper->escapeHtml(__('No FAQ Group available')) ?></h1>
+        </div>
+    <?php endif; ?>
+<?php endif; ?>

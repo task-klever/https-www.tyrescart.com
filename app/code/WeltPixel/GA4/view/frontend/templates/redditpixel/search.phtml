@@ -1,0 +1,39 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var $block \WeltPixel\GA4\Block\RedditPixel\Common */
+
+/** @var \WeltPixel\GA4\Helper\RedditPixelTracking $redditPixelHelper */
+$redditPixelHelper = $this->helper('WeltPixel\GA4\Helper\RedditPixelTracking');
+$cspNonceProvider = $redditPixelHelper->getCspNonceProvider();
+$eventConversionId = $redditPixelHelper->getEventConversionID();
+?>
+<?php if ($block->isRedditPixelTrackingEnabled() && $block->shouldRedditPixelEventBeTracked(\WeltPixel\GA4\Model\Config\Source\RedditPixel\TrackingEvents::EVENT_SEARCH)) : ?>
+<script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+    if (window.ga4AllowServices) {
+        rdt('track', 'Search' , {
+            conversionId: "<?= /* @noEscape */ $eventConversionId ?>"
+        });
+    }
+</script>
+<?php endif; ?>
+
+
+<?php if ($redditPixelHelper->isServerSideTrackingEnabled() && $redditPixelHelper->shouldRedditServerSideEventBeTracked(\WeltPixel\GA4\Model\Config\Source\RedditPixel\TrackingEvents::EVENT_SEARCH)) : ?>
+    <script  <?php if ($cspNonceProvider) /* @noEscape */ echo ' nonce="' .  $cspNonceProvider->generateNonce() . '" ' ?>>
+        requirejs(['jquery'],
+            function  ($) {
+                $(document).ready(function() {
+                    var requestUrl = '<?php echo $block->escapeUrl($redditPixelHelper->getRedditSSTrackUrl()); ?>';
+                    $.post({
+                        url: requestUrl,
+                        global: false,
+                        data: {
+                            'eventId': '<?= /* @noEscape */ $eventConversionId ?>',
+                            'eventName': '<?= /* @noEscape */ \WeltPixel\GA4\Model\Config\Source\RedditPixel\TrackingEvents::EVENT_SEARCH  ?>',
+                            'pageUrl': '<?= $block->escapeUrl($redditPixelHelper->getStoreCurrenUrl()) ?>'
+                        }
+                    });
+                });
+            });
+    </script>
+<?php endif; ?>

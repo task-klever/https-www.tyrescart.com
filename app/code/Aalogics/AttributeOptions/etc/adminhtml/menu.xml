@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../Magento/Backend/etc/menu.xsd">
+    <menu>
+    	<add id="Aalogics_AttributeOptions::parent" title="Aalogics" module="Aalogics_AttributeOptions" sortOrder="10" resource="Aalogics_AttributeOptions::parent"/>
+		<add id="Aalogics_AttributeOptions::attribute" parent="Aalogics_AttributeOptions::parent" title="Import Attribute options" module="Aalogics_AttributeOptions" sortOrder="20"  action="attributeoptions/attribute" resource="Aalogics_AttributeOptions::attributeoptions"/>
+    </menu>
+</config>

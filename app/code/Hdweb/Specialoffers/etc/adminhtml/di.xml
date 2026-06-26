@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+	<preference for="Magento\CatalogRule\Model\Rule\DataProvider" type="Hdweb\Specialoffers\Model\CatalogRule\DataProvider" />
+	<preference for="Magento\SalesRule\Model\Rule\DataProvider" type="Hdweb\Specialoffers\Model\SalesRule\DataProvider" />
+
+	<!-- <preference for="Magento\CatalogRule\Controller\Adminhtml\Promo\Catalog\Save" type="Hdweb\Specialoffers\Controller\Adminhtml\Promo\Catalog\Save" /> -->
+	<preference for="Magento\SalesRule\Controller\Adminhtml\Promo\Quote\Save" type="Hdweb\Specialoffers\Controller\Adminhtml\Promo\Quote\Save" />
+	
+</config>

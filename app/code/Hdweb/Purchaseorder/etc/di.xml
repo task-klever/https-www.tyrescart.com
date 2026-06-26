@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+ 
+
+     <!-- <virtualType name="Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorder\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+             <argument name="mainTable" xsi:type="string">purchase_order</argument>
+            <argument name="resourceModel" xsi:type="string">Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorder</argument>
+        </arguments>
+    </virtualType>
+ 
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="purchaseorder_create_grid_data_source" xsi:type="string">
+                    Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorder\Collection</item>
+            </argument>
+        </arguments>
+    </type> -->
+	<!-- Start For Purchaseorder Grid -->
+    <virtualType name="HdwebPurchaseorderPurchaseorderFilterPool" type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
+        <arguments>
+            <argument name="appliers" xsi:type="array">
+                <item name="regular" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\RegularFilter</item>
+                <item name="fulltext" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\FulltextFilter</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="HdwebPurchaseorderPurchaseorderFilterPool" type="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+        <arguments>
+            <argument name="collection" xsi:type="object" shared="false">Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorder\Collection</argument>
+            <argument name="filterPool" xsi:type="object" shared="false">HdwebPurchaseorderPurchaseorderFilterPool</argument>
+        </arguments>
+    </virtualType>
+    <type name="Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorder\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">purchase_order</argument>
+            <argument name="eventPrefix" xsi:type="string">hdweb_purchaseorder_purchaseorder_grid_collection</argument>
+            <argument name="eventObject" xsi:type="string">purchaseorder_grid_collection</argument>
+            <argument name="resourceModel" xsi:type="string">Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorder</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="hdweb_purchaseorder_purchaseorder_listing_data_source" xsi:type="string">Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorder\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+	<!-- <virtualType name="Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorder\Grid\Collection" type="Hdweb\Purchaseorder\Ui\Component\Listing\CustomerDataProvider">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">purchase_order</argument>
+            <argument name="resourceModel" xsi:type="string">Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorder</argument>
+        </arguments>
+    </virtualType> -->
+	<!-- End For Purchaseorder Grid -->
+	
+	<!-- Start For Purchaseorder Item Grid -->
+    <virtualType name="HdwebPurchaseorderPurchaseorderitemFilterPool" type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
+        <arguments>
+            <argument name="appliers" xsi:type="array">
+                <item name="regular" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\RegularFilter</item>
+                <item name="fulltext" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\FulltextFilter</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="HdwebPurchaseorderPurchaseorderitemFilterPool" type="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+        <arguments>
+            <argument name="collection" xsi:type="object" shared="false">Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorderitem\Collection</argument>
+            <argument name="filterPool" xsi:type="object" shared="false">HdwebPurchaseorderPurchaseorderitemFilterPool</argument>
+        </arguments>
+    </virtualType>
+    <type name="Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorderitem\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">purchase_order_item</argument>
+            <argument name="eventPrefix" xsi:type="string">hdweb_purchaseorder_purchaseorderitem_grid_collection</argument>
+            <argument name="eventObject" xsi:type="string">purchaseorderitem_grid_collection</argument>
+            <argument name="resourceModel" xsi:type="string">Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorderitem</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="hdweb_purchaseorder_purchaseorderitem_listing_data_source" xsi:type="string">Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorderitem\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+	<!-- End For Purchaseorder Item Grid -->
+
+    <!-- <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="purchaseorder_create_itemgrid_data_source" xsi:type="string">
+                    Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorderitem\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    
+       <virtualType name="Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorderitem\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+             <argument name="mainTable" xsi:type="string">purchase_order_item</argument>
+            <argument name="resourceModel" xsi:type="string">Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorderitem</argument>
+        </arguments>
+    </virtualType> -->
+ 
+    
+    <!-- <virtualType name="Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorder\Collection" type="Hdweb\Purchaseorder\Ui\Component\Listing\CustomerDataProvider">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">purchase_order</argument>
+            <argument name="resourceModel" xsi:type="string">Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorder</argument>
+        </arguments>
+    </virtualType> -->
+	
+	<!-- <virtualType name="Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorderitem\Collection" type="Hdweb\Purchaseorder\Ui\Component\Listing\PoitemDataProvider">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">purchase_order_item</argument>
+            <argument name="resourceModel" xsi:type="string">Hdweb\Purchaseorder\Model\ResourceModel\Purchaseorderitem</argument>
+        </arguments>
+    </virtualType> -->
+<!-- 
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="sales_order_invoice_grid_data_source" xsi:type="string">Hdweb/Purchaseorder\Model\ResourceModel\Order\Invoice\Collection</item>
+            </argument>
+        </arguments>
+    </type> -->
+
+</config>

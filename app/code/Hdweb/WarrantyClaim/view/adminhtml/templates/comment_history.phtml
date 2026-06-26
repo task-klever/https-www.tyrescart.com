@@ -1,0 +1,176 @@
+<?php
+/** @var \Magento\Backend\Block\Template $block */
+$claimId = $block->getRequest()->getParam('claim_id');
+$claim = null;
+
+if ($claimId) {
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    $claim = $objectManager->create(\Hdweb\WarrantyClaim\Model\Claim::class)->load($claimId);
+
+    $currentStatus = $claim ? $claim->getStatus() : '';
+}
+
+
+$mediaUrl = $block->getViewFileUrl('');
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$storeManager = $objectManager->get(\Magento\Store\Model\StoreManagerInterface::class);
+$mediaBaseUrl = $storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+?>
+
+<?php if ($claim && $claim->getId()): ?>
+    <div class="admin__fieldset-wrapper">
+        <div class="admin__fieldset-wrapper-title">
+            <strong class="admin__fieldset-title"><?= __('Claim Details') ?></strong>
+        </div>
+        <div class="admin__fieldset">
+            <table class="admin__table-secondary">
+                <tr><th><?= __('Customer Name') ?></th><td><?= $claim->getCustomerName() ?></td></tr>
+                <tr><th><?= __('Email') ?></th><td><?= $claim->getEmail() ?></td></tr>
+                <tr><th><?= __('Phone') ?></th><td><?= $claim->getPhone() ?></td></tr>
+                <tr><th><?= __('Vehicle Plate') ?></th><td><?= $claim->getVehiclePlate() ?></td></tr>
+                <tr><th><?= __('Invoice Number') ?></th><td><?= $claim->getInvoiceNumber() ?></td></tr>
+                <tr><th><?= __('Invoice Date') ?></th><td><?= $claim->getInvoiceDate() ?></td></tr>
+                <tr><th><?= __('Warranty Reference') ?></th><td><?= $claim->getWarrantyReference() ?></td></tr>
+                <tr><th><?= __('Product Type') ?></th><td><?= $claim->getProductType() ?></td></tr>
+                <tr><th><?= __('Current Millage') ?></th><td><?= $claim->getCurrentMillage() ?></td></tr>
+                <tr>
+                    <?php $claimStatus = $claim->getStatus(); ?>
+                    <th><?= __('Status') ?></th>
+                    <td>
+                        <?php if ($claimStatus == 'in_progress'): ?>
+                            <?= __('In Progress') ?>
+                        <?php else: ?>
+                            <?= ucfirst($claimStatus) ?>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+
+
+                <?php if ($claim->getInvoiceImage()): ?>
+                    <?php
+                        $invoiceFile = $claim->getInvoiceImage();
+                        $invoiceUrl = $mediaBaseUrl . $invoiceFile;
+                        $fileExtension = strtolower(pathinfo($invoiceFile, PATHINFO_EXTENSION));
+                    ?>
+                    <tr>
+                        <th><?= __('Invoice File') ?></th>
+                        <td>
+                            <?php if (in_array($fileExtension, ['jpg', 'jpeg', 'png', 'gif'])): ?>
+                                <a href="javascript:void(0);" onclick="showPopupImage('<?= $invoiceUrl ?>')">View Image</a>
+                            <?php elseif ($fileExtension === 'pdf'): ?>
+                                <a href="<?= $invoiceUrl ?>" target="_blank" download>Download PDF</a>
+                            <?php else: ?>
+                                <span>Unsupported file type</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endif; ?>
+
+                <?php if ($claim->getProductImage1()): ?>
+                    <tr>
+                        <th><?= __('Product Image 1') ?></th>
+                        <td><a href="javascript:void(0);" onclick="showPopupImage('<?= $mediaBaseUrl . $claim->getProductImage1() ?>')">View Image</a></td>
+                    </tr>
+                <?php endif; ?>
+
+                <?php if ($claim->getProductImage2()): ?>
+                    <tr>
+                        <th><?= __('Product Image 2') ?></th>
+                        <td><a href="javascript:void(0);" onclick="showPopupImage('<?= $mediaBaseUrl . $claim->getProductImage2() ?>')">View Image</a></td>
+                    </tr>
+                <?php endif; ?>
+
+                <?php if ($claim->getProductImage3()): ?>
+                    <tr>
+                        <th><?= __('Product Image 3') ?></th>
+                        <td><a href="javascript:void(0);" onclick="showPopupImage('<?= $mediaBaseUrl . $claim->getProductImage3() ?>')">View Image</a></td>
+                    </tr>
+                <?php endif; ?>
+
+            </table>
+        </div>
+    </div>
+<?php endif; ?>
+
+
+<!-- Image popup container -->
+<div id="imagePopup" style="display:none; position:fixed; z-index:1000; top:10%; left:50%; transform:translateX(-50%); background:white; border:1px solid #ccc; padding:10px; max-width:90%; max-height:80%;">
+    <span style="float:right; cursor:pointer; font-weight:bold;" onclick="document.getElementById('imagePopup').style.display='none'">X</span>
+    <div style="text-align:center;">
+        <img id="popupImage" src="" alt="Image" style="max-width:100%; max-height:70vh;" />
+    </div>
+</div>
+
+<script>
+function showPopupImage(imageUrl) {
+    var popup = document.getElementById('imagePopup');
+    var popupImage = document.getElementById('popupImage');
+    popupImage.src = imageUrl;
+    popup.style.display = 'block';
+}
+</script>
+
+
+
+<form action="<?= $block->escapeUrl($block->getUrl('hdweb_warrantyclaim/comment/submitcomment'),['_current' => true]) ?>" method="post" id="claim-comment-form">
+    
+    
+    <input name="form_key" type="hidden" value="<?= $block->getFormKey() ?>">
+    <input type="hidden" name="claim_id" value="<?= $block->getRequest()->getParam('claim_id') ?>" />
+
+    <div class="admin__field">
+        <label class="admin__field-label" for="status">Status</label>
+        <div class="admin__field-control">
+            <select name="status" id="status" class="admin__control-select">
+                <option value="pending" <?= $currentStatus === 'pending' ? 'selected' : '' ?>>Pending</option>
+                <option value="in_progress" <?= $currentStatus === 'in_progress' ? 'selected' : '' ?>>In Progress</option>
+                <option value="rejected" <?= $currentStatus === 'rejected' ? 'selected' : '' ?>>Rejected</option>
+                <option value="declined" <?= $currentStatus === 'declined' ? 'selected' : '' ?>>Declined</option>
+                <option value="approved" <?= $currentStatus === 'approved' ? 'selected' : '' ?>>Approved</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="admin__field">
+        <label class="admin__field-label" for="comment">Comment</label>
+        <div class="admin__field-control">
+            <textarea name="comment" id="comment" rows="5" class="admin__control-textarea"></textarea>
+        </div>
+    </div>
+
+    <div class="admin__field">
+        <div class="admin__field-control">
+            <input type="checkbox" name="is_notify_customer" value="1" id="send_email" />
+            <label for="is_notify_customer">Is Notify Customer</label>
+        </div>
+    </div>
+
+    <div class="admin__field">
+        <button type="submit" class="action-default scalable save primary">
+            <span>Submit Comment</span>
+        </button>
+    </div>
+</form>
+
+<div class="admin__fieldset-wrapper">
+
+<div class="admin__fieldset" style="margin-top: 20px;">
+    <div class="admin__legend">Comment History</div>
+    <div class="admin__legend">
+        <?php foreach ($block->getComments() as $comment): ?>
+            <div class="admin__control-text" style="margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                <strong><?= $block->escapeHtml($block->getAdminUsername($comment->getCreatedBy())) ?></strong>
+                <em><?= $block->escapeHtml($comment->getCreatedAt()) ?></em>
+                <div><strong>Status:</strong> <?= $block->escapeHtml($comment->getStatus()) ?></div>
+                <div><?= nl2br($block->escapeHtml($comment->getComment())) ?></div>
+                <?php if ($comment->getIsNotifyCustomer()): ?>
+                    <div><em>Customer was notified</em></div>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+
+</div>
+
+

@@ -1,0 +1,54 @@
+<div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+    <div class="payment-method-title field choice">
+        <input type="radio"
+               name="payment[method]"
+               class="radio"
+               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+        <label data-bind="attr: {'for': getCode()}" class="label"><span data-bind="text: getTitle()"></span></label>
+    </div>
+    <div class="payment-method-content">
+        <div class="payment-method-billing-address">
+            <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+        <!-- ko foreach: getRegion('messages') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+        <fieldset class="fieldset" data-bind='attr: {id: "payment_form_" + getCode()}'>
+            <!-- ko ifnot: isIframeEnabled() -->
+            <div class="payment-method-note">
+                <!-- ko i18n: 'You will be redirected to our partner\'s website, where you can safely pay.' --><!-- /ko -->
+            </div>
+            <!-- /ko -->
+        </fieldset>
+
+        <div data-bind="visible: isInAction()">
+            <!-- ko if: isLightboxReady() -->
+            <div id="totalpay-iframe-container">
+                <iframe
+                        data-bind="attr: {id: getCode() + '-iframe', src: iframeSrc}, event: {load: iframeLoaded}, style: {width: iframeWidth(), height: iframeHeight()}"
+                        data-container="totalpay-iframe"
+                        class="totalpay-payments iframe"
+                        scrolling="1"
+                        frameborder="0"
+                        border="0"
+                >
+                </iframe>
+            </div>
+            <!-- /ko -->
+        </div>
+
+
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button class="action primary checkout"
+                        type="submit"
+                        data-bind="click: placeOrder, enable: (getCode() == isChecked())"
+                        disabled>
+                    <span data-bind="i18n: 'Continue to payment'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

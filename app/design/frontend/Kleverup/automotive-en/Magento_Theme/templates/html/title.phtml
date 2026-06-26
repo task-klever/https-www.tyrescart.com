@@ -1,0 +1,301 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+/**
+ * @var $block \Magento\Theme\Block\Html\Title
+ */
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$request = $objectManager->get('Magento\Framework\App\Action\Context')->getRequest();
+$currentPath = $request->getPathInfo();
+$coreRegistry = $objectManager->get('Magento\Framework\Registry');
+$vehiclesHelper = $objectManager->get('Hdweb\Vehicles\Helper\Data');
+
+$cssClass = $block->getCssClass() ? ' ' . $block->getCssClass() : '';
+$titleHtml = '';
+
+if ($request->getFullActionName() == 'blog_post_view'){
+
+ $post = $coreRegistry->registry('current_post');
+        $h1String = $post->getTitle();
+        $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $block->escapeHtml($h1String)
+        . '</span>';
+}elseif ($request->getFullActionName() == 'blog_index_index') {
+    
+        $h1String = 'Explore Our Blog – Tyre Advice & Car Maintenance Tips';
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>';  
+        
+}elseif ($request->getFullActionName() == 'brand_brand_view') {
+
+    $brand = $coreRegistry->registry('current_brand');
+        $h1String = $brand->getName();
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>'; 
+
+}
+elseif ($request->getFullActionName() == 'brand_brand_patternview') {
+
+     $pattern = $coreRegistry->registry('current_pattern');
+        $h1String = $pattern->getPattern();
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>'; 
+}
+elseif ($request->getFullActionName() == 'catalog_category_view') {
+
+     $category = $coreRegistry->registry('current_category');
+
+     if ($category->getCategoryPageTitle()) {
+        $h1String = $category->getCategoryPageTitle();
+    } else {
+        $h1String = $category->getName();
+    }
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>'; 
+}
+
+elseif ($request->getFullActionName() == 'vehicles_vehicles_make') {
+    $make = $this->getRequest()->getParam('make');
+    $strMake = str_replace('-', ' ', $make);
+    $makeString = ucwords($strMake);
+    $makeH1 = $vehiclesHelper->getH1TagForMakePage();
+    if ($makeH1) {
+        $h1String = str_replace('{make}', $makeString, $makeH1);
+    } else {
+        $h1String = $makeString;
+    }
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>';
+}elseif ($request->getFullActionName() == 'vehicles_vehicles_model') {
+    $make = $this->getRequest()->getParam('make');
+    $strMake = str_replace('-', ' ', $make);
+    $makeString = ucwords($strMake);
+    $model = $this->getRequest()->getParam('model');
+    $strModel = str_replace('-', ' ', $model);
+    $modelString = ucwords($strModel);
+    $modelH1 = $vehiclesHelper->getH1TagForModelPage();
+    if ($modelH1) {
+        $replacements = [
+            '{make}' => $makeString,
+            '{model}' => $modelString
+        ];
+        $h1String = str_replace(array_keys($replacements), array_values($replacements), $modelH1);
+    } else {
+        $h1String = $makeString . ' ' . $modelString;
+    }
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>';
+
+}elseif ($request->getFullActionName() == 'vehicles_vehicles_index') {
+    
+        $h1String = 'Buy Tyres by Car Make & Model';
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>';
+        
+        
+}elseif ($request->getFullActionName() == 'contact_index_index') {
+    
+        $h1String = 'Contact Us';
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>';    
+        
+}elseif ($request->getFullActionName() == 'storelocator_index_index') {
+    
+        $h1String = 'Store Locator';
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>';
+        
+}elseif ($request->getFullActionName() == 'mpbannerslider_specialoffers_index') {
+    
+        $h1String = 'Special Tyre Offers UAE';
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>';
+        
+} elseif ($request->getFullActionName() == 'customer_account_login') {
+    
+        $h1String = 'Login to Your Account';
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>'; 
+
+} elseif ($currentPath == '/blog/tyres') {
+    
+        $h1String = 'Tyres';
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>'; 
+
+} elseif ($currentPath == '/blog/battery') {
+    
+        $h1String = 'Battery';
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>'; 
+
+} elseif ($currentPath == '/blog/oil_change') {
+    
+        $h1String = 'Oil Change';
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>'; 
+
+} elseif ($currentPath == '/blog/car-service') {
+    
+        $h1String = 'Car Service';
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>'; 
+
+} elseif ($currentPath == '/blog/news') {
+    
+        $h1String = 'News';
+    
+
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $escaper->escapeHtml($h1String)
+        . '</span>'; 
+
+} else{
+
+if (trim($block->getPageHeading())) {
+    $titleHtml = '<span class="base" data-ui-id="page-title-wrapper" '
+        . $block->getAddBaseAttribute()
+        . '>'
+        . $block->escapeHtml($block->getPageHeading())
+        . '</span>';
+}
+}
+?>
+
+<?php if ($titleHtml) : ?>
+     <div class="page-title-wrapper md:text-left pt-8 pb-10 md:pt-10 md:pb-16 lg:pb-24 relative bg-[linear-gradient(145deg,_#001a0d_0%,_#003320_55%,_#004d26_100%)] overflow-hidden before:content-[''] before:absolute before:-top-[14px] before:left-0 before:h-full before:w-full before:bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] before:[background-size:14px_14px] md:before:[background-size:28px_28px] before:opacity-10 before:z-0">
+         <div class="container-theme">
+         <h1 class="text-[1.7rem] md:text-[1.75rem] text-white">
+            <?php if ($block->getId()) : ?> id="<?= $block->escapeHtmlAttr($block->getId()) ?>" <?php endif; ?>
+            <?php if ($block->getAddBaseAttributeAria()) : ?>
+            aria-labelledby="<?= $block->escapeHtmlAttr($block->getAddBaseAttributeAria()) ?>"
+            <?php endif; ?>
+            <?= /* @noEscape */ $titleHtml ?>
+         </h1>
+            </div>
+        <svg class="bottom-curve absolute bottom-[-1px] left-0 w-full text-white" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
+            <path fill="currentColor" d="M0 80V40c240 30 480 30 720 0s480-30 720 0v40z"></path>
+        </svg>
+      </div>
+
+      <?= $block->getChildHtml() ?>
+      <?php
+         /* Tyre Finder Block Visible for specific url Start */
+         /** @var \Magento\Framework\View\Element\Template $block */
+         $currentUrl = $block->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true]);
+         $baseUrl = $block->getBaseUrl();
+         // Extract the relative path without base URL
+         //$currentPath = trim(str_replace($baseUrl, '', $currentUrl), '/');
+         $currentPath = trim(
+             str_replace($baseUrl, '', strtok($currentUrl, '?')),
+             '/'
+         );
+         // Allowed paths
+         $allowedPaths = [
+             // 'tyres',
+             // 'tyres/size'
+         ];
+             if (in_array($currentPath, $allowedPaths)) :
+                         /*Tyre Finder Block Start*/
+                         /** @var \Magento\Framework\View\Element\Template $block */
+                         echo $block->getLayout()
+                             ->createBlock(\Magento\Framework\View\Element\Template::class)
+                             ->setTemplate('Hdweb_Tyrefinder::hyva_tyre_finder_listingpage.phtml')
+                             ->toHtml();    
+                         /*Tyre Finder Block End*/    
+             endif;           
+         /* Tyre Finder Block Visible for specific url End */
+         ?>
+
+<?php endif; ?>
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+?>
+<?php
+
+$breadcrumbs = $block->getLayout()->getBlock('breadcrumbs');
+if ($breadcrumbs instanceof \Magento\Framework\View\Element\AbstractBlock): ?>
+    <div class="custom-breadcrumbs-wrapper mt-2 md:mt-0">
+        <?= $breadcrumbs->toHtml(); ?>
+    </div>
+<?php endif; ?>

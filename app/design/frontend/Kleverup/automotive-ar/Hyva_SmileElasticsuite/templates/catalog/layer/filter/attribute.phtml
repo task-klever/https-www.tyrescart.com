@@ -1,0 +1,94 @@
+<?php
+
+/** @var $block \Smile\ElasticsuiteCatalog\Block\Navigation\FilterRenderer */
+/** @var $this \Smile\ElasticsuiteCatalog\Block\Navigation\Renderer\Attribute */
+/** @var $escaper \Magento\Framework\Escaper  */
+
+?>
+<?php
+  $uniqueId = '_' . uniqid();
+  $jsLayoutData = json_decode($this->getJsLayout(), true);
+  array_walk_recursive($jsLayoutData, function (&$value, $key) {
+      if ($key === 'label' && is_string($value)) {
+          $value = (string) __($value);
+      }
+  });
+  $jsLayout = json_encode($jsLayoutData);
+  $datascope = $this->getFilter()->getRequestVar() . 'Filter';
+  $filterName = $this->getFilter()->getName();
+?>
+<?php if (!empty($filterItems)) : ?>
+    <div
+        class="<?= $escaper->escapeHtml($datascope); ?>"
+        x-data="initSmileAttribute(<?= $escaper->escapeHtmlAttr($jsLayout) ?>)"
+        x-init="initialize();"
+    >
+        <div class="field search"  x-show="displaySearch">
+            <div class="control">
+                <input class="filter-search w-full mb-2 h-[34px] text-sm rounded-[4px] border border-[#cccccc]"
+                       type="text"
+                       aria-label="<?= $escaper->escapeHtmlAttr( __('Search %1 filter', $filterName)) ?>"
+                       autocomplete="off"
+                       :placeholder="searchPlaceholder"
+                       @keyup="onSearchChange"
+                       @focusout="onSearchFocusOut" />
+            </div>
+        </div>
+        <ol class="items max-h-[167px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#d8e9f3] [&::-webkit-scrollbar-thumb]:bg-theme-blue dark:[&::-webkit-scrollbar-track]:bg-[#d8e9f3] dark:[&::-webkit-scrollbar-thumb]:bg-theme-blue"
+            aria-label="<?= $escaper->escapeHtmlAttr(__('%1 filter options', $filterName)) ?>"
+            tabindex="-1"
+            x-ref="closestItems<?= $uniqueId ?>"
+        >
+            <template x-for="attribute in displayedItems" hidden>
+                <li class="item my-1">
+                    <a
+                        class="flex items-center text-sm"
+                        :href="attribute.url"
+                        x-show="attribute.count >= 1"
+                        :rel="options.displayRelNofollow"
+                    >
+                        <span
+                            class="rounded-sm border border-gray-400"
+                            :class="attribute.is_selected && 'bg-theme-blue border-theme-blue'"
+                        >
+                            <svg
+                                fill="none"
+                                class="stroke-2 stroke-white"
+                                :class="{
+                                    'opacity-100': attribute.is_selected,
+                                    'opacity-0': !attribute.is_selected,
+                                }"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                                aria-hidden="true"
+                            >
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path>
+                            </svg>
+                        </span>
+                        <div class="mr-2 [direction:ltr]">
+                            <span x-html="attribute.label"></span>
+                            <span class="count" x-show="options.displayProductCount">
+                                (<span x-text="attribute.count"></span><span class="sr-only"><?= $escaper->escapeHtml(__('products available')) ?></span>)
+                            </span>
+                            <span class="sr-only" x-show="attribute.is_selected">
+                                <?= $escaper->escapeHtml(__('filter selected')) ?>
+                            </span>
+                        </div>
+                    </a>
+
+                    <div x-show="attribute.count < 1">
+                        <span x-html="attribute.label"></span>
+                        <span class="count" x-text="attribute.count"></span>
+                    </div>
+                </li>
+            </template>
+        </ol>
+
+        <div class="no-results-message" x-model="result" x-show="getFulltextSearch() && !hasSearchResult()" class="empty">
+            <p x-html="getSearchResultMessage()"></p>
+        </div>
+    </div>
+
+<?php endif; ?>

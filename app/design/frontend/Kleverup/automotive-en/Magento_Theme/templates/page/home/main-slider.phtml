@@ -1,0 +1,125 @@
+<?php
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$bannerFactory = $objectManager->get(\Mageplaza\BannerSlider\Model\BannerFactory::class);
+$topBanner = $bannerFactory->create()->load(15);
+$mediaURL = $objectManager->get(\Magento\Store\Model\StoreManagerInterface::class)->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+?>
+<section class="hero-banner text-center md:text-left pb-[6rem] md:pb-[7.5rem] pt-[1.7rem] md:pt-[3.5rem] relative bg-[linear-gradient(145deg,_#001a0d_0%,_#003320_55%,_#004d26_100%)] overflow-hidden before:content-[''] before:absolute before:-top-[14px] before:left-0 before:h-full before:w-full before:bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] before:[background-size:28px_28px] before:opacity-10 before:z-0">
+   <div class="container-theme">
+      <div class="flex flex-col lg:flex-row items-center">
+         <div class="hero-inner relative w-full lg:w-[72%] xl:w-3/5">
+            <p class="hero-badge inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-medium px-4 py-2 rounded-full mb-5 w-fit">
+               <svg class="text-theme-blue" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
+               </svg>
+               <?php echo __('Authorised dealer - Factory to warehouse') ?>
+            </p>
+            <h1 class="text-[1.7rem] md:text-[1.75rem] text-white leading-[1.5] [text-shadow:1px_2px_8px_rgba(0,0,0,0.85),0_0_24px_rgba(0,0,0,0.5)]">
+               <?php echo __('Buy') ?> <span class="text-theme-blue [text-shadow:-1px_-1px_0_#fff,1px_-1px_0_#fff,-1px_1px_0_#fff,1px_1px_0_#fff,0_3px_10px_rgba(0,0,0,0.95),0_0_20px_rgba(0,132,61,0.45)]"><?php echo __('Tyres Online') ?></span> <?php echo __('in UAE') ?>
+            </h1>
+            <h2 class="text-[1.2rem] md:text-[1.5rem] uppercase text-white block mt-2"><?php echo __('50+ Brands, Free Delivery & Expert Fitting') ?></h2>
+            <p class="text-white/80 mt-4 text-sm md:text-base leading-[1.7]">
+               <?php echo __('Search the perfect tyre by size, vehicle or EV compatibility - fully fitted, delivered, and balanced across the UAE.') ?>
+            </p>
+            <?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Hdweb_Tyrefinder::hyva_tyre_finder.phtml")->toHtml();?> 
+            <div class="fip-trust-badges flex flex-wrap items-center gap-x-6 gap-y-2.5 justify-center md:justify-start mt-6 md:mt-7">
+               <span class="fip-trust-badge flex items-center gap-1.5 text-white/80 text-[13px] md:text-[14px]">
+                  <svg class="text-theme-blue top-[-1px] relative" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                     <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  <?php echo __('Doorstep installation') ?>
+               </span>
+               <span class="fip-trust-badge flex items-center gap-1.5 text-white/80 text-[13px] md:text-[14px]">
+                  <svg class="text-theme-blue top-[-1px] relative" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                     <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  <?php echo __('5-year warranty') ?>
+               </span>
+               <span class="fip-trust-badge flex items-center gap-1.5 text-white/80 text-[13px] md:text-[14px]">
+                  <svg class="text-theme-blue top-[-1px] relative" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                     <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  <?php echo __('Tabby & Tamara') ?>
+               </span>
+            </div>
+         </div>
+         <div class="right-img w-full lg:w-[25%] xl:w-2/5 relative hidden lg:block">
+            <img class="ml-auto h-[326px] xl:h-[400px]" src="<?php echo $mediaURL.'images/single-full-tyre.webp'; ?>" />
+            <div class="absolute bottom-5 left-12 flex items-center gap-2.5 bg-black/50 backdrop-blur-sm border border-white/20 rounded-xl p-2 shadow-lg">
+               <div class="flex-shrink-0 w-9 h-9 rounded-lg bg-[#f59e0b] flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                     <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
+                  </svg>
+               </div>
+               <div>
+                  <p class="text-white/60 text-[10px] font-medium uppercase tracking-widest leading-none mb-1"><?php echo __('New 2026') ?></p>
+                  <p class="text-white text-sm font-bold leading-tight"><?php echo __('Michelin Pilot Sport 5') ?></p>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+   <svg class="bottom-curve absolute bottom-[-1px] left-0 w-full text-white" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
+      <path fill="currentColor" d="M0 80V40c240 30 480 30 720 0s480-30 720 0v40z"></path>
+   </svg>
+</section>
+    <div class="section data-protection-gride mt-[-68px]">
+    <div class="container-theme">
+<div class="rounded-[10px] bg-white border border-color transition-all duration-300 shadow-lg">
+      <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100">
+         <div class="flex items-center gap-3 py-2 lg:py-4 px-2 lg:px-6">
+            <div class="flex-shrink-0 h-8 w-8 md:w-9 md:h-9 rounded-full bg-gray-100 flex items-center justify-center border">
+               <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+               </svg>
+            </div>
+            <div>
+               <p class="text-[0.750rem] md:text-sm font-semibold text-gray-900 leading-tight"><?php echo __('Data Protection') ?></p>
+               <p class="text-[0.688rem] md:text-xs text-gray-500 mt-0.5"><?php echo __('Robust security on every order') ?></p>
+            </div>
+         </div>
+         <div class="flex items-center gap-3 py-2 px-2 lg:px-6">
+            <div class="flex-shrink-0 h-8 w-8 md:w-9 md:h-9 rounded-full bg-gray-100 flex items-center justify-center border">
+               <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                  <line x1="1" y1="10" x2="23" y2="10"/>
+               </svg>
+            </div>
+            <div>
+               <p class="text-[0.750rem] md:text-sm font-semibold text-gray-900 leading-tight"><?php echo __('Multiple Payments') ?></p>
+               <p class="text-[0.688rem] md:text-xs text-gray-500 mt-0.5"><?php echo __('Card, Tabby, Tamara, Cash') ?></p>
+            </div>
+         </div>
+         <div class="flex items-center gap-3 py-2 px-2 lg:px-6">
+            <div class="flex-shrink-0 h-8 w-8 md:w-9 md:h-9 rounded-full bg-gray-100 flex items-center justify-center border">
+               <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+                  <line x1="7" y1="7" x2="7.01" y2="7"/>
+               </svg>
+            </div>
+            <div>
+               <p class="text-[0.750rem] md:text-sm font-semibold text-gray-900 leading-tight"><?php echo __('Unmatched Prices') ?></p>
+               <p class="text-[0.688rem] md:text-xs text-gray-500 mt-0.5"><?php echo __('Direct stockist savings') ?></p>
+            </div>
+         </div>
+         <div class="flex items-center gap-3 py-2 px-2 lg:px-6">
+            <div class="flex-shrink-0 h-8 w-8 md:w-9 md:h-9 rounded-full bg-gray-100 flex items-center justify-center border">
+               <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <rect x="1" y="3" width="15" height="13" rx="1"/>
+                  <path d="M16 8h4l3 5v3h-7V8z"/>
+                  <circle cx="5.5" cy="18.5" r="2.5"/>
+                  <circle cx="18.5" cy="18.5" r="2.5"/>
+               </svg>
+            </div>
+            <div>
+               <p class="text-[0.750rem] md:text-sm font-semibold text-gray-900 leading-tight"><?php echo __('Delivery &amp; Install') ?></p>
+               <p class="text-[0.688rem] md:text-xs text-gray-500 mt-0.5"><?php echo __('Doorstep across the UAE') ?></p>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+</div>

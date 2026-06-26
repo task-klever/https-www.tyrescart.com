@@ -1,0 +1,46 @@
+<?php
+/**
+ * Ecomteck
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Ecomteck.com license that is
+ * available through the world-wide-web at this URL:
+ * https://ecomteck.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Ecomteck
+ * @package     Ecomteck_CustomerCustomAttributes
+ * @copyright   Copyright (c) 2018 Ecomteck (https://ecomteck.com/)
+ * @license     https://ecomteck.com/LICENSE.txt
+ */
+
+// @codingStandardsIgnoreFile
+
+?>
+<?php
+/**
+ * Create account form template
+ *
+ * @see \Ecomteck\CustomerCustomAttributes\Block\Form
+ */
+/* @var $block \Ecomteck\CustomerCustomAttributes\Block\Form */
+?>
+<?php if ($block->hasUserDefinedAttributes()): ?>
+    <?php if ($block->isShowContainer()): ?>
+    <fieldset class="fieldset">
+    <?php endif;?>
+    <?php foreach ($block->getUserDefinedAttributes() as $attribute):?>
+        <?php $attributeContent = $block->getAttributeHtml($attribute);?>
+        <?php if ($attributeContent): ?>
+            <?php /* @escapeNotVerified */ echo $attributeContent;?>
+        <?php endif;?>
+    <?php endforeach;?>
+    <?php if ($block->isShowContainer()): ?>
+    </fieldset>
+    <?php endif;?>
+<?php endif; ?>

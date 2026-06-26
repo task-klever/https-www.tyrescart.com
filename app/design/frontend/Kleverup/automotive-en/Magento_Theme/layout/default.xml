@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<page
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
+>
+    <update handle="hyva_form_validation"/>
+    <update handle="hyva_modal"/>
+    <head>
+        <!-- custom.js removed: Swiper inits moved to Alpine.js in templates, scroll logic moved to fitment-bar.phtml -->
+    </head>
+    <body>
+       <referenceBlock name="breadcrumbs" display="false"/>
+        <referenceContainer name="head.additional">
+            <block class="Magento\Framework\View\Element\Template" name="custom_head_file" template="Magento_Theme::html/custom_head.phtml" before="-"/>
+        </referenceContainer>
+        <referenceContainer name="main.content">
+            <container name="breadcrumbs.title.container" as="breadcrumbsTitleContainer" label="Breadcrumbs Title Container" htmlTag="div" htmlClass="section page-title" before="-">
+            </container>
+        </referenceContainer>
+        <move element="breadcrumbs" destination="breadcrumbs.title.container" before="-"/>
+        <move element="page.main.title" destination="breadcrumbs.title.container" before="breadcrumbs"/>
+        <move element="messages" destination="main.content" after="breadcrumbs.title.container"/>
+        <referenceContainer name="before.body.end">
+            <block name="klever-loader" template="Magento_Theme::klever-site-loader.phtml" />
+        </referenceContainer>
+        <referenceBlock name="head.additional">
+            <block name="footer-collapse-js" template="Magento_Theme::js/footer-collapse-loader.phtml"/>
+        </referenceBlock>
+        <referenceContainer name="header.container">
+            <!-- <block name="header-top" template="Magento_Theme::html/header/header-top.phtml" before="header-content" />
+            <block name="fitment.bar" template="Magento_Theme::html/header/fitment-bar.phtml" after="-"/> -->
+        </referenceContainer>
+        <!-- Pranav : 27-12-2025 : Remove ttl from header topmenu -->
+        <referenceBlock name="catalog.topnav">
+            <action method="setTtl">
+                <argument name="ttl" xsi:type="null"/>
+            </action>
+        </referenceBlock>
+        <!-- End -->
+        <!-- Remove ttl from topmenu_generic to prevent ESI rendering (menu not loading via Varnish ESI) -->
+        <referenceBlock name="topmenu_generic">
+            <action method="setTtl">
+                <argument name="ttl" xsi:type="null"/>
+            </action>
+        </referenceBlock>
+        <referenceContainer name="after.body.start">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="warranty.popup"
+                   template="Magento_Theme::warranty_popup.phtml"/>
+        </referenceContainer>
+        <referenceContainer name="header.container" htmlClass="page-header w-full z-50 transition-colors duration-300 relative"/>
+        <referenceBlock name="footer-static-links" remove="true"/>
+        <referenceContainer name="footer">
+            <block name="footer.fitment.bar" template="Magento_Theme::html/footer/fitment-bar.phtml" before="footer-content"/>
+        </referenceContainer>
+        <referenceBlock name="footer-content">
+         <block name="header-top" template="Magento_Theme::html/header/header-top.phtml" before="header-content" />
+            <block name="fitment.bar" template="Magento_Theme::html/header/fitment-bar.phtml" after="-"/>
+            <container name="footer-content-before"/>
+            <block name="footer_column_1" template="Magento_Theme::html/footer/collapse.phtml">
+                <arguments>
+                    <argument name="title_part_1" xsi:type="string" translate="true">Product</argument>
+                    <argument name="title_part_2" xsi:type="string" translate="true">Information</argument>
+                    <argument name="open" xsi:type="boolean">true</argument> <!-- Set the collapse to be open by default on mobile (true/false) -->
+                </arguments>
+                <!-- If you want to use the links as a static block -->
+                <block class="Magento\Cms\Block\Block" name="footer-cms-content">
+                    <arguments>
+                        <argument name="block_id" xsi:type="string">footer_content_1</argument>
+                    </arguments>
+                </block>
+            </block>
+            <block name="footer_column_2" template="Magento_Theme::html/footer/collapse.phtml" after="footer_column_2">
+                <arguments>
+                    <argument name="title_part_1" xsi:type="string" translate="true">Premium</argument>
+                    <argument name="title_part_2" xsi:type="string" translate="true">Tyres</argument>
+                </arguments>
+                <block class="Magento\Cms\Block\Block" name="footer-static-links-services">
+                    <arguments>
+                        <argument name="block_id" xsi:type="string">footer_content_2</argument>
+                    </arguments>
+                </block>
+            </block>
+            <block name="footer_column_3" template="Magento_Theme::html/footer/collapse.phtml" after="footer_column_2">
+                <arguments>
+                    <argument name="title_part_1" xsi:type="string" translate="true">Why</argument>
+                    <argument name="title_part_2" xsi:type="string" translate="true">TyresCart.ae?</argument>
+                </arguments>
+                <block class="Magento\Cms\Block\Block" name="footer-static-links-company">
+                    <arguments>
+                        <argument name="block_id" xsi:type="string">footer_content_3</argument>
+                    </arguments>
+                </block>
+            </block>
+            <block name="footer_column_4" template="Magento_Theme::html/footer/collapse.phtml" after="footer_column_3">
+                <arguments>
+                    <argument name="title_part_1" xsi:type="string" translate="true">Website</argument>
+                    <argument name="title_part_2" xsi:type="string" translate="true">Information</argument>
+                </arguments>
+                <block class="Magento\Cms\Block\Block" name="footer_menu_4">
+                    <arguments>
+                        <argument name="block_id" xsi:type="string">footer_content_4</argument>
+                    </arguments>
+                </block>
+            </block>
+            
+           <block name="footer_menu_5" template="Magento_Theme::html/footer/collapse.phtml" after="footer_column_4">
+                <arguments>
+                    <argument name="title_part_1" xsi:type="string" translate="true">Get In</argument>
+                    <argument name="title_part_2" xsi:type="string" translate="true">Touch</argument>
+                </arguments>
+                <block class="Magento\Cms\Block\Block" name="footer_content_5">
+                    <arguments>
+                        <argument name="block_id" xsi:type="string">footer_content_5</argument>
+                    </arguments>
+                </block>
+            </block> 
+            <!-- <block class="Magento\Cms\Block\Block" name="footer_menu_5" after="footer_column_4">
+                <arguments>
+                    <argument name="block_id" xsi:type="string">footer_content_5</argument>
+                </arguments>
+            </block> -->
+        </referenceBlock>
+          <!-- Move breadcrumbs after page.main.title -->
+        <!-- <move element="breadcrumbs" destination="content" before="-"/> -->
+    </body>
+</page>

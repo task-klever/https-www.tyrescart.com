@@ -1,0 +1,255 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+$brandDataHelper = $this->helper('MGS\Brand\Helper\Data');
+$brandCollection = $block->getCollection();
+$baseUrl = $block->getBaseUrl();
+$mediaUrl = $brandDataHelper->getBaseMediaUrl();
+$brandRoute = $brandDataHelper->getBrandRoute();
+
+// Load brand_segment data from DB
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$resource = $objectManager->get(\Magento\Framework\App\ResourceConnection::class);
+$conn = $resource->getConnection();
+$segmentMap = [];
+$segmentRows = $conn->fetchAll('SELECT brand_id, brand_segment FROM mgs_brand WHERE brand_segment IS NOT NULL AND brand_segment != ""');
+foreach ($segmentRows as $sr) { $segmentMap[$sr['brand_id']] = $sr['brand_segment']; }
+
+$brandsData = [];
+$availableLetters = [];
+$urlKeys = [];
+
+// Group by segment
+$segmentBrands = [
+    'top_premium' => [],
+    'top_quality' => [],
+    'top_budget'  => [],
+];
+$otherBrands = [];
+
+foreach ($brandCollection as $brand) {
+    $name = trim($brand->getName());
+    if (!$name) { continue; }
+    $urlKey = $brand->getUrlKey();
+    if (!$urlKey) {
+        $urlKey = strtolower(preg_replace('/[^a-z0-9]+/', '-', $name));
+        $urlKey = trim($urlKey, '-');
+    }
+    $originalUrlKey = $urlKey;
+    $i = 1;
+    while (in_array($urlKey, $urlKeys)) {
+        $urlKey = $originalUrlKey . '-' . $i;
+        $i++;
+    }
+    $urlKeys[] = $urlKey;
+    $firstLetter = strtoupper(substr($name, 0, 1));
+    if (!in_array($firstLetter, $availableLetters)) {
+        $availableLetters[] = $firstLetter;
+    }
+
+    $brandData = [
+        'name' => $name,
+        'urlKey' => $urlKey,
+        'image' => $brand->getImage() ? $mediaUrl . $brand->getImage() : '',
+        'firstLetter' => $firstLetter,
+        'category' => $brand->getBrandCategory(),
+        'segment' => $segmentMap[$brand->getBrandId()] ?? '',
+    ];
+
+    $brandsData[] = $brandData;
+
+    $seg = $segmentMap[$brand->getBrandId()] ?? '';
+    if ($seg && isset($segmentBrands[$seg]) && $brand->getBrandCategory() === 'Tyres') {
+        $segmentBrands[$seg][] = $brandData;
+    }
+}
+sort($availableLetters);
+
+$hasSegmentBrands = !empty($segmentBrands['top_premium']) || !empty($segmentBrands['top_quality']) || !empty($segmentBrands['top_budget']);
+
+$segmentConfig = [
+    'top_premium' => ['label' => __('Premium Brands'), 'bg' => 'bg-gradient-to-r from-[#1a1a2e] to-[#16213e]', 'text' => 'text-white'],
+    'top_quality' => ['label' => __('Quality Brands'), 'bg' => 'bg-gradient-to-r from-[#00843D] to-[#00a64d]', 'text' => 'text-white'],
+    'top_budget'  => ['label' => __('Budget Brands'), 'bg' => 'bg-gradient-to-r from-[#f39c12] to-[#e67e22]', 'text' => 'text-white'],
+];
+?>
+<div x-data="brandFilter()" class="section section-padding all-brands-section">
+   <?php if (!empty($brandsData)): ?>
+
+      <div class="section-title text-center">
+         <h3><?php echo __('All') ?> <span class="text-theme-blue"><?php echo __('Brands') ?></span></h3>
+      </div>
+      <div class="flex justify-center items-center mt-4">
+          <div class="relative flex w-[13rem] md:w-[16rem] h-12 bg-black rounded-full shadow-lg">
+              <div class="absolute top-1 left-[2%] h-10 w-[48%] rounded-full bg-theme-blue transition-all duration-300 z-0"
+                  :style="activeCategory === 'Tyres' ? 'transform: translateX(0);' : 'transform: translateX(100%);'">
+              </div>
+              <button
+                  @click="activeCategory = 'Tyres'"
+                  class="w-1/2 h-full rounded-full font-semibold text-base md:text-lg transition-all duration-300 z-10"
+                  :class="activeCategory === 'Tyres' ? 'text-white' : 'text-white'"
+              >
+                  <?php echo __('Tyres') ?>
+              </button>
+              <button
+                  @click="activeCategory = 'Battery'"
+                  class="w-1/2 h-full rounded-full font-semibold text-base md:text-lg transition-all duration-300 z-10"
+                  :class="activeCategory === 'Battery' ? 'text-white' : 'text-white'"
+              >
+                  <?php echo __('Battery') ?>
+              </button>
+          </div>
+      </div>
+   <div class="keyword-filter">
+      <div class="relative alphabet-filter mt-3.5 md:mt-6 mb-0 md:mb-3">
+         <div class="flex gap-1 md:gap-2 overflow-x-auto scrollbar-hide pb-2 md:flex-wrap md:justify-center md:overflow-visible md:pb-0" style="scrollbar-width: none; -ms-overflow-style: none;">
+            <button
+               @click="activeLetter = 'all'; centerActiveButton($event)"
+               :class="{
+               'bg-theme-blue text-white shadow-md border-2 border-border-theme': activeLetter === 'all',
+               'bg-white border-2 border-border-theme hover:border-theme-blue': activeLetter !== 'all'
+               }"
+               class="flex-shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-[10px] font-medium text-sm lg:text-base transition-all duration-300 whitespace-nowrap"
+               >
+               <span class="flex items-center gap-1 lg:gap-2">
+                  <svg class="w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                  </svg>
+                  <span class="hidden sm:inline"><?php echo __('All Brands') ?></span>
+                  <span class="sm:hidden"><?php echo __('All') ?></span>
+               </span>
+            </button>
+            <template x-for="letter in availableLetters" :key="letter">
+               <button
+                  type="button"
+                  @click="activeLetter = letter; centerActiveButton($event)"
+                  x-text="letter"
+                  :class="{
+                  'bg-theme-blue text-white shadow-md border-2 border-border-theme': activeLetter === letter,
+                  'bg-white border-2 border-border-theme hover:border-theme-blue': activeLetter !== letter
+                  }"
+                  class="flex-shrink-0 w-10 h-10 lg:w-12 lg:h-12 rounded-[10px] font-bold text-sm lg:text-lg transition-all duration-300 relative overflow-hidden"
+                  >
+               <span
+                  class="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 transition-opacity duration-300"
+                  ></span>
+               </button>
+            </template>
+         </div>
+      </div>
+   </div>
+   <!-- Segment-grouped view: shown when Tyres tab is active -->
+   <div x-show="activeCategory === 'Tyres'" class="mb-4">
+      <template x-for="seg in segmentOrder" :key="seg.key">
+         <div x-show="filteredBySegment(seg.key).length > 0" class="mb-5">
+            <div :class="seg.bg" class="text-white px-5 py-3 rounded-t-xl flex items-center gap-2">
+               <span class="text-base font-bold uppercase tracking-wide" x-text="seg.label"></span>
+               <span class="text-xs opacity-75" x-text="'(' + filteredBySegment(seg.key).length + ')'"></span>
+            </div>
+            <div class="border border-t-0 border-gray-200 rounded-b-xl px-2 py-3 bg-white">
+               <div class="flex flex-wrap">
+                  <template x-for="(brand, index) in filteredBySegment(seg.key)" :key="brand.urlKey">
+                     <div class="w-1/2 md:w-1/4 lg:w-1/5 xl:w-1/6 p-1.5 md:p-2.5">
+                        <a :href="'<?= $baseUrl ?>tyres/<?= $brandRoute ?>/' + brand.urlKey" class="group shadow-lg hover:shadow-xl flex flex-wrap justify-center text-center border border-border-theme rounded-[10px] px-5 py-3 md:py-4 transition hover:border-theme-blue duration-500">
+                           <template x-if="brand.image">
+                              <div class="bg-transparent w-full h-[40px] lg:h-[50px] content-center">
+                                 <img class="w-auto object-contain m-auto max-h-full filter transition-all duration-500 ease-out"
+                                    :src="brand.image" loading="lazy" :alt="brand.name" :title="brand.name"/>
+                              </div>
+                           </template>
+                           <p class="block mt-2 w-full text-sm md:text-base font-semibold text-gray-800" x-text="brand.name"></p>
+                        </a>
+                     </div>
+                  </template>
+               </div>
+            </div>
+         </div>
+      </template>
+   </div>
+
+   <!-- Flat grid view: shown when Battery tab is active -->
+   <div x-show="activeCategory !== 'Tyres'" class="flex flex-wrap items-center justify-center mb-4">
+      <template x-for="(brand, index) in filtered" :key="brand.urlKey">
+         <div class="w-1/2 md:w-1/4 lg:w-1/5 xl:w-1/6 p-1.5 md:p-2.5 brand-card animate-[slideInUp_0.6s_ease-out_forwards] opacity-0" :style="`animation-delay: ${index * 50}ms`">
+            <a :href="'<?= $baseUrl ?>car-battery?brand=' + brand.name" class="group shadow-lg hover:shadow-xl flex flex-wrap justify-center text-center border border-border-theme rounded-[10px] px-5 py-3 md:py-4 transition hover:border-theme-blue transition-all duration-500">
+               <template x-if="brand.image">
+                  <div class="bg-transparent w-full h-[40px] lg:h-[50px] content-center">
+                     <img class="w-auto object-contain m-auto filter transition-all duration-500 ease-out"
+                        :src="brand.image" loading="lazy" :alt="brand.name" :title="brand.name"/>
+                  </div>
+               </template>
+               <p class="block mt-2 w-full text-sm md:text-base font-semibold text-gray-800 transition-colors duration-300" x-text="brand.name"></p>
+            </a>
+         </div>
+      </template>
+   </div>
+   <div x-show="(activeCategory === 'Tyres' && filteredTyresCount === 0) || (activeCategory !== 'Tyres' && filtered.length === 0)"
+      class="text-center mt-6 text-gray-500 text-lg">
+      <?= __("No brands found matching your search.") ?>
+   </div>
+   <?php else: ?>
+   <div class="text-center mt-6 text-gray-500 text-lg">
+      <?= __("We can't find any brands.") ?>
+   </div>
+   <?php endif; ?>
+</div>
+<script>
+function brandFilter() {
+    return {
+        searchTerm: '',
+        activeLetter: 'all',
+        activeCategory: 'Tyres',
+        availableLetters: <?= json_encode($availableLetters ?: []) ?>,
+        brands: <?= json_encode($brandsData ?: []) ?>,
+        segmentOrder: [
+            { key: 'top_premium', label: '<?= $escaper->escapeJs(__('Premium Brands')) ?>', bg: 'bg-gradient-to-r from-[#1a1a2e] to-[#16213e]' },
+            { key: 'top_quality', label: '<?= $escaper->escapeJs(__('Quality Brands')) ?>', bg: 'bg-gradient-to-r from-[#00843D] to-[#00a64d]' },
+            { key: 'top_budget',  label: '<?= $escaper->escapeJs(__('Budget Brands')) ?>', bg: 'bg-gradient-to-r from-[#f39c12] to-[#e67e22]' },
+        ],
+        filteredBySegment(segKey) {
+            if (!this.brands || !Array.isArray(this.brands)) return [];
+            return this.brands.filter(brand => {
+                if (brand.category !== 'Tyres') return false;
+                if (brand.segment !== segKey) return false;
+                const matchesSearch = this.searchTerm === '' ||
+                    brand.name.toLowerCase().includes(this.searchTerm.toLowerCase());
+                const matchesLetter = this.activeLetter === 'all' ||
+                    brand.firstLetter === this.activeLetter;
+                return matchesSearch && matchesLetter;
+            });
+        },
+        get filteredTyresCount() {
+            let total = 0;
+            ['top_premium', 'top_quality', 'top_budget'].forEach(s => { total += this.filteredBySegment(s).length; });
+            return total;
+        },
+        get filtered() {
+            if (!this.brands || !Array.isArray(this.brands)) {
+                return [];
+            }
+            return this.brands.filter(brand => {
+                const matchesCategory = this.activeCategory === 'all' ||
+                                      (brand.category && brand.category === this.activeCategory);
+                const matchesSearch = this.searchTerm === '' ||
+                    brand.name.toLowerCase().includes(this.searchTerm.toLowerCase());
+                const matchesLetter = this.activeLetter === 'all' ||
+                    brand.firstLetter === this.activeLetter;
+                return matchesCategory && matchesSearch && matchesLetter;
+            });
+        },
+        centerActiveButton(event) {
+            setTimeout(() => {
+                const button = event.target.closest('button');
+                const buttonContainer = button.closest('.overflow-x-auto');
+                if (!buttonContainer || !button) return;
+                const buttonRect = button.getBoundingClientRect();
+                const containerRect = buttonContainer.getBoundingClientRect();
+                const scrollLeft = buttonContainer.scrollLeft;
+                const buttonCenter = buttonRect.left - containerRect.left + (buttonRect.width / 2) + scrollLeft;
+                const containerCenter = containerRect.width / 2;
+                const scrollTo = buttonCenter - containerCenter;
+                buttonContainer.scrollTo({ left: Math.max(0, scrollTo), behavior: 'smooth' });
+            }, 50);
+        }
+    }
+}
+</script>

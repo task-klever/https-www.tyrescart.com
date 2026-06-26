@@ -1,0 +1,62 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+/**
+ * The AlpineJS scope of this file is the method `initCartTotals()` in Magento_Checkout::php-cart/totals.phtml
+ */
+?>
+<!-- display shipping including and excluding tax -->
+<template x-if="segment.code === 'shipping' && quoteData.is_virtual === 0 && !!shippingMethod && 'both' === checkoutConfig.reviewShippingDisplayMode && (totalsData.shipping_amount > 0 || totalsData.shipping_incl_tax > 0)">
+    <div>
+        <div class="flex pb-2 my-2 border-b border-slate-300 text-base md:text-lg md:grid md:grid-cols-2 md:w-full border-container px-4 md:px-7">
+            <div class="w-7/12 text-right md:w-auto"
+                <?php /* x-html="`${segment.title} ${excludingTaxMessage}` " */ ?>
+                 x-html="'Shipping & Handling'"
+            ></div>
+            <div class="w-5/12 text-left md:w-auto font-semibold price"
+                 x-html="hyva.formatPrice(totalsData.shipping_amount  || 0)"
+            ></div>
+        </div>
+
+        <div class="flex pb-2 my-2 border-b border-slate-300 text-base md:text-lg md:grid md:grid-cols-2 md:w-full border-container px-4 md:px-7">
+            <div class="w-7/12 text-left md:w-auto"
+               <?php /* x-html="`${segment.title} ${includingTaxMessage}` " */ ?>
+                 x-html="'Shipping & Handling'"
+            ></div>
+            <div class="w-5/12 text-left md:w-auto font-semibold price"
+                 x-html="hyva.formatPrice(totalsData.shipping_incl_tax  || 0)"
+            ></div>
+        </div>
+    </div>
+</template>
+
+<!-- display shipping excluding tax -->
+<template x-if="segment.code === 'shipping' && quoteData.is_virtual === 0 && !!shippingMethod && 'excluding' === checkoutConfig.reviewShippingDisplayMode && segment.value > 0">
+    <div class="flex pb-2 my-2 border-b border-slate-300 text-base md:text-lg md:grid md:grid-cols-2 md:w-full border-container px-4 md:px-7">
+        <div class="w-7/12 text-left md:w-auto"
+            <?php /* x-html="`${segment.title}` " */ ?>
+             x-html="'Shipping & Handling'"
+        ></div>
+        <div class="w-5/12 text-left md:w-auto font-semibold price"
+             x-html="hyva.formatPrice(segment.value)"
+        ></div>
+    </div>
+</template>
+
+<!-- display shipping including tax -->
+<template x-if="segment.code === 'shipping' && quoteData.is_virtual === 0 && !!shippingMethod && 'including' === checkoutConfig.reviewShippingDisplayMode && totalsData.shipping_incl_tax > 0">
+    <div class="flex pb-2 my-2 border-b border-slate-300 text-base md:text-lg md:grid md:grid-cols-2 md:w-full border-container px-4 md:px-7">
+        <div class="w-7/12 text-left md:w-auto"
+             <?php /* x-html="`${segment.title}`" */ ?>
+             x-html="'Shipping & Handling'"
+        ></div>
+        <div class="w-5/12 text-left md:w-auto font-semibold price"
+             x-html="hyva.formatPrice(totalsData.shipping_incl_tax)"
+        ></div>
+    </div>
+</template>

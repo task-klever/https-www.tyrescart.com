@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <script src="Ecomteck_StorePickup::js/installer.js"/>
+    </head>
+    <body>
+		<referenceContainer name="checkout.cart.widget" htmlTag="div" htmlClass="cart-container">
+			<block class="Ecomteck\StorePickup\Block\InstallerBlock" name="cart.stepper" template="Ecomteck_StorePickup::cart/stepper.phtml" before="-"/>
+			<block class="Ecomteck\StorePickup\Block\InstallerBlock" name="cart.installer" template="Ecomteck_StorePickup::cart/installer.phtml" after="cart.stepper" />
+		</referenceContainer>
+    </body>
+</page>

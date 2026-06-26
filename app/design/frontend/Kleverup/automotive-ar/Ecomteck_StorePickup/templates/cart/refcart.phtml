@@ -1,0 +1,1072 @@
+<?php
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$scopeConfig = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface');
+$nofitmentInstallerId = $scopeConfig->getValue('ecomteck_storelocator/installer/no_fitment_installer');
+$mobileVanInstallerId = $scopeConfig->getValue('ecomteck_storelocator/installer/mobile_van_installer');
+
+// Load all active stores (non mobile-van, non no-fitment)
+$outletStores = $objectManager->create('Ecomteck\StoreLocator\Model\ResourceModel\Stores\Collection')
+    ->addFieldToFilter('status', ['eq' => '1'])
+    ->addFieldToFilter('stores_id', ['neq' => $nofitmentInstallerId])
+    ->addFieldToFilter('ismobilevan', ['neq' => '1']);
+$outletStores->getSelect()->order('installer_sort_order ASC');
+
+// Load mobile van stores
+$mobileVanStores = $objectManager->create('Ecomteck\StoreLocator\Model\ResourceModel\Stores\Collection')
+    ->addFieldToFilter('status', ['eq' => '1'])
+    ->addFieldToFilter('ismobilevan', ['eq' => '1']);
+$mobileVanStores->getSelect()->order('installer_sort_order ASC');
+
+// Collect opening hours and scheduling data for all stores
+$allStoreOpeningHours = [];
+$storeSkipDays = [];
+$storeCutoffTime = [];
+$storeSkipHours = [];
+$storeGoogleMaps = [];
+
+$storeCollectionAll = $objectManager->create('Ecomteck\StoreLocator\Model\ResourceModel\Stores\Collection');
+$storeCollectionAll->addFieldToFilter('status', ['eq' => '1']);
+
+$timezone = $objectManager->get('Magento\Framework\Stdlib\DateTime\TimezoneInterface');
+$storeTimezone = $timezone->getConfigTimezone();
+
+$mediaUrl = $objectManager->get('Magento\Store\Model\StoreManagerInterface')->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+$gmapApiKey = $scopeConfig->getValue('ecomteck_storelocator/map/api_key');
+
+foreach ($storeCollectionAll as $store) {
+    $sid = $store->getStoresId();
+    $allStoreOpeningHours[$sid] = $store->getOpeningHoursFormated();
+    $storeSkipDays[$sid] = $store->getSkipDays() ? (int)$store->getSkipDays() : 0;
+    $storeCutoffTime[$sid] = $store->getCutoffTime() ?: '';
+    $storeSkipHours[$sid] = $store->getSkipHours() ? (int)$store->getSkipHours() : 0;
+    $storeGoogleMaps[$sid] = $store->getGoogleMap() ?: '';
+}
+
+// Build unique cities + JSON arrays for Alpine.js
+$uniqueCities = [];
+$cityArMap = [];
+$outletStoresJson = [];
+foreach ($outletStores as $installer) {
+    if ($installer->getCommingSoon()) continue;
+    $city = trim($installer->getCity());
+    $cityAr = trim($installer->getCityAr() ?: '');
+    if ($city && !in_array($city, $uniqueCities)) {
+        $uniqueCities[] = $city;
+        $cityArMap[$city] = $cityAr ?: $city;
+    }
+    $storeImage = $installer->getImage();
+    $imageUrl = ($storeImage) ? $mediaUrl . 'ecomteck_storelocator/stores/image/' . $storeImage : '';
+    $outletStoresJson[] = [
+        'id'        => (string)$installer->getStoresId(),
+        'name'      => $installer->getNameAr() ?: $installer->getName(),
+        'city'      => $city,
+        'cityDisplay' => $cityAr ?: $city,
+        'address'   => $installer->getAddressAr() ?: $installer->getAddress(),
+        'lat'       => (float)$installer->getLatitude(),
+        'lng'       => (float)$installer->getLongitude(),
+        'phone'     => $installer->getPhone() ?: '',
+        'image'     => $imageUrl,
+        'openOne'   => $installer->getOpeningHoursOne() ?: '',
+        'openTwo'   => $installer->getOpeningHoursTwo() ?: '',
+        'hasMap'    => !empty($installer->getGoogleMap()),
+        'shippingAmount' => (float)$installer->getShippingAmount(),
+        'distance'  => null,
+    ];
+}
+
+$mobileVanStoresJson = [];
+foreach ($mobileVanStores as $installer) {
+    if ($installer->getCommingSoon()) continue;
+    $city = trim($installer->getCity());
+    $cityAr = trim($installer->getCityAr() ?: '');
+    if ($city && !in_array($city, $uniqueCities)) {
+        $uniqueCities[] = $city;
+        $cityArMap[$city] = $cityAr ?: $city;
+    }
+    $storeImage = $installer->getImage();
+    $imageUrl = ($storeImage) ? $mediaUrl . 'ecomteck_storelocator/stores/image/' . $storeImage : '';
+    $mobileVanStoresJson[] = [
+        'id'        => (string)$installer->getStoresId(),
+        'name'      => $installer->getNameAr() ?: $installer->getName(),
+        'city'      => $city,
+        'cityDisplay' => $cityAr ?: $city,
+        'address'   => $installer->getAddressAr() ?: $installer->getAddress(),
+        'lat'       => (float)$installer->getLatitude(),
+        'lng'       => (float)$installer->getLongitude(),
+        'phone'     => $installer->getPhone() ?: '',
+        'image'     => $imageUrl,
+        'openOne'   => $installer->getOpeningHoursOne() ?: '',
+        'openTwo'   => $installer->getOpeningHoursTwo() ?: '',
+        'hasMap'    => !empty($installer->getGoogleMap()),
+        'shippingAmount' => (float)$installer->getShippingAmount(),
+        'distance'  => null,
+    ];
+}
+sort($uniqueCities);
+?>
+
+<!-- HERO SECTION -->
+<section class="fip-hero pt-12 pb-14 md:pt-10 md:pb-18 lg:pb-24 relative bg-[linear-gradient(145deg,_#001a0d_0%,_#003320_55%,_#004d26_100%)] overflow-hidden before:content-[''] before:absolute before:-top-[14px] before:left-0 before:h-full before:w-full before:bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] before:[background-size:28px_28px] before:opacity-10 before:z-0" style="text-align: right;">
+   <div class="container-theme">
+      <div class="fip-hero-inner relative z-10 w-full lg:w-[70%] mr-0 ml-auto">
+         <p class="fip-hero-badge inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-5 w-fit">
+            <svg class="text-[#4ade80]" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+               <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <?php echo __('Trusted fitting partners across the UAE'); ?>
+         </p>
+         <h2 class="fip-hero-title text-[1.7rem] md:text-[2.35rem] lg:text-[2.75rem] font-extrabold uppercase tracking-tight text-white mb-5 leading-[1.3]">
+            <?php echo __('Find your nearest'); ?> <span class="text-theme-blue whitespace-nowrap"><?php echo __('fitting partner'); ?></span><br>
+            <?php echo __('&amp; fit tyres hassle-free.'); ?>
+         </h2>
+         <p class="fip-hero-sub text-white/65 text-sm md:text-[0.95rem] leading-relaxed max-w-lg mb-7 ml-auto">
+            <?php echo __('Book your tyre fitting the easy way with flexible appointment slots, trusted installers, and convenient mobile fitting options across the UAE.'); ?>
+         </p>
+         <a href="javascript:void(0)" class="fip-size-pill inline-flex items-center gap-2 border border-white/40 text-white text-sm font-medium px-5 py-2.5 rounded-full hover:bg-white/10 transition-colors duration-200 mb-7 w-fit" onclick="tyresizeModal(); return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <circle cx="12" cy="12" r="9"></circle>
+               <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <?php echo __('Find tyres by size'); ?>
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+               <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+         </a>
+         <div class="fip-trust-badges flex flex-wrap items-center gap-x-6 gap-y-2.5 justify-center md:justify-start">
+            <span class="fip-trust-badge flex items-center gap-1.5 text-white text-xs">
+               <svg class="text-[#4ade80]" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+               </svg>
+               <?php echo __('Premium fitting experience'); ?>
+            </span>
+            <span class="fip-trust-badge flex items-center gap-1.5 text-white text-xs">
+               <svg class="text-[#4ade80]" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+               </svg>
+               <?php echo __('Quick &amp; easy scheduling'); ?>
+            </span>
+            <span class="fip-trust-badge flex items-center gap-1.5 text-white text-xs">
+               <svg class="text-[#4ade80]" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+               </svg>
+               <?php echo __('Workshop &amp; mobile options'); ?>
+            </span>
+         </div>
+      </div>
+   </div>
+   <svg class="bottom-curve absolute bottom-[-1px] left-0 w-full text-white -scale-x-100" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
+      <path fill="currentColor" d="M0 80V40c240 30 480 30 720 0s480-30 720 0v40z"></path>
+   </svg>
+</section>
+
+<!-- BREADCRUMBS -->
+<nav class="breadcrumbs mt-2 md:mt-0" aria-label="Breadcrumb">
+   <div class="container-theme">
+      <ol class="items list-reset flex flex-wrap text-grey text-sm">
+         <li class="item flex home">
+            <a class="text-sm font-medium text-center text-theme-blue hover:text-theme-dark transition-colors duration-300" href="<?= $this->getUrl('') ?>" aria-label="Go to Home Page"><?php echo __('Home'); ?></a>
+         </li>
+         <li class="item flex current">
+            <span aria-hidden="true" class="separator text-primary-lighter px-2">/</span>
+            <span class="text-sm font-medium text-theme-dark" aria-current="page"><?php echo __('Installer Network'); ?></span>
+         </li>
+      </ol>
+   </div>
+</nav>
+
+<!-- ============ REFCART MAIN LAYOUT ============ -->
+<div class="section section-padding refcart-page pt-5"
+     x-data="refcartLocatorApp()"
+     x-init="initComponent()">
+<div class="container-theme">
+
+   <!-- SECTION TITLE + CITY FILTER TABS (same row) -->
+      <div class="flex flex-col gap-3 mb-3">
+         <div class="flex-shrink-0">
+            <h3 class="text-xl md:text-2xl font-extrabold text-[#003320] uppercase">
+               <?php echo __('Installers') ?> <span class="text-[#00843D]"><?php echo __('Near You') ?></span>
+            </h3>
+            <p class="text-gray-400 text-xs mt-0.5"><?php echo __('Search above to find workshops near you') ?></p>
+         </div>
+         <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide flex-shrink-0">
+            <button @click="filterCity = 'all'; renderMarkers()"
+                    :class="filterCity === 'all' ? 'bg-[#00843D] text-white border-[#00843D]' : 'bg-white text-gray-700 border-gray-300 hover:border-[#00843D] hover:text-[#00843D]'"
+                    class="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap border transition-colors duration-200">
+               <?php echo __('All') ?>
+            </button>
+            <?php foreach ($uniqueCities as $city): ?>
+            <button @click="filterCity = '<?= htmlspecialchars($city, ENT_QUOTES) ?>'; renderMarkers()"
+                    :class="filterCity === '<?= htmlspecialchars($city, ENT_QUOTES) ?>' ? 'bg-[#00843D] text-white border-[#00843D]' : 'bg-white text-gray-700 border-gray-300 hover:border-[#00843D] hover:text-[#00843D]'"
+                    class="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap border transition-colors duration-200">
+               <?= htmlspecialchars($cityArMap[$city] ?? $city) ?>
+            </button>
+            <?php endforeach; ?>
+         </div>
+      </div>
+
+      <!-- SEARCH BAR -->
+      <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-xl pl-3 p-3 md:p-1 mb-3 shadow-sm flex-wrap">
+         <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+         </svg>
+         <input id="refcart-search-input" name="installerarea" type="text"
+                x-model="searchQuery"
+                @input="showClear = ($event.target.value.length > 0)"
+                placeholder="<?php echo __('Enter area or city'); ?>"
+                class="flex-1 border-0 bg-transparent text-sm focus:ring-0 focus:outline-none p-0 placeholder-gray-400">
+         <button x-show="showClear || searchQuery" x-cloak @click="clearSearch()" class="text-gray-400 hover:text-red-500 flex-shrink-0 p-1 rounded-full hover:bg-gray-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+         </button>
+         <div class="buttons flex items-center gap-3">
+         <button @click="performSearch()" id="refcart-search-btn"
+                 class="flex items-center gap-2 bg-[#00843D] hover:bg-black text-white px-5 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors duration-200 flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <?php echo __('Search') ?>
+         </button>
+         <button @click="useMyLocation()"
+                 class="flex items-center gap-2 text-[#00843D] px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap border border-gray-200 hover:bg-gray-50 transition-colors duration-200 flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"></path>
+            </svg>
+            <?php echo __('Use my location') ?>
+         </button>
+      </div>
+      </div>
+
+   <!-- MODE TABS (card style) -->
+   <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-5">
+      <!-- Install at Outlet -->
+      <button @click="switchMode('normal')"
+              :class="activeMode === 'normal' ? 'border-[#00843D] bg-[#f0faf5]' : 'border-gray-200 bg-white hover:border-[#00843D]'"
+              class="flex flex-col items-center text-center rounded-xl border-2 p-5 md:p-6 transition-all duration-300 cursor-pointer">
+         <div :class="activeMode === 'normal' ? 'bg-[#00843D]' : 'bg-gray-100'"
+              class="w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors duration-300">
+              <svg :class="activeMode === 'normal' ? 'text-white' : 'text-[#00843D]'" class="w-6 h-6" fill="currentColor" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
+               <path d="M298.6 4c-6-5.3-15.1-5.3-21.2 0L5.4 244c-6.6 5.8-7.3 16-1.4 22.6s16 7.3 22.6 1.4L64 235V432c0 44.2 35.8 80 80 80H432c44.2 0 80-35.8 80-80V235l37.4 33c6.6 5.8 16.7 5.2 22.6-1.4s5.2-16.7-1.4-22.6L298.6 4zM96 432V206.7L288 37.3 480 206.7V432c0 26.5-21.5 48-48 48H368V320c0-17.7-14.3-32-32-32H240c-17.7 0-32 14.3-32 32V480H144c-26.5 0-48-21.5-48-48zm144 48V320h96V480H240z"/>
+            </svg>
+         </div>
+         <span class="font-bold text-sm md:text-base text-[#003320]"><?php echo __('Install at Outlet') ?></span>
+         <span class="text-xs text-gray-400 mt-1"><?php echo __('Visit our outlet for professional installation'); ?></span>
+      </button>
+      <!-- Mobile Van Service -->
+      <button @click="switchMode('mobile_van')"
+              :class="activeMode === 'mobile_van' ? 'border-[#00843D] bg-[#f0faf5]' : 'border-gray-200 bg-white hover:border-[#00843D]'"
+              class="flex flex-col items-center text-center rounded-xl border-2 p-5 md:p-6 transition-all duration-300 cursor-pointer">
+         <div :class="activeMode === 'mobile_van' ? 'bg-[#00843D]' : 'bg-gray-100'"
+              class="w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors duration-300">
+              <svg :class="activeMode === 'mobile_van' ? 'text-white' : 'text-[#00843D]'" class="w-6 h-6" fill="currentColor" viewBox="0 0 640 512" xmlns="http://www.w3.org/2000/svg">
+               <path d="M96 64V176c0 26.5-21.5 48-48 48s-48-21.5-48-48V160c0-8.8 7.2-16 16-16s16 7.2 16 16v16c0 8.8 7.2 16 16 16s16-7.2 16-16V32C64 20.2 70.4 9.8 80 4.3C84.7 1.6 90.2 0 96 0h3.8 45.9c9.1 0 17.8 3.9 23.9 10.7L384 252V144c0-26.5 21.5-48 48-48h56.5c19.8 0 38.4 9.1 50.5 24.7l90.8 116.8c6.6 8.4 10.1 18.8 10.1 29.5V368c0 26.5-21.5 48-48 48H576c0 53-43 96-96 96s-96-43-96-96H256c0 53-43 96-96 96s-96-43-96-96H48c-26.5 0-48-21.5-48-48V304c0-26.5 21.5-48 48-48H192L96 64zM250.5 384H389.5c13.2-37.3 48.7-64 90.5-64s77.4 26.7 90.5 64H592c8.8 0 16-7.2 16-16V288H416 384 373.2 208 48c-8.8 0-16 7.2-16 16v64c0 8.8 7.2 16 16 16H69.5c13.2-37.3 48.7-64 90.5-64s77.4 26.7 90.5 64zM416 416a64 64 0 1 0 128 0 64 64 0 1 0 -128 0zm97.8-275.6c-6.1-7.8-15.4-12.4-25.3-12.4H432c-8.8 0-16 7.2-16 16V256H603.7L513.8 140.4zM145.6 32l-29.9 0 112 224h117L145.6 32zM224 416A64 64 0 1 0 96 416a64 64 0 1 0 128 0z"/>
+            </svg>
+         </div>
+         <span class="font-bold text-sm md:text-base text-[#003320]"><?php echo __('Mobile Van Service') ?></span>
+         <span class="text-xs text-gray-400 mt-1"><?php echo __('Our mobile van comes to your location') ?></span>
+      </button>
+      <!-- Free Shipping -->
+      <button @click="switchMode('without_fitting')"
+              :class="activeMode === 'without_fitting' ? 'border-[#00843D] bg-[#f0faf5]' : 'border-gray-200 bg-white hover:border-[#00843D]'"
+              class="flex flex-col items-center text-center rounded-xl border-2 p-5 md:p-6 transition-all duration-300 cursor-pointer"
+              id="refcart-without-fitting-btn">
+         <div :class="activeMode === 'without_fitting' ? 'bg-[#00843D]' : 'bg-gray-100'"
+              class="w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors duration-300">
+           <svg :class="activeMode === 'without_fitting' ? 'text-white' : 'text-[#00843D]'" class="w-6 h-6" fill="currentColor" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+               <path d="M342.4 64H240v96H405.9L371.7 83c-5.1-11.6-16.6-19-29.2-19zM416 192H240 208 32V416c0 17.7 14.3 32 32 32H384c17.7 0 32-14.3 32-32V192zM42.1 160H208V64H105.6c-12.6 0-24.1 7.4-29.2 19L42.1 160zM342.4 32c25.3 0 48.2 14.9 58.5 38l41.6 93.6c3.6 8.2 5.5 17 5.5 26V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V189.6c0-9 1.9-17.8 5.5-26L47.1 70c10.3-23.1 33.2-38 58.5-38H342.4z"/>
+            </svg>
+         </div>
+         <span class="font-bold text-sm md:text-base text-[#003320]"><?php echo __('Free Shipping') ?></span>
+         <span class="text-xs text-gray-400 mt-1"><?php echo __('Delivery without fitment service') ?></span>
+      </button>
+   </div>
+
+   <!-- WITHOUT FITTING CARD -->
+   <div x-show="activeMode === 'without_fitting'" x-cloak style="display:none"
+        class="max-w-xl mx-auto text-center bg-white rounded-xl border border-gray-200 shadow-lg p-4 md:p-8">
+      <h3 class="text-lg md:text-xl font-semibold text-[#00843D] mb-2"><?php echo __('Delivery - Without Fitment') ?></h3>
+      <p class="text-gray-600 mb-3"><?php echo __('Your order will be delivered without installation service.') ?></p>
+      <button type="button" id="refcart-without-fitting-checkout"
+              class="btn px-6 py-2 text-sm md:text-base bg-black hover:bg-[#00843D] font-semibold rounded-full w-auto transition-colors duration-300 mx-auto">
+         <?php echo __('Proceed to Checkout') ?>
+      </button>
+   </div>
+
+   <div x-show="activeMode !== 'without_fitting'">
+      <!-- ===== OUTLET MODE: Split Layout (store list + map) ===== -->
+      <div x-show="activeMode === 'normal'" class="flex flex-col lg:flex-row gap-4">
+
+         <!-- LEFT: Store Cards -->
+         <div class="w-full lg:w-[500px] lg:flex-shrink-0 max-h-[560px] overflow-y-auto pl-1 fip-store-list all-stores overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#d8e9f3] [&::-webkit-scrollbar-thumb]:bg-theme-blue dark:[&::-webkit-scrollbar-track]:bg-[#d8e9f3] dark:[&::-webkit-scrollbar-thumb]:bg-theme-blue">
+            <template x-for="store in filteredStores" :key="store.id">
+               <div class="refcart-store-card refcart-installerDiv bg-white rounded-xl border-2 border-gray-200 shadow-sm p-4 cursor-pointer transition-all duration-200 hover:border-[#00843D] hover:shadow-md mb-3"
+                    :class="activeStore === store.id ? 'border-theme-blue border-2' : ''"
+                    :data-store-id="store.id"
+                    :data-lat="store.lat" :data-lng="store.lng"
+                    @click="toggleStore(store)">
+
+                  <div class="flex items-start gap-3">
+                     <!-- Store Image -->
+                     <template x-if="store.image">
+                        <img :src="store.image" :alt="store.name" class="w-14 h-14 rounded-lg object-cover flex-shrink-0">
+                     </template>
+                     <template x-if="!store.image">
+                        <div class="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                           <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        </div>
+                     </template>
+
+                     <!-- Store Info -->
+                     <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-2">
+                           <h4 class="font-bold text-[#003320] text-sm uppercase" x-text="store.name"></h4>
+                           <div class="flex items-center gap-2">
+                              <span class="text-xs text-gray-500 whitespace-nowrap" x-text="store.cityDisplay"></span>
+                           </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1 flex items-start gap-1">
+                           <svg class="w-3.5 h-3.5 text-[#00843D] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                           </svg>
+                           <span class="line-clamp-2" x-text="store.address"></span>
+                        </p>
+                        <!-- Distance -->
+                        <div x-show="store.distance !== null" x-cloak class="refcart-distance mt-1.5">
+                           <span class="inline-flex items-center gap-1 bg-[#f0faf5] text-[#00843D] text-xs font-semibold px-2 py-0.5 rounded-full refcart-miles"
+                                 x-text="store.distance + ' <?= $escaper->escapeJs(__('kms')) ?>'"></span>
+                        </div>
+                     </div>
+                  </div>
+
+                  <!-- Action Links -->
+                  <div class="flex flex-wrap items-center gap-4 mt-3 pt-3 border-t border-gray-100 text-xs">
+                     <a x-show="store.phone" :href="'https://wa.me/' + store.phone.replace(/[^0-9]/g, '')" target="_blank" @click.stop
+                        class="flex items-center gap-1.5 text-black hover:text-theme-blue transition-colors duration-200">
+                           <svg class="w-3 h-auto" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.611.611l4.458-1.495A11.96 11.96 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.353 0-4.563-.648-6.448-1.776l-.45-.273-2.644.886.886-2.644-.273-.45A9.96 9.96 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z"/></svg>
+                        <?php echo __('WhatsApp'); ?>
+                     </a>
+                     <a :href="'https://www.google.com/maps/dir/?api=1&destination=' + store.lat + ',' + store.lng" target="_blank" @click.stop
+                        class="flex items-center gap-1.5 text-black hover:text-theme-blue transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+                        <?php echo __('Directions'); ?>
+                     </a>
+                     <button x-show="store.hasMap" @click.stop="$dispatch('open-map-modal', { storeId: store.id })"
+                             class="flex items-center gap-1.5 text-black hover:text-theme-blue transition-colors duration-200">
+                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                        <?php echo __('See on Map'); ?>
+                     </button>
+                     <!-- Book Installer link -->
+                     <button @click.stop="toggleStore(store)"
+                             class="flex items-center gap-1 text-theme-blue font-bold hover:text-black transition-colors duration-200 mr-0 md:mr-auto">
+                        <?php echo __('Book Installer'); ?>
+                        <svg class="w-3.5 h-3.5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                     </button>
+                  </div>
+
+                  <!-- Expandable Date/Time/Checkout (preserves refcart-installer.js classes) -->
+                  <div x-show="activeStore === store.id" x-cloak
+                       x-transition:enter="transition ease-out duration-300"
+                       x-transition:enter-start="opacity-0"
+                       x-transition:enter-end="opacity-100"
+                       @click.stop
+                       class="refcart-selection bg-[#f3f4f5] p-3 w-full rounded-xl border border-gray-200 mt-3"
+                       :data-store-id="store.id">
+                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pickup-date-gride">
+                        <div class="relative">
+                           <label class="label text-sm font-medium"><?php echo __('Pickup Date') ?> <span class="text-red-500">*</span></label>
+                           <select dir="ltr" class="refcart-date-select form-select border border-gray-200 h-[40px] w-full rounded text-sm focus:ring-0 focus:border-black mt-1"
+                                   :data-store-id="store.id"
+                                   >
+                              <option value=""><?php echo __('Select a Date') ?></option>
+                           </select>
+                                                   </div>
+                        <div class="relative">
+                           <label class="label text-sm font-medium"><?php echo __('Pickup Time') ?> <span class="text-red-500">*</span></label>
+                           <select dir="ltr" class="refcart-time-select form-select border border-gray-200 h-[40px] w-full rounded text-sm focus:ring-0 focus:border-black mt-1"
+                                   :data-store-id="store.id"
+                                   >
+                              <option value=""><?php echo __('Select Time Slot') ?></option>
+                           </select>
+                                                   </div>
+                        <div class="flex items-end">
+                           <button type="button"
+                                   class="refcart-validate-checkout text-white bg-black hover:bg-[#00843D] justify-center w-full h-[41px] text-xs px-1 transition-colors duration-300 rounded font-bold"
+                                   :data-store-id="store.id">
+                              <?php echo __('Proceed to Checkout') ?>
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </template>
+
+            <!-- No results -->
+            <div x-show="filteredStores.length === 0" class="text-center text-gray-500 py-12">
+               <p class="font-medium"><?php echo __('No stores found') ?></p>
+               <p class="text-sm mt-1"><?php echo __('Try selecting a different city or searching another area') ?></p>
+            </div>
+         </div>
+
+         <!-- RIGHT: Google Map (sticky) -->
+         <div class="flex-1 lg:sticky lg:top-5 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+            <div id="refcart-map" class="w-full" style="height: 560px;"></div>
+         </div>
+      </div>
+
+      <!-- ===== MOBILE VAN MODE: 2-column grid (no map) ===== -->
+      <!-- ===== MOBILE VAN MODE: Booking Widget Card ===== -->
+      <div x-show="activeMode === 'mobile_van'" x-cloak style="display:none" class="all-stores">
+         <div class="max-w-2xl mx-auto">
+            <div class="mobilevan-booking-card bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
+
+               <!-- Header -->
+               <div class="bg-[#f0faf5] border-b border-[#00843D]/10 px-6 py-4 text-center">
+                  <p class="text-sm text-gray-500"><?php echo __('Our mobile van comes to your location') ?></p>
+               </div>
+
+               <!-- Body -->
+               <div class="p-5 md:p-6">
+
+                  <!-- Step 1: City Dropdown -->
+                  <div class="mb-0">
+                     <label class="block text-sm font-semibold text-[#003320] mb-1.5">
+                        <span class="flex items-center gap-2">
+                           <span class="w-6 h-6 bg-[#00843D] text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
+                           <?php echo __('Select City') ?> <span class="text-red-500">*</span>
+                        </span>
+                     </label>
+                     <select class="mobilevan-city-select form-select border border-gray-300 h-[46px] w-full rounded-lg text-sm focus:ring-2 focus:ring-[#00843D]/20 focus:border-[#00843D] transition-colors"
+                             @change="selectMobileVanCity($event.target.value)">
+                        <option value=""><?php echo __('Choose your city...') ?></option>
+                        <template x-for="store in mobileVanStores" :key="store.id">
+                           <option :value="store.id" x-text="store.cityDisplay + (store.shippingAmount > 0 ? ' · AED ' + store.shippingAmount.toFixed(2) : '')"></option>
+                        </template>
+                     </select>
+                  </div>
+
+                  <!-- Selected City Confirmation Badge -->
+                  <div x-show="mobileVanSelectedStore" x-cloak
+                       x-transition:enter="transition ease-out duration-300"
+                       x-transition:enter-start="opacity-0 -translate-y-2"
+                       x-transition:enter-end="opacity-100 translate-y-0"
+                       class="mt-4 flex items-center justify-between bg-[#f0faf5] border border-[#00843D]/20 rounded-lg px-4 py-2.5">
+                     <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[#00843D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span class="text-sm font-semibold text-[#003320]" x-text="mobileVanSelectedStore ? mobileVanSelectedStore.cityDisplay : ''"></span>
+                        <template x-if="mobileVanSelectedStore && mobileVanSelectedStore.shippingAmount > 0">
+                           <span class="text-sm text-[#00843D] font-bold" x-text="'· AED ' + mobileVanSelectedStore.shippingAmount.toFixed(2)"></span>
+                        </template>
+                     </div>
+                     <button @click="selectMobileVanCity('')" class="text-xs text-gray-500 hover:text-[#00843D] font-medium transition-colors">
+                        <?php echo __('Change') ?>
+                     </button>
+                  </div>
+
+                  <!-- Steps 2-4: Fitting Location + Date + Time -->
+                  <div x-show="mobileVanSelectedStore" x-cloak
+                       x-transition:enter="transition ease-out duration-300"
+                       x-transition:enter-start="opacity-0 translate-y-4"
+                       x-transition:enter-end="opacity-100 translate-y-0"
+                       class="refcart-selection mt-5 space-y-4"
+                       :data-store-id="mobileVanSelectedStore ? mobileVanSelectedStore.id : ''"
+                       :data-store-city="mobileVanSelectedStore ? mobileVanSelectedStore.city : ''">
+
+                     <div class="border-t border-gray-200"></div>
+
+                     <!-- Step 2: Fitting Location -->
+                     <div>
+                        <label class="block text-sm font-semibold text-[#003320] mb-1.5">
+                           <span class="flex items-center gap-2">
+                              <span class="w-6 h-6 bg-[#00843D] text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+                              <?php echo __('Fitting Location') ?> <span class="text-red-500">*</span>
+                           </span>
+                        </label>
+                        <div class="relative">
+                           <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                           </svg>
+                           <input type="text" class="refcart-pickup-location form-input border border-gray-300 h-[46px] w-full rounded-lg text-sm pr-10 focus:ring-2 focus:ring-[#00843D]/20 focus:border-[#00843D] transition-colors pac-target-input"
+                                  :data-store-id="mobileVanSelectedStore ? mobileVanSelectedStore.id : ''"
+                                  :data-store-city="mobileVanSelectedStore ? mobileVanSelectedStore.city : ''"
+                                  placeholder="<?php echo __('Enter your address for mobile van service...') ?>" autocomplete="off">
+                        </div>
+                     </div>
+
+                     <!-- Step 3 & 4: Date + Time -->
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                           <label class="block text-sm font-semibold text-[#003320] mb-1.5">
+                              <span class="flex items-center gap-2">
+                                 <span class="w-6 h-6 bg-[#00843D] text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
+                                 <?php echo __('Pickup Date') ?> <span class="text-red-500">*</span>
+                              </span>
+                           </label>
+                           <select dir="ltr" class="refcart-date-select form-select border border-gray-300 h-[46px] w-full rounded-lg text-sm focus:ring-2 focus:ring-[#00843D]/20 focus:border-[#00843D] transition-colors"
+                                   :data-store-id="mobileVanSelectedStore ? mobileVanSelectedStore.id : ''">
+                              <option value=""><?php echo __('Select a Date') ?></option>
+                           </select>
+                        </div>
+                        <div>
+                           <label class="block text-sm font-semibold text-[#003320] mb-1.5">
+                              <span class="flex items-center gap-2">
+                                 <span class="w-6 h-6 bg-[#00843D] text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">4</span>
+                                 <?php echo __('Pickup Time') ?> <span class="text-red-500">*</span>
+                              </span>
+                           </label>
+                           <select dir="ltr" class="refcart-time-select form-select border border-gray-300 h-[46px] w-full rounded-lg text-sm focus:ring-2 focus:ring-[#00843D]/20 focus:border-[#00843D] transition-colors"
+                                   :data-store-id="mobileVanSelectedStore ? mobileVanSelectedStore.id : ''">
+                              <option value=""><?php echo __('Select Time Slot') ?></option>
+                           </select>
+                        </div>
+                     </div>
+
+                     <!-- Proceed to Checkout -->
+                     <button type="button"
+                             class="refcart-validate-checkout w-full h-[50px] bg-black hover:bg-[#00843D] text-white font-bold text-sm rounded-lg transition-colors duration-300 flex items-center justify-center gap-2"
+                             :data-store-id="mobileVanSelectedStore ? mobileVanSelectedStore.id : ''">
+                        <?php echo __('Proceed to Checkout') ?>
+                        <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                     </button>
+
+                  </div>
+
+                  <!-- No mobile van stores -->
+                  <div x-show="mobileVanStores.length === 0" class="text-center text-gray-500 py-8">
+                     <p class="font-medium"><?php echo __('No mobile van services found') ?></p>
+                  </div>
+
+               </div>
+            </div>
+         </div>
+      </div>
+
+   </div><!-- end x-show !== without_fitting -->
+
+</div>
+</div>
+
+<!-- MAP MODAL (shared) -->
+<div class="fitment-bar-wrapper">
+   <div id="refcart-map-sidebar" class="fitment-drawer-panel fixed inset-x-0 bottom-0 z-[9999] overflow-hidden bg-white transition-transform ease-out duration-300 translate-y-full">
+      <div class="container-theme w-full py-4 lg:py-6 h-full flex flex-col overflow-hidden">
+         <div class="flex-shrink-0 pb-4 mb-3 border-b border-border-color relative">
+            <h3 class="text-lg md:text-2xl font-extrabold text-gray-900"><?php echo __('Store') ?> <span class="text-[#00843D]"><?php echo __('Location') ?></span></h3>
+            <button type="button" onclick="closeRefcartMapModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:text-gray-800 transition-all absolute top-0 right-0">
+               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+               </svg>
+            </button>
+         </div>
+         <div id="refcart-map-content" class="flex-1 overflow-auto"></div>
+      </div>
+   </div>
+   <div id="refcart-map-overlay" onclick="closeRefcartMapModal()" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998] hidden transition-all ease-out duration-300"></div>
+</div>
+
+<!-- Store scheduling data for refcart-installer.js -->
+<div id="store-opening-hours-data"
+     data-opening-hours='<?php echo json_encode($allStoreOpeningHours) ?>'
+     data-skip-days='<?php echo json_encode($storeSkipDays) ?>'
+     data-cutoff-time='<?php echo json_encode($storeCutoffTime) ?>'
+     data-skip-hours='<?php echo json_encode($storeSkipHours) ?>'
+     data-store-timezone='<?php echo $storeTimezone ?>'
+     data-nofitment-id='<?php echo $nofitmentInstallerId ?>'
+     data-label-select-date='<?php echo $escaper->escapeHtmlAttr(__("Select a Date")) ?>'
+     data-label-select-time='<?php echo $escaper->escapeHtmlAttr(__("Select Time Slot")) ?>'
+     class="hidden"></div>
+
+<!-- ============ JAVASCRIPT ============ -->
+<script>
+var refcartStoreGoogleMaps = <?php echo json_encode($storeGoogleMaps); ?>;
+
+// Map modal handlers (keep for "See on Map" button)
+window.addEventListener('open-map-modal', function(e) {
+    var storeId = e.detail.storeId;
+    var mapContent = document.getElementById('refcart-map-content');
+    mapContent.innerHTML = '<div class="flex flex-col items-center justify-center h-full gap-4"><div class="w-12 h-12 border-4 border-gray-200 border-t-[#00843d] rounded-full animate-spin"></div><p class="text-sm text-gray-500">Loading map...</p></div>';
+    document.getElementById('refcart-map-sidebar').classList.remove('translate-y-full');
+    document.getElementById('refcart-map-overlay').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    setTimeout(function() {
+        if (storeId && refcartStoreGoogleMaps[storeId]) {
+            mapContent.innerHTML = refcartStoreGoogleMaps[storeId];
+        } else {
+            mapContent.innerHTML = '<p style="padding:16px;"><?php echo __("Map not available for this store") ?></p>';
+        }
+    }, 2000);
+});
+
+function closeRefcartMapModal() {
+    document.getElementById('refcart-map-sidebar').classList.add('translate-y-full');
+    document.getElementById('refcart-map-overlay').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
+
+function refcartLocatorApp() {
+    return {
+        outletStores: <?php echo json_encode($outletStoresJson) ?>,
+        mobileVanStores: <?php echo json_encode($mobileVanStoresJson) ?>,
+        activeMode: 'normal',
+        activeStore: null,
+        filterCity: 'all',
+        dateError: false,
+        timeError: false,
+        pickupError: false,
+        searchQuery: '',
+        showClear: false,
+        searchLat: null,
+        searchLng: null,
+        map: null,
+        markers: [],
+        infoWindow: null,
+        autocomplete: null,
+        mobileVanSelectedStore: null,
+
+        get filteredStores() {
+            var self = this;
+            var source = this.activeMode === 'mobile_van' ? this.mobileVanStores : this.outletStores;
+            var filtered = source.slice();
+            if (this.filterCity !== 'all') {
+                filtered = filtered.filter(function(s) { return s.city === self.filterCity; });
+            }
+            if (this.searchLat !== null) {
+                filtered = filtered.sort(function(a, b) {
+                    return (a.distance || 99999) - (b.distance || 99999);
+                });
+            }
+            return filtered;
+        },
+
+        switchMode(mode) {
+            this.activeMode = mode;
+            this.activeStore = null;
+            this.filterCity = 'all';
+            this.mobileVanSelectedStore = null;
+            if (mode === 'normal') {
+                var self = this;
+                this.$nextTick(function() { self.renderMarkers(); });
+            }
+        },
+
+        selectMobileVanCity(storeId) {
+            var self = this;
+            if (!storeId) {
+                this.mobileVanSelectedStore = null;
+                this.activeStore = null;
+                var citySelect = document.querySelector('.mobilevan-city-select');
+                if (citySelect) citySelect.value = '';
+                return;
+            }
+            var store = this.mobileVanStores.find(function(s) { return s.id === storeId; });
+            if (!store) return;
+            this.mobileVanSelectedStore = store;
+            this.activeStore = store.id;
+            this.$nextTick(function() {
+                var card = document.querySelector('.mobilevan-booking-card');
+                if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+            // Save selected installer to quote via AJAX
+            var params = {
+                pickup_store: store.id,
+                pickup_type: 'mobile_van',
+                form_key: typeof hyva !== 'undefined' ? hyva.getFormKey() : '',
+                uenc: btoa(window.location.href)
+            };
+            fetch(BASE_URL + 'storelocator/ajax/setinstaller', {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: new URLSearchParams(params),
+                method: 'POST',
+                mode: 'cors',
+                credentials: 'include'
+            });
+            // After Alpine renders, populate dates and init autocomplete
+            this.$nextTick(function() {
+                setTimeout(function() {
+                    var sel = document.querySelector('.mobilevan-booking-card .refcart-selection');
+                    if (sel) {
+                        var dateSelect = sel.querySelector('.refcart-date-select');
+                        if (dateSelect) {
+                            self.populateDates(dateSelect, store.id);
+                        }
+                        var timeSelect = sel.querySelector('.refcart-time-select');
+                        if (timeSelect) {
+                            timeSelect.innerHTML = '<option value=""><?php echo __("Select Time Slot") ?></option>';
+                        }
+                        // Init pickup location autocomplete with city geofencing
+                        self.initPickupAutocomplete(store);
+                    }
+                }, 150);
+            });
+        },
+
+        toggleStore(store) {
+            this.dateError = false;
+            this.timeError = false;
+            this.pickupError = false;
+            this.activeStore = (this.activeStore === store.id) ? null : store.id;
+            if (this.activeStore && this.activeMode === 'normal') {
+                this.panToStore(store);
+            }
+            // Save selected installer to quote via AJAX + populate date/time
+            if (this.activeStore) {
+                var self = this;
+                var mode = this.activeMode === 'mobile_van' ? 'mobile_van' : 'normal';
+                var params = {
+                    pickup_store: store.id,
+                    pickup_type: mode,
+                    form_key: typeof hyva !== 'undefined' ? hyva.getFormKey() : '',
+                    uenc: btoa(window.location.href)
+                };
+                fetch(BASE_URL + 'storelocator/ajax/setinstaller', {
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                    body: new URLSearchParams(params),
+                    method: 'POST',
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+
+                // After Alpine renders the expanded panel, populate dates and init autocomplete
+                this.$nextTick(function() {
+                    setTimeout(function() {
+                        var sel = document.querySelector('.refcart-selection[data-store-id="' + store.id + '"]');
+                        if (sel) {
+                            // Populate date dropdown
+                            var dateSelect = sel.querySelector('.refcart-date-select');
+                            if (dateSelect) {
+                                self.populateDates(dateSelect, store.id);
+                            }
+                            // Reset time
+                            var timeSelect = sel.querySelector('.refcart-time-select');
+                            if (timeSelect) {
+                                timeSelect.innerHTML = '<option value=""><?php echo __("Select Time Slot") ?></option>';
+                            }
+                        }
+                        // Init pickup location autocomplete for mobile van
+                        if (self.activeMode === 'mobile_van') {
+                            self.initPickupAutocomplete(store);
+                        }
+                    }, 200);
+                });
+            }
+        },
+
+        populateDates(dateSelect, storeId) {
+            // Read scheduling data from the hidden div
+            var dataEl = document.getElementById('store-opening-hours-data');
+            if (!dataEl) return;
+            var allHours = JSON.parse(dataEl.getAttribute('data-opening-hours') || '{}');
+            var skipDays = JSON.parse(dataEl.getAttribute('data-skip-days') || '{}');
+            var cutoffTime = JSON.parse(dataEl.getAttribute('data-cutoff-time') || '{}');
+            var skipHours = JSON.parse(dataEl.getAttribute('data-skip-hours') || '{}');
+            var tz = dataEl.getAttribute('data-store-timezone') || 'Asia/Dubai';
+
+            var now = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
+            var skip = skipDays[storeId] || 0;
+            var startDate = new Date(now);
+            startDate.setHours(0,0,0,0);
+            startDate.setDate(startDate.getDate() + skip);
+
+            var weekdays = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+            var weekdaysAr = ["\u0627\u0644\u0623\u062D\u062F","\u0627\u0644\u0627\u062B\u0646\u064A\u0646","\u0627\u0644\u062B\u0644\u0627\u062B\u0627\u0621","\u0627\u0644\u0623\u0631\u0628\u0639\u0627\u0621","\u0627\u0644\u062E\u0645\u064A\u0633","\u0627\u0644\u062C\u0645\u0639\u0629","\u0627\u0644\u0633\u0628\u062A"];
+            var monthNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+            var options = '<option value=""><?php echo __("Select a Date") ?></option>';
+            var collected = 0;
+
+            for (var i = 0; i < 45 && collected < 15; i++) {
+                var date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                var dayName = weekdays[date.getDay()];
+                var dateVal = (date.getMonth()+1) + '/' + date.getDate() + '/' + date.getFullYear();
+
+                if (allHours[storeId] && allHours[storeId][dayName] && allHours[storeId][dayName].length > 0) {
+                    var displayText = '(' + weekdaysAr[date.getDay()] + ') \u200E' + date.getDate().toString().padStart(2,'0') + '-' + monthNames[date.getMonth()] + '-' + date.getFullYear();
+                    options += '<option value="' + dateVal + '">' + displayText + '</option>';
+                    collected++;
+                }
+            }
+            if (collected === 0) {
+                options += '<option value="" disabled><?php echo __("No available dates") ?></option>';
+            }
+            dateSelect.innerHTML = options;
+        },
+
+        initPickupAutocomplete(store) {
+            var input = document.querySelector('.refcart-selection[data-store-id="' + store.id + '"] .refcart-pickup-location');
+            if (!input || input._autocompleteInit) return;
+            input._autocompleteInit = true;
+
+            var autocomplete = new google.maps.places.Autocomplete(input, {
+                componentRestrictions: { country: 'ae' }
+            });
+
+            // Restrict to store's city bounds
+            var storeCity = store.city || '';
+            if (storeCity) {
+                var geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ address: storeCity + ', UAE' }, function(results, status) {
+                    if (status === 'OK' && results[0] && results[0].geometry) {
+                        var bounds = results[0].geometry.viewport || results[0].geometry.bounds;
+                        if (bounds) {
+                            autocomplete.setBounds(bounds);
+                            autocomplete.setOptions({ strictBounds: true });
+                        }
+                    }
+                });
+            }
+
+            autocomplete.addListener('place_changed', function() {
+                var errorEl = input.closest('.refcart-selection').querySelector('.refcart-pickup-error');
+                if (errorEl) errorEl.classList.add('hidden');
+            });
+        },
+
+        initComponent() {
+            var self = this;
+            var tryInit = function() {
+                if (typeof google === 'undefined' || !google.maps) {
+                    setTimeout(tryInit, 300);
+                    return;
+                }
+                self.initMap();
+                self.initAutocomplete();
+            };
+            tryInit();
+        },
+
+        initMap() {
+            var mapEl = document.getElementById('refcart-map');
+            if (!mapEl) return;
+            this.map = new google.maps.Map(mapEl, {
+                center: { lat: 24.4539, lng: 54.3773 },
+                zoom: 7,
+                mapTypeControl: true,
+                streetViewControl: false,
+                fullscreenControl: true,
+            });
+            this.infoWindow = new google.maps.InfoWindow();
+            this.renderMarkers();
+        },
+
+        initAutocomplete() {
+            var self = this;
+            var input = document.getElementById('refcart-search-input');
+            if (!input) return;
+            this.autocomplete = new google.maps.places.Autocomplete(input, {
+                componentRestrictions: { country: 'ae' }
+            });
+            this.autocomplete.addListener('place_changed', function() {
+                var place = self.autocomplete.getPlace();
+                if (place && place.geometry) {
+                    self.searchLat = place.geometry.location.lat();
+                    self.searchLng = place.geometry.location.lng();
+                    self.showClear = true;
+                    self.searchQuery = input.value;
+                    self._doDistanceCalc();
+                }
+            });
+        },
+
+        renderMarkers() {
+            var self = this;
+            this.markers.forEach(function(m) { m.setMap(null); });
+            this.markers = [];
+            if (!this.map || this.activeMode !== 'normal') return;
+
+            var bounds = new google.maps.LatLngBounds();
+            this.filteredStores.forEach(function(store) {
+                if (!store.lat || !store.lng) return;
+                var marker = new google.maps.Marker({
+                    position: { lat: store.lat, lng: store.lng },
+                    map: self.map,
+                    title: store.name,
+                });
+                marker.storeId = store.id;
+                marker.addListener('click', function() {
+                    self.infoWindow.setContent(
+                        '<div style="max-width:220px"><strong style="color:#003320">' + store.name + '</strong><br><span style="font-size:12px;color:#666">' + store.address + '</span></div>'
+                    );
+                    self.infoWindow.open(self.map, marker);
+                    self.activeStore = store.id;
+                });
+                self.markers.push(marker);
+                bounds.extend(marker.getPosition());
+            });
+
+            if (this.markers.length > 0) {
+                this.map.fitBounds(bounds);
+                if (this.markers.length === 1) this.map.setZoom(14);
+            }
+        },
+
+        panToStore(store) {
+            if (!this.map || !store.lat || !store.lng) return;
+            this.map.panTo({ lat: store.lat, lng: store.lng });
+            this.map.setZoom(14);
+            var self = this;
+            var marker = this.markers.find(function(m) { return m.storeId === store.id; });
+            if (marker) {
+                this.infoWindow.setContent(
+                    '<div style="max-width:220px"><strong style="color:#003320">' + store.name + '</strong><br><span style="font-size:12px;color:#666">' + store.address + '</span></div>'
+                );
+                this.infoWindow.open(this.map, marker);
+            }
+        },
+
+        performSearch() {
+            var self = this;
+            var inputVal = document.getElementById('refcart-search-input').value.trim();
+
+            if (this.searchLat !== null && this.searchLng !== null) {
+                this._doDistanceCalc();
+                return;
+            }
+
+            if (!inputVal) return;
+            var geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: inputVal + ', UAE' }, function(results, status) {
+                if (status === 'OK' && results[0] && results[0].geometry) {
+                    self.searchLat = results[0].geometry.location.lat();
+                    self.searchLng = results[0].geometry.location.lng();
+                    self.showClear = true;
+                    self._doDistanceCalc();
+                }
+            });
+        },
+
+        _doDistanceCalc() {
+            var self = this;
+            var origin = new google.maps.LatLng(this.searchLat, this.searchLng);
+
+            // Create new arrays to trigger Alpine reactivity
+            this.outletStores = this.outletStores.map(function(store) {
+                var s = Object.assign({}, store);
+                if (!s.lat || !s.lng) { s.distance = null; return s; }
+                var dest = new google.maps.LatLng(s.lat, s.lng);
+                s.distance = parseFloat(
+                    (google.maps.geometry.spherical.computeDistanceBetween(origin, dest) / 1000).toFixed(2)
+                );
+                return s;
+            });
+            this.mobileVanStores = this.mobileVanStores.map(function(store) {
+                var s = Object.assign({}, store);
+                if (!s.lat || !s.lng) { s.distance = null; return s; }
+                var dest = new google.maps.LatLng(s.lat, s.lng);
+                s.distance = parseFloat(
+                    (google.maps.geometry.spherical.computeDistanceBetween(origin, dest) / 1000).toFixed(2)
+                );
+                return s;
+            });
+
+            this.renderMarkers();
+            if (this.map) {
+                this.map.panTo({ lat: this.searchLat, lng: this.searchLng });
+                this.map.setZoom(10);
+            }
+        },
+
+        useMyLocation() {
+            if (!navigator.geolocation) { alert('Geolocation is not supported.'); return; }
+            var self = this;
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    self.searchLat = pos.coords.latitude;
+                    self.searchLng = pos.coords.longitude;
+                    var geocoder = new google.maps.Geocoder();
+                    geocoder.geocode({ location: { lat: self.searchLat, lng: self.searchLng } }, function(results, status) {
+                        if (status === 'OK' && results[0]) {
+                            self.searchQuery = results[0].formatted_address;
+                            document.getElementById('refcart-search-input').value = self.searchQuery;
+                        }
+                        self.performSearch();
+                    });
+                },
+                function() { alert('Could not get your location. Please enable location access.'); }
+            );
+        },
+
+        clearSearch() {
+            this.searchQuery = '';
+            this.showClear = false;
+            this.searchLat = null;
+            this.searchLng = null;
+            document.getElementById('refcart-search-input').value = '';
+            this.outletStores = this.outletStores.map(function(s) { return Object.assign({}, s, { distance: null }); });
+            this.mobileVanStores = this.mobileVanStores.map(function(s) { return Object.assign({}, s, { distance: null }); });
+            this.renderMarkers();
+        },
+
+        doValidateCheckout() { /* moved to global scope */ }
+    };
+}
+
+document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.refcart-validate-checkout');
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    var sel = btn.closest('.refcart-selection');
+    if (!sel) return;
+
+    var valid = true;
+
+    var errStyle = 'color:#ef4444; font-size:12px; margin-top:4px; display:block;';
+
+    // Remove any previous error messages
+    sel.querySelectorAll('.field-error-msg').forEach(function(el) { el.remove(); });
+
+    // Fitting Location (mobile van)
+    var pickupEl = sel.querySelector('.refcart-pickup-location');
+    if (pickupEl && !pickupEl.value.trim()) {
+        var err = document.createElement('div');
+        err.className = 'field-error-msg';
+        err.setAttribute('style', errStyle);
+        err.textContent = '<?= $escaper->escapeJs(__('This is a required field.')) ?>';
+        pickupEl.parentNode.appendChild(err);
+        valid = false;
+    }
+
+    // Pickup Date
+    var dateEl = sel.querySelector('.refcart-date-select');
+    if (!dateEl || !dateEl.value) {
+        var err = document.createElement('div');
+        err.className = 'field-error-msg';
+        err.setAttribute('style', errStyle);
+        err.textContent = '<?= $escaper->escapeJs(__('This is a required field.')) ?>';
+        dateEl.parentNode.appendChild(err);
+        valid = false;
+    }
+
+    // Pickup Time
+    var timeEl = sel.querySelector('.refcart-time-select');
+    if (!timeEl || !timeEl.value) {
+        var err = document.createElement('div');
+        err.className = 'field-error-msg';
+        err.setAttribute('style', errStyle);
+        err.textContent = '<?= $escaper->escapeJs(__('This is a required field.')) ?>';
+        timeEl.parentNode.appendChild(err);
+        valid = false;
+    }
+
+    if (valid) {
+        window.location.href = BASE_URL + 'checkout?_=' + Date.now();
+    } else {
+        // Scroll first visible error into view
+        var firstErr = sel.querySelector('.refcart-pickup-error, .refcart-date-error, .refcart-time-error');
+        if (firstErr && firstErr.style.display === 'block') {
+            firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+}, true);
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo $gmapApiKey; ?>&libraries=places,geometry" async defer></script>

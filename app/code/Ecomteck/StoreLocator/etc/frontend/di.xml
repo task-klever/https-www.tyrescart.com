@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Store Locator Dependency Injection
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this module to newer
+ * versions in the future.
+ *
+ * @category  Ecomteck
+ * @package   Ecomteck_StoreLocator
+ * @author    Ecomteck <ecomteck@gmail.com>
+ * @copyright 2016 Ecomteck
+ * @license   Apache License Version 2.0
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Framework\App\RouterList">
+        <arguments>
+            <argument name="routerList" xsi:type="array">
+                <item name="storelocator" xsi:type="array">
+                    <item name="class" xsi:type="string">Ecomteck\StoreLocator\Controller\Router</item>
+                    <item name="disable" xsi:type="boolean">false</item>
+                    <item name="sortOrder" xsi:type="string">50</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+</config>

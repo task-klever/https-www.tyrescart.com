@@ -1,0 +1,758 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">ecomteck_storelocator_stores_form.stores_form_data_source</item>
+            <item name="deps" xsi:type="string">ecomteck_storelocator_stores_form.stores_form_data_source</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">Store Information</item>
+        <item name="config" xsi:type="array">
+            <item name="dataScope" xsi:type="string">data</item>
+            <item name="namespace" xsi:type="string">ecomteck_storelocator_stores_form</item>
+        </item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+        <item name="buttons" xsi:type="array">
+            <item name="back" xsi:type="string">Ecomteck\StoreLocator\Block\Adminhtml\Stores\Edit\Buttons\Back</item>
+            <item name="delete" xsi:type="string">Ecomteck\StoreLocator\Block\Adminhtml\Stores\Edit\Buttons\Delete</item>
+            <item name="reset" xsi:type="string">Ecomteck\StoreLocator\Block\Adminhtml\Stores\Edit\Buttons\Reset</item>
+            <item name="save" xsi:type="string">Ecomteck\StoreLocator\Block\Adminhtml\Stores\Edit\Buttons\Save</item>
+            <item name="save_and_continue" xsi:type="string">Ecomteck\StoreLocator\Block\Adminhtml\Stores\Edit\Buttons\SaveAndContinue</item>
+        </item>
+    </argument>
+    <dataSource name="stores_form_data_source">
+        <argument name="dataProvider" xsi:type="configurableObject">
+            <argument name="class" xsi:type="string">Ecomteck\StoreLocator\Model\Stores\DataProvider</argument>
+            <argument name="name" xsi:type="string">stores_form_data_source</argument>
+            <argument name="primaryFieldName" xsi:type="string">stores_id</argument>
+            <argument name="requestFieldName" xsi:type="string">stores_id</argument>
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="submit_url" xsi:type="url" path="storelocator/stores/save"/>
+                </item>
+            </argument>
+        </argument>
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+    </dataSource>
+    <fieldset name="stores_main">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="label" xsi:type="string"/>
+            </item>
+        </argument>
+        <field name="stores_id">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="visible" xsi:type="boolean">false</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="dataScope" xsi:type="string">stores_id</item>
+                </item>
+            </argument>
+        </field>
+        <field name="name">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Name</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">10</item>
+                    <item name="dataScope" xsi:type="string">name</item>
+                    <item name="notice" xsi:type="string" translate="true">Enter full store name here</item>
+                    <item name="validation" xsi:type="array">
+                        <item name="required-entry" xsi:type="boolean">true</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="name_ar">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Name Arabic</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">11</item>
+                    <item name="dataScope" xsi:type="string">name_ar</item>
+                    <item name="notice" xsi:type="string" translate="true">Enter store name in Arabic</item>
+                </item>
+            </argument>
+        </field>
+        <field name="status">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">boolean</item>
+                    <item name="label" xsi:type="string" translate="true">Status</item>
+                    <item name="formElement" xsi:type="string">checkbox</item>
+                    <item name="prefer" xsi:type="string">toggle</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">30</item>
+                    <item name="dataScope" xsi:type="string">status</item>
+                    <item name="valueMap" xsi:type="array">
+                        <item name="true" xsi:type="number">1</item>
+                        <item name="false" xsi:type="number">0</item>
+                    </item>
+                    <item name="default" xsi:type="number">1</item>
+                </item>
+            </argument>
+        </field>
+        <field name="category">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Ecomteck\StoreLocator\Model\Source\Category</item>
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Category</item>
+                    <item name="formElement" xsi:type="string">select</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="dataScope" xsi:type="string">category</item>
+                </item>
+            </argument>
+        </field>
+        <field name="ismobilevan">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Magento\Config\Model\Config\Source\Yesno</item>
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Is Mobile Van</item>
+                    <item name="formElement" xsi:type="string">select</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="dataScope" xsi:type="string">ismobilevan</item>
+                </item>
+            </argument>
+        </field>
+        <field name="shipping_amount">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Shipping Amount</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="dataScope" xsi:type="string">shipping_amount</item>
+                </item>
+            </argument>
+        </field>
+        <field name="installer_sort_order">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Installer Sort Order</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="dataScope" xsi:type="string">installer_sort_order</item>
+                </item>
+            </argument>
+        </field>
+
+         <field name="skip_days">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Skip Days</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="dataScope" xsi:type="string">skip_days</item>
+                    <item name="notice" xsi:type="string" translate="true">Number of days to skip from today. 0 = today available, 1 = earliest is tomorrow.</item>
+                </item>
+            </argument>
+        </field>
+
+        <field name="cutoff_time">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Ecomteck\StoreLocator\Model\Source\CutoffTime</item>
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Cutoff Time</item>
+                    <item name="formElement" xsi:type="string">select</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="dataScope" xsi:type="string">cutoff_time</item>
+                    <item name="notice" xsi:type="string" translate="true">If current time passes this cutoff, today becomes unavailable. Only applies when Skip Days = 0.</item>
+                </item>
+            </argument>
+        </field>
+
+        <field name="skip_hours">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Ecomteck\StoreLocator\Model\Source\SkipHours</item>
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Skip Hours</item>
+                    <item name="formElement" xsi:type="string">select</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="dataScope" xsi:type="string">skip_hours</item>
+                    <item name="notice" xsi:type="string" translate="true">Minimum hours from now before a time slot is available. Only applies for today when Skip Days = 0.</item>
+                </item>
+            </argument>
+        </field>
+
+        <field name="comming_soon">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Magento\Config\Model\Config\Source\Yesno</item>
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Comming Soon</item>
+                    <item name="formElement" xsi:type="string">select</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="dataScope" xsi:type="string">comming_soon</item>
+                    <item name="default" xsi:type="string">0</item>
+                </item>
+            </argument>
+        </field>
+
+        <field name="opening_hours_one">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Opening Hours One</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="dataScope" xsi:type="string">opening_hours_one</item>
+                </item>
+            </argument>
+        </field>
+        <field name="opening_hours_two">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Opening Hours Two</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="dataScope" xsi:type="string">opening_hours_two</item>
+                </item>
+            </argument>
+        </field>
+    </fieldset>
+    <fieldset name="Address">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="label" xsi:type="string">Address</item>
+                <item name="collapsible" xsi:type="boolean">true</item>
+            </item>
+        </argument>
+        <field name="full_address">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <!--component constructor-->
+                    <item name="component" xsi:type="string">Ecomteck_StoreLocator/js/form/element/autocomplete</item>
+                    <!--main template for form field that renders elementTmpl as a child template-->
+                    <item name="template" xsi:type="string">ui/form/field</item>
+                    <item name="elementTmpl" xsi:type="string">Ecomteck_StoreLocator/form/element/autocomplete</item>
+                    <item name="label" xsi:type="string">Search Address</item>
+                    <item name="dataScope" xsi:type="string">full_address</item>
+                    <item name="visible" xsi:type="boolean">true</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">1</item>
+                </item>
+            </argument>
+        </field>
+        <field name="longitude">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Longitude</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">2</item>
+                    <item name="dataScope" xsi:type="string">longitude</item>
+                    <item name="notice" xsi:type="string" translate="true">Example for Silicon Roundabout, London: -0.088302</item>
+                    <item name="validation" xsi:type="array">
+                        <item name="required-entry" xsi:type="boolean">true</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="latitude">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Latitude</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">3</item>
+                    <item name="dataScope" xsi:type="string">latitude</item>
+                    <item name="notice" xsi:type="string" translate="true">Example for Silicon Roundabout, London: 51.525127</item>
+                    <item name="validation" xsi:type="array">
+                        <item name="required-entry" xsi:type="boolean">true</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="address">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Address</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">4</item>
+                    <item name="dataScope" xsi:type="string">address</item>
+                </item>
+            </argument>
+        </field>
+        <field name="address_ar">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Address Arabic</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">4</item>
+                    <item name="dataScope" xsi:type="string">address_ar</item>
+                    <item name="notice" xsi:type="string" translate="true">Enter store address in Arabic</item>
+                </item>
+            </argument>
+        </field>
+        <field name="city">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">City</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">5</item>
+                    <item name="dataScope" xsi:type="string">city</item>
+                </item>
+            </argument>
+        </field>
+        <field name="city_ar">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">City Arabic</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">5</item>
+                    <item name="dataScope" xsi:type="string">city_ar</item>
+                    <item name="notice" xsi:type="string" translate="true">Enter city name in Arabic</item>
+                </item>
+            </argument>
+        </field>
+        <field name="postcode">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Postcode</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">6</item>
+                    <item name="dataScope" xsi:type="string">postcode</item>
+                </item>
+            </argument>
+        </field>
+        <field name="country">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Ecomteck\StoreLocator\Model\Source\Country</item>
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Country</item>
+                    <item name="formElement" xsi:type="string">select</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">7</item>
+                    <item name="dataScope" xsi:type="string">country</item>
+                </item>
+            </argument>
+        </field>
+        <field name="region">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Region</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">8</item>
+                    <item name="dataScope" xsi:type="string">region</item>
+                </item>
+            </argument>
+        </field>
+    </fieldset>
+    <fieldset name="Contact">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="label" xsi:type="string">Contact</item>
+                <item name="collapsible" xsi:type="boolean">true</item>
+            </item>
+        </argument>
+        <field name="email">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Email</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">20</item>
+                    <item name="dataScope" xsi:type="string">email</item>
+                </item>
+            </argument>
+        </field>
+        <field name="phone">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Phone</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">20</item>
+                    <item name="dataScope" xsi:type="string">phone</item>
+                </item>
+            </argument>
+        </field>
+        <field name="external_link">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">External Link</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">20</item>
+                    <item name="dataScope" xsi:type="string">external_link</item>
+                    <item name="notice" xsi:type="string" translate="true">If your store has an individual store details page and it is on a different website, enter it here. Format: http://...</item>
+                </item>
+            </argument>
+        </field>
+        <field name="google_map">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Google Map</item>
+                    <item name="formElement" xsi:type="string">textarea</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">30</item>
+                    <item name="dataScope" xsi:type="string">google_map</item>
+                </item>
+            </argument>
+        </field>
+        <field name="image">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">string</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="label" xsi:type="string" translate="true">Image</item>
+                    <item name="visible" xsi:type="boolean">true</item>
+                    <item name="formElement" xsi:type="string">fileUploader</item>
+                    <item name="elementTmpl" xsi:type="string">ui/form/element/uploader/uploader</item>
+                    <item name="previewTmpl" xsi:type="string">Ecomteck_StoreLocator/image-preview</item>
+                    <item name="required" xsi:type="boolean">false</item>
+                    <item name="uploaderConfig" xsi:type="array">
+                        <item name="url" xsi:type="url" path="storelocator/stores_image/upload/field/image"/>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="image_1">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">string</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="label" xsi:type="string" translate="true">Image 1</item>
+                    <item name="visible" xsi:type="boolean">true</item>
+                    <item name="formElement" xsi:type="string">fileUploader</item>
+                    <item name="elementTmpl" xsi:type="string">ui/form/element/uploader/uploader</item>
+                    <item name="previewTmpl" xsi:type="string">Ecomteck_StoreLocator/image-preview</item>
+                    <item name="required" xsi:type="boolean">false</item>
+                    <item name="dataScope" xsi:type="string">image_1</item>
+                    <item name="uploaderConfig" xsi:type="array">
+                        <item name="url" xsi:type="url" path="storelocator/stores_image/upload/field/image"/>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="image_2">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">string</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="label" xsi:type="string" translate="true">Image 2</item>
+                    <item name="visible" xsi:type="boolean">true</item>
+                    <item name="formElement" xsi:type="string">fileUploader</item>
+                    <item name="elementTmpl" xsi:type="string">ui/form/element/uploader/uploader</item>
+                    <item name="previewTmpl" xsi:type="string">Ecomteck_StoreLocator/image-preview</item>
+                    <item name="required" xsi:type="boolean">false</item>
+                    <item name="dataScope" xsi:type="string">image_2</item>
+                    <item name="uploaderConfig" xsi:type="array">
+                        <item name="url" xsi:type="url" path="storelocator/stores_image/upload/field/image_2"/>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="image_3">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">string</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="label" xsi:type="string" translate="true">Image 3</item>
+                    <item name="visible" xsi:type="boolean">true</item>
+                    <item name="formElement" xsi:type="string">fileUploader</item>
+                    <item name="elementTmpl" xsi:type="string">ui/form/element/uploader/uploader</item>
+                    <item name="previewTmpl" xsi:type="string">Ecomteck_StoreLocator/image-preview</item>
+                    <item name="required" xsi:type="boolean">false</item>
+                    <item name="dataScope" xsi:type="string">image_3</item>
+                    <item name="uploaderConfig" xsi:type="array">
+                        <item name="url" xsi:type="url" path="storelocator/stores_image/upload/field/image_3"/>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="image_4">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">string</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="label" xsi:type="string" translate="true">Image 4</item>
+                    <item name="visible" xsi:type="boolean">true</item>
+                    <item name="formElement" xsi:type="string">fileUploader</item>
+                    <item name="elementTmpl" xsi:type="string">ui/form/element/uploader/uploader</item>
+                    <item name="previewTmpl" xsi:type="string">Ecomteck_StoreLocator/image-preview</item>
+                    <item name="required" xsi:type="boolean">false</item>
+                    <item name="dataScope" xsi:type="string">image_4</item>
+                    <item name="uploaderConfig" xsi:type="array">
+                        <item name="url" xsi:type="url" path="storelocator/stores_image/upload/field/image_4"/>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="image_5">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">string</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="label" xsi:type="string" translate="true">Image 5</item>
+                    <item name="visible" xsi:type="boolean">true</item>
+                    <item name="formElement" xsi:type="string">fileUploader</item>
+                    <item name="elementTmpl" xsi:type="string">ui/form/element/uploader/uploader</item>
+                    <item name="previewTmpl" xsi:type="string">Ecomteck_StoreLocator/image-preview</item>
+                    <item name="required" xsi:type="boolean">false</item>
+                    <item name="dataScope" xsi:type="string">image_5</item>
+                    <item name="uploaderConfig" xsi:type="array">
+                        <item name="url" xsi:type="url" path="storelocator/stores_image/upload/field/image_5"/>
+                    </item>
+                </item>
+            </argument>
+        </field>
+    </fieldset>
+    <fieldset name="details">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="label" xsi:type="string">Store Details</item>
+                <item name="collapsible" xsi:type="boolean">true</item>
+                <item name="visible" xsi:type="boolean">false</item>
+            </item>
+        </argument>
+        <field name="url_key">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Url Key</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">20</item>
+                    <item name="dataScope" xsi:type="string">url_key</item>
+                    <item name="notice" xsi:type="string" translate="true">If you want a store details page on the same website enter your url here. If the final url is www.website.com/storelocator/waterloo then you need to enter only waterloo.</item>
+                </item>
+            </argument>
+        </field>
+        <field name="station">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Nearest Station</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">20</item>
+                    <item name="dataScope" xsi:type="string">station</item>
+                </item>
+            </argument>
+        </field>
+        <field name="distance">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Distance</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">20</item>
+                    <item name="dataScope" xsi:type="string">distance</item>
+                </item>
+            </argument>
+        </field>
+        <field name="description">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Description</item>
+                    <item name="formElement" xsi:type="string">textarea</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">20</item>
+                    <item name="dataScope" xsi:type="string">description</item>
+                </item>
+            </argument>
+        </field>
+        <field name="details_image">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">string</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="label" xsi:type="string" translate="true">Store Details Image</item>
+                    <item name="visible" xsi:type="boolean">true</item>
+                    <item name="formElement" xsi:type="string">fileUploader</item>
+                    <item name="elementTmpl" xsi:type="string">ui/form/element/uploader/uploader</item>
+                    <item name="previewTmpl" xsi:type="string">Ecomteck_StoreLocator/image-preview</item>
+                    <item name="required" xsi:type="boolean">false</item>
+                    <item name="uploaderConfig" xsi:type="array">
+                        <item name="url" xsi:type="url" path="storelocator/stores_image/upload/field/details_image"/>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="service_included">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Service Included</item>
+                    <item name="formElement" xsi:type="string">textarea</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">30</item>
+                    <item name="dataScope" xsi:type="string">service_included</item>
+                </item>
+            </argument>
+        </field>
+        <field name="intro">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Intro</item>
+                    <item name="formElement" xsi:type="string">textarea</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="sortOrder" xsi:type="number">20</item>
+                    <item name="dataScope" xsi:type="string">intro</item>
+                </item>
+            </argument>
+        </field>
+    </fieldset>
+    <fieldset name="opening_hours">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="sortOrder" xsi:type="number">200</item>
+                <item name="label" xsi:type="string" translate="true">Opening Hours</item>
+                <item name="collapsible" xsi:type="boolean">true</item>
+                <item name="opened" xsi:type="boolean">false</item>
+                <item name="additionalClasses" xsi:type="string">opening-hours-fieldset-wrapper</item>
+            </item>
+        </argument>
+        <container name="opening_hours_config_container">
+            <htmlContent name="opening_hours">
+                <argument name="block" xsi:type="object">Ecomteck\StoreLocator\Block\Adminhtml\Stores\Edit\Form\OpeningHours</argument>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="sortOrder" xsi:type="number">20</item>
+                        <item name="component" xsi:type="string">Ecomteck_StoreLocator/js/component/stores/opening-hours</item>
+                        <item name="dataScope" xsi:type="string">opening_hours</item>
+                        <item name="imports" xsi:type="array">
+                            <item name="visible" xsi:type="string">true</item>
+                        </item>
+                    </item>
+                </argument>
+            </htmlContent>
+        </container>
+    </fieldset>
+    <fieldset name="websites" class="Magento\Store\Ui\Component\Form\Fieldset\Websites">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="collapsible" xsi:type="boolean">true</item>
+                <item name="label" xsi:type="string" translate="true">Manage Store views</item>
+                <item name="sortOrder" xsi:type="number">30</item>
+                <item name="visible" xsi:type="boolean">false</item>
+            </item>
+        </argument>
+        <field name="storeviews">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Ecomteck\StoreLocator\Ui\Component\Listing\Column\Store\Options</item>
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">int</item>
+                    <item name="label" xsi:type="string" translate="true">Store View</item>
+                    <item name="formElement" xsi:type="string">multiselect</item>
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="dataScope" xsi:type="string">store_id</item>
+                    <item name="default" xsi:type="string">0</item>
+                    <item name="validation" xsi:type="array">
+                        <item name="required-entry" xsi:type="boolean">true</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+    </fieldset>
+    <fieldset name="special_opening_hours">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="sortOrder" xsi:type="number">300</item>
+                <item name="label" xsi:type="string" translate="true">Special Opening Hours</item>
+                <item name="collapsible" xsi:type="boolean">true</item>
+                <item name="opened" xsi:type="boolean">false</item>
+                <item name="visible" xsi:type="boolean">false</item>
+            </item>
+        </argument>
+        <container name="special_opening_hours_config_container">
+            <htmlContent name="special_opening_hours">
+                <argument name="block" xsi:type="object">Ecomteck\StoreLocator\Block\Adminhtml\Stores\Edit\Form\SpecialOpeningHours</argument>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="sortOrder" xsi:type="number">20</item>
+                        <item name="component" xsi:type="string">Ecomteck_StoreLocator/js/component/stores/opening-hours</item>
+                        <item name="dataScope" xsi:type="string">special_opening_hours</item>
+                        <item name="imports" xsi:type="array">
+                            <item name="visible" xsi:type="string">true</item>
+                        </item>
+                    </item>
+                </argument>
+            </htmlContent>
+        </container>
+    </fieldset>
+    <fieldset name="assign_products">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="collapsible" xsi:type="boolean">true</item>
+                <item name="label" xsi:type="string" translate="true">Products in Store</item>
+                <item name="visible" xsi:type="boolean">false</item>
+            </item>
+        </argument>
+        <!--settings>
+            <collapsible>true</collapsible>
+            <label translate="true">Products in Store</label>
+        </settings-->
+        <!--field name="is_all_products" sortOrder="10" formElement="checkbox">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">stores</item>
+                    <item name="default" xsi:type="number">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">All Products Avaiable For This Store</label>
+                <dataScope>is_all_products</dataScope>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <valueMap>
+                            <map name="false" xsi:type="number">0</map>
+                            <map name="true" xsi:type="number">1</map>
+                        </valueMap>
+                        <prefer>toggle</prefer>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field-->
+        <container name="assign_products_container">
+            <htmlContent name="html_content">
+                <argument name="block" xsi:type="object">Ecomteck\StoreLocator\Block\Adminhtml\Stores\Edit\Tab\AssignProducts</argument>
+                <!--block name="gallery" class="Ecomteck\StoreLocator\Block\Adminhtml\Stores\Edit\Tab\AssignProducts"/-->
+            </htmlContent>
+        </container>
+    </fieldset>
+</form>

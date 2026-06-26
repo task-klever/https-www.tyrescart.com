@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="checkout.cart.shipping" remove="false"/>
+        <referenceBlock name="checkout.cart.coupon" remove="true"/>
+        <move element="checkout.cart.coupon" destination="checkout.cart.totals.container" after="-" />
+        <!-- Move Proceed to Checkout button after cart-summary-actions (shipping estimation + totals) -->
+        <move element="checkout.cart.methods.bottom" destination="cart.summary" after="-" />
+    </body>
+</page>

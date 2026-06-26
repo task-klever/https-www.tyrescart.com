@@ -1,0 +1,200 @@
+<?php
+use Hyva\Theme\ViewModel\HyvaCsp;
+
+/** @var HyvaCsp $hyvaCsp */
+
+$route = 'tyres/cars';
+$vehicleMakes = $block->getVehiclesMakes();
+$baseUrl = $this->getBaseUrl();
+$vehicleItems = array_slice($vehicleMakes['data'], 0, 14);
+$firstRow = array_slice($vehicleItems, 0, 7);
+$secondRow = array_slice($vehicleItems, 7, 7);
+?>
+
+<section class="section leading-online ">
+   <div class="container-theme">
+   <div class="bg-black rounded-[10px] p-6">
+      <div class="section-title text-center">
+         <h3 class="text-white"><?php echo __('UAE\'s Leading Online Tyre Shop - ') ?> <span class="text-theme-blue"><?php echo __('Wide Selection & Great Deals') ?></span></h3>
+      </div>
+      <div class="flex flex-col gap-4">
+         <p class="text-white/70"><?php echo __('At TyresCart, we help you choose tires that match your vehicle, your driving habits, and your budget. Whether you drive on rough backroads or highways, you can find the right tyre from our online tyre shop in Dubai with ease.') ?></p>
+         <p class="text-white/70"> <span class="text-white font-bold"><?php echo __('Browse By Size, Brand, and Vehicle Type:') ?></span> <?php echo __('Not sure which tyres fit your vehicle? Browse tyre options using search filters and explore tyre options by size, brands, and vehicle types. We have premium options for all your vehicle types, whether you drive a city car, an SUV, or a heavy-duty 4x4. With precise matching, we make your tyre shopping experience straightforward and stress-free.') ?></p>
+         <p class="text-white/70"> <span class="text-white font-bold"><?php echo __('Find Tyres Built For UAE\'s Unique Conditions:') ?></span> <?php echo __('An ordinary car tyre can lose grip and fail when the temperature soars. That\'s why at TyresCart we offer tyres engineered specifically for the UAE\'s unique climate and roads. We offer tyres made with heat-resistant materials and rugged tread designs so you can drive safely and confidently in the unpredictable desert terrains, and your tyres last and perform better.') ?></p>
+         <p class="text-white/70"> <span class="text-white font-bold"><?php echo __('Shop As Per Your Driving Needs:') ?></span> <?php echo __('If you mostly drive on city roads, a regular all-season car tyre is your best fit. But if you often take your vehicle off-road or on challenging drives, we are here to help. Just give us a call, and our experts will help you choose and buy tires online with ease.') ?></p>
+         <p class="text-white/70"> <span class="text-white font-bold"><?php echo __('Get Quality At The Best Price:') ?></span> <?php echo __('We are committed to providing you with premium quality tyres from the best tyres brand in UAE at the most competitive prices. With our exclusive deals, you can shop top-notch tyres without compromising quality for affordability. Shop from our top tyre shop Abu Dhabi and experience the perfect balance of quality and value.') ?></p>
+         <p class="text-white/70"> <span class="text-white font-bold"><?php echo __('Expert Tyre Care Guidance:') ?></span> <?php echo __('At TyresCart, our goal is to help you provide ongoing expert advice and support to maintain your tyres for longer life and optimal performance. Whether you need tyre care tips or seek assistance for rotation schedules and wear monitoring, we are here to help you get the most out of your investment.') ?></p>
+      </div>
+   </div>
+   </div>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<?php /*
+<section class="section popular-vehicle-makes pt-0 pb-10 md:pt-0 md:pb-12 lg:pt-14 lg:pb-14">
+   <div class="popular-vehicle">
+      <div class="container-theme w-full mx-auto block">
+      <div class="sec-title w-full">
+         <div class="w-full">
+          <div class="flex justify-center md:justify-between gap-6 mb-3 md:mb-5">
+ <h2 class="title-h2 text-theme-dark font-bold relative">
+               <span class="w-[70px] md:w-[100px] border-b border-theme-blue bg-theme-blue absolute left-0 bottom-0 hidden">
+               </span>
+               <i class="icon icon-logo-icon mr-1 text-theme-blue"></i>Popular <span class="text-theme-blue">Vehicle</span> Makes
+            </h2>
+            <div class="hidden lg:block whitespace-nowrap mt-[3px]">         
+         <a href="<?php echo $baseUrl . $route; ?>" class="btn-blue-yellow"><i class="icon icon-tyre-btn text-base mr-2"></i> <?php echo __('View all') ?> <i class="icon icon-three-arrow text-f9 ml-2"></i></a>
+</div>
+          </div>
+            <p class="text-lg md:text-xl text-center md:text-left">Get the right car tires for your vehicle from our wide selection and give the performance, comfort, and durability it needs. So, buy tyres online today and your shopping will be effortless with us.</p>
+         </div>
+      </div>
+      </div>
+   </div>
+   <div class="row-one relative overflow-hidden md:pt-6 pt-5">
+      <div id="vehicle-marquee" class="flex w-max gap-4" style="will-change: transform;">
+         <?php foreach ($firstRow as $vehicle) : ?>
+            <div
+               class="flex flex-col items-center justify-center mx-2 basis-[14.28%] max-w-[14.28%] min-w-[120px] md:basis-1/5 md:max-w-1/5 md:min-w-[110px] sm:basis-1/3 sm:max-w-1/3 sm:min-w-[90px]">
+               <a href="<?php echo $baseUrl . $route . '/'; ?><?php echo $vehicle['slug']; ?>" class="block group">
+                  <div class="w-[100px] h-[72px] md:w-[135px] md:h-[91px] lg:w-[135px] lg:h-[91px] xl:w-[228px] xl:h-[124px] rounded-[10px] flex items-center justify-center border border-[#D9D9D9] hover:border-theme-blue  transition-all duration-300 ease-in-out bg-white shadow-sm 
+               transition-shadow mb-2 skew-x-[-12deg]">
+                     <img
+                        src="<?php echo $vehicle['logo']; ?>"
+                        loading="lazy"
+                        alt="<?php echo __($vehicle['name'] . ' Car Tyres Online'); ?>"
+                        title="<?php echo __($vehicle['name']); ?>"
+                        class="max-w-[64px] md:max-w-[90px] lg:max-w-[92px] xl:max-w-[112px] object-contain skew-x-[12deg]" />
+                  </div>
+               </a>
+            </div>
+         <?php endforeach; ?>
+      </div>
+      <div class="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white via-white/80 to-transparent hidden sm:block"></div>
+      <div class="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white via-white/80 to-transparent hidden sm:block"></div>
+   </div>
+   <div class="row-two relative overflow-hidden mt-1 md:mt-2 lg:mt-3 xl:mt-5">
+      <div id="vehicle-marquee2" class="flex w-max gap-4" style="will-change: transform;">
+         <?php foreach ($secondRow as $vehicle) : ?>
+            <div
+               class="flex flex-col items-center justify-center mx-2 basis-[14.28%] max-w-[14.28%] min-w-[120px] md:basis-1/5 md:max-w-1/5 md:min-w-[110px] sm:basis-1/3 sm:max-w-1/3 sm:min-w-[90px]">
+               <a href="<?php echo $baseUrl . $route . '/'; ?><?php echo $vehicle['slug']; ?>" class="block group">
+                  <div class="w-[100px] h-[72px] md:w-[135px] md:h-[91px] lg:w-[135px] lg:h-[91px] xl:w-[228px] xl:h-[124px] rounded-[10px] flex items-center justify-center border border-[#D9D9D9] hover:border-theme-blue  transition-all duration-300 ease-in-out bg-white shadow-sm 
+               transition-shadow mb-2 skew-x-[-12deg]">
+                     <img
+                        src="<?php echo $vehicle['logo']; ?>"
+                        loading="lazy"
+                        alt="<?php echo __($vehicle['name'] . ' Car Tyres Online'); ?>"
+                        title="<?php echo __($vehicle['name']); ?>"
+                        class="max-w-[64px] md:max-w-[90px] lg:max-w-[92px] xl:max-w-[112px] object-contain skew-x-[12deg]" />
+                  </div>
+               </a>
+            </div>
+         <?php endforeach; ?>
+      </div>
+      <div class="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white via-white/80 to-transparent hidden sm:block"></div>
+      <div class="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white via-white/80 to-transparent hidden sm:block"></div>
+   </div>
+   <div class="block lg:hidden mt-3 text-center">         
+         <a href="<?php echo $baseUrl . $route; ?>" class="btn-blue-yellow"><i class="icon icon-tyre-btn text-base mr-2"></i> <?php echo __('View all') ?> <i class="icon icon-three-arrow text-f9 ml-2"></i></a>
+</div>
+</section>
+<script>
+   document.addEventListener('DOMContentLoaded', function() {
+      const marquee = document.getElementById('vehicle-marquee');
+      // Duplicate content for infinite scroll effect
+      marquee.innerHTML += marquee.innerHTML;
+      let scrollAmount = 0;
+      const speed = 1;
+      let reqId;
+      function loop() {
+         scrollAmount += speed;
+         if (scrollAmount >= marquee.scrollWidth / 2) {
+            scrollAmount = 0; // Reset when half is scrolled (1 set worth)
+         }
+         marquee.style.transform = `translateX(-${scrollAmount}px)`;
+         reqId = requestAnimationFrame(loop);
+      }
+      marquee.addEventListener('mouseenter', () => cancelAnimationFrame(reqId));
+      marquee.addEventListener('mouseleave', () => loop());
+      loop();
+   });
+   document.addEventListener('DOMContentLoaded', function() {
+      const marquee = document.getElementById('vehicle-marquee2');
+      // Duplicate content for seamless scroll
+      marquee.innerHTML += marquee.innerHTML;
+      const halfWidth = marquee.scrollWidth / 2;
+      let scrollAmount = -halfWidth; // 👈 Start from left of second half
+      const speed = 1;
+      let reqId;
+      function loop() {
+         scrollAmount += speed; // 👈 Move right
+         if (scrollAmount >= 0) {
+            scrollAmount = -halfWidth; // 👈 Reset to start from left again
+         }
+         marquee.style.transform = `translateX(${scrollAmount}px)`;
+         reqId = requestAnimationFrame(loop);
+      }
+      marquee.addEventListener('mouseenter', () => cancelAnimationFrame(reqId));
+      marquee.addEventListener('mouseleave', () => loop());
+      loop(); // Start loop
+   });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+<style>
+   #vehicle-marquee {
+      transition: transform 0s linear;
+      white-space: nowrap;
+   }
+   @media (max-width: 1024px) {
+      #vehicle-marquee>div {
+         min-width: 100px;
+         max-width: 120px;
+      }
+   }
+   @media (max-width: 767px) {
+      #vehicle-marquee>div {
+         min-width: 80px;
+         max-width: 80px;
+      }
+   }
+   #vehicle-marquee2 {
+      transition: transform 0s linear;
+      white-space: nowrap;
+   }
+   @media (max-width: 1024px) {
+      #vehicle-marquee2>div {
+         min-width: 100px;
+         max-width: 120px;
+      }
+   }
+   @media (max-width: 767px) {
+      #vehicle-marquee2>div {
+         min-width: 80px;
+         max-width: 80px;
+      }
+   }
+</style>
+*/ ?>
+

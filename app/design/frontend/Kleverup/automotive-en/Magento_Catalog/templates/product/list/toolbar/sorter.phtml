@@ -1,0 +1,74 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+declare(strict_types=1);
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Catalog\Block\Product\ProductList\Toolbar;
+use Magento\Framework\Escaper;
+/** @var Toolbar $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+?>
+<div class="toolbar-sorter sorter flex items-center order-1 col-span-3 sm:col-span-6
+        md:col-span-3 lg:col-span-6 justify-end">
+    <!-- Mobile: Filter button -->
+    <a onclick="FilterItems()" href="javascript:void(0)"
+        class="visible lg:hidden more-filter-mobile group bg-theme-yellow hover:bg-theme-blue transition-all duration-300 ease-in-out flex items-center min-h-9 lg:min-h-11 px-3 rounded-md mr-3 [html[lang='ar']_&]:mr-0 [html[lang='ar']_&]:ml-3 text-[0.9rem] lg:text-lg">
+        <span class="text-theme-blue"><svg class="w-5 h-5 mr-1 filter-icon transition-all duration-300 ease-in-out"
+                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M15,12.7071068 L15,18.5 C15,18.7044523 14.8755245,18.8883067 14.6856953,18.9642383 L9.68569534,20.9642383 C9.35726314,21.0956112 9,20.8537323 9,20.5 L9,12.7071068 L3.14644661,6.85355339 C3.05267842,6.7597852 3,6.63260824 3,6.5 L3,3.5 C3,3.22385763 3.22385763,3 3.5,3 L20.5,3 C20.7761424,3 21,3.22385763 21,3.5 L21,6.5 C21,6.63260824 20.9473216,6.7597852 20.8535534,6.85355339 L15,12.7071068 Z M14,13 L10,13 L10,19.7614835 L14,18.1614835 L14,13 L14,13 Z M4,4 L4,6.29289322 L9.70710678,12 L14.2928932,12 L20,6.29289322 L20,4 L4,4 Z" />
+            </svg></span>
+        <span class="text group-hover:text-white transition-all duration-300 ease-in-out"><?php echo __('Filter') ?></span>
+    </a>
+    <label class="inline-block">
+        <select data-role="sorter"
+            class="form-select sorter-options cursor-pointer pr-1 md:pr-2 text-[0.9rem] lg:text-lg min-h-9 lg:min-h-11"
+            aria-label="<?= $escaper->escapeHtmlAttr(__('Sort By')) ?>" @change="changeUrl(
+                    'product_list_order',
+                    $event.currentTarget.options[$event.currentTarget.selectedIndex].value,
+                    options.orderDefault
+                )">
+            <?php foreach ($block->getAvailableOrders() as $orderCode => $orderLabel):?>
+            <option value="<?= $escaper->escapeHtmlAttr($orderCode) ?>" <?php if ($block->isOrderCurrent($orderCode)):
+                ?>
+                selected="selected"
+                <?php endif; ?>
+                >
+                <?= $escaper->escapeHtml(__($orderLabel)) ?>
+            </option>
+            <?php endforeach; ?>
+        </select>
+    </label>
+    <?php if ($block->getCurrentDirection() == 'desc'): ?>
+    <a title="<?= $escaper->escapeHtmlAttr(__('Set Ascending Direction')) ?>" href="#"
+        class="action sorter-action sort-desc"
+        @click.prevent="changeUrl('product_list_dir', 'asc', options.directionDefault)">
+        <?= $heroicons->sortAscendingHtml('text-theme-blue', 24, 24, ['aria-hidden' => true]); ?>
+    </a>
+    <?php else: ?>
+    <?php /*
+        <a title="<?= $escaper->escapeHtmlAttr(__('Set Descending Direction')) ?>"
+    href="#"
+    class="action sorter-action sort-asc"
+    @click.prevent="changeUrl('product_list_dir', 'desc', options.directionDefault)"
+    >
+    <?= $heroicons->sortDescendingHtml('text-theme-blue', 24, 24, ['aria-hidden' => true]); ?>
+    </a>
+    */ ?>
+    <?php endif; ?>
+    <!-- Desktop: Filter icon button (after sorting) -->
+    <a onclick="FilterItems()" href="javascript:void(0)" title="<?= $escaper->escapeHtmlAttr(__('Filters')) ?>"
+        class="hidden lg:inline-flex items-center justify-center w-10 h-10 ml-3 [html[lang='ar']_&]:ml-0 [html[lang='ar']_&]:mr-3 rounded-md bg-theme-blue hover:bg-black transition-all duration-300 ease-in-out">
+        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15,12.7071068 L15,18.5 C15,18.7044523 14.8755245,18.8883067 14.6856953,18.9642383 L9.68569534,20.9642383 C9.35726314,21.0956112 9,20.8537323 9,20.5 L9,12.7071068 L3.14644661,6.85355339 C3.05267842,6.7597852 3,6.63260824 3,6.5 L3,3.5 C3,3.22385763 3.22385763,3 3.5,3 L20.5,3 C20.7761424,3 21,3.22385763 21,3.5 L21,6.5 C21,6.63260824 20.9473216,6.7597852 20.8535534,6.85355339 L15,12.7071068 Z M14,13 L10,13 L10,19.7614835 L14,18.1614835 L14,13 L14,13 Z M4,4 L4,6.29289322 L9.70710678,12 L14.2928932,12 L20,6.29289322 L20,4 L4,4 Z" />
+        </svg>
+    </a>
+</div>

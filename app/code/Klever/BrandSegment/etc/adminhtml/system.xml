@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system.xsd">
+    <system>
+        <section id="klever_brandsegment" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Brand Segment - Top Picks</label>
+            <tab>klever</tab>
+            <resource>Magento_Config::config</resource>
+            <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General Settings</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Top Picks Section</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Show Top Premium / Top Quality / Top Budget section on tyre size search pages.</comment>
+                </field>
+                <field id="products_per_segment" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Products Per Segment</label>
+                    <comment>Number of products to show in each segment column (default: 3).</comment>
+                    <validate>validate-digits</validate>
+                </field>
+                <field id="segments" translate="label comment" type="multiselect" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Segments to Show</label>
+                    <source_model>Klever\BrandSegment\Model\Config\Source\Segments</source_model>
+                    <comment>Select which brand segments to display. Leave empty to show all.</comment>
+                    <can_be_empty>1</can_be_empty>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
