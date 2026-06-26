@@ -1,4 +1,4 @@
-## Magento 2 .gitignore — Track custom code only
+## Magento 2 .gitignore
 
 # Ignore everything by default
 /*
@@ -10,6 +10,11 @@
 !/app/design/
 !/app/etc/
 /app/etc/env.php
+
+!/bin/
+!/lib/
+!/dev/
+!/setup/
 
 # Track root config files
 !/.gitignore
@@ -30,14 +35,10 @@
 !/Gruntfile.js.sample
 !/package.json.sample
 !/auth.json.sample
-!/deploy-frontend.sh
 !/cronLaunch.php
 !/magento-upgrade.md
 !/magento-upgrade-249.md
 !/README.md
-
-# Track bin
-!/bin/
 
 # Track pub essentials only
 !/pub/
@@ -56,9 +57,15 @@
 *.bkp*
 *.sql
 *.log
-*.png
-*.jpg
+.DS_Store
 /auth.json
 /.claude/
-.DS_Store
 deploy-frontend.sh
+
+# Magento generated (never commit)
+/vendor/
+/generated/
+/var/
+/pub/static/
+/pub/media/
+/node_modules/
