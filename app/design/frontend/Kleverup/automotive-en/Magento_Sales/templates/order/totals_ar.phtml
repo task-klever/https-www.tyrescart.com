@@ -27,14 +27,14 @@ $arabicLabels = [
         $arLabel = $arabicLabels[(string)$label] ?? (string)$label;
     ?>
     <tr class="<?= $block->escapeHtmlAttr($_code) ?>">
-        <th scope="row" colspan="5" style="text-align:right;font-weight:800;font-family:'Montserrat',arial,tahoma">
+        <th scope="row" style="text-align:right;font-weight:800;font-family:'Montserrat',arial,tahoma;padding:4px 8px;">
             <?php if ($_total->getStrong()) : ?>
                 <strong><?= $block->escapeHtml($arLabel) ?></strong>
             <?php else : ?>
                 <?= $block->escapeHtml($arLabel) ?>
             <?php endif ?>
         </th>
-        <td <?= /* @noEscape */ $block->getValueProperties() ?> data-th="<?= $block->escapeHtmlAttr($arLabel) ?>" style="text-align:left;">
+        <td style="text-align:left;padding:4px 8px;white-space:nowrap;">
             <?php if ($_total->getStrong()) : ?>
                 <strong><?= /* @noEscape */ $block->formatValue($_total) ?></strong>
             <?php else : ?>

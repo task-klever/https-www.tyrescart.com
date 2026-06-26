@@ -12,7 +12,7 @@
    // print_r($categoryPostCollection->getData());
    // die();
    ?>
-<div class="section section-padding blog-list">
+<div class="section py-5 blog-list">
          <div x-data="{ activeTab: 'tab<?php echo $firsCategory->getCategoryId(); ?>' }">
             <?php /* ?>
             <div class="flex items-center justify-center overflow-hidden">
@@ -62,9 +62,13 @@
                               </div>
 
                               <div class="blog-blog-info p-4">
-                                 <h6 class="mb-2">
-                                    <a href="<?php echo $categoryPost->getPostUrlWithNoCategory(); ?>" class="text-ellipsis line-clamp-2 text-black hover:text-theme-blue transition ease-out text-[1rem] font-bold uppercase"><?php echo $postTitle; ?></a>
+                                 <h6 class="mb-2 text-sm">
+                                    <a href="<?php echo $categoryPost->getPostUrlWithNoCategory(); ?>" class="text-ellipsis line-clamp-2 text-black hover:text-theme-blue transition ease-out font-bold uppercase"><?php echo $postTitle; ?></a>
                                  </h6>
+                                 <div class="flex items-center gap-2 my-2 [html[lang='ar']_&amp;]:flex-row-reverse">
+                                 <div class="h-[2px] w-6 rounded-full bg-theme-blue"></div>
+                                 <div class="h-px flex-1 bg-gray-200"></div>
+                              </div>
                                  <?php echo $postShortContent; ?>
                               </div>
                               

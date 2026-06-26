@@ -2063,7 +2063,8 @@ form label, fieldset label {
     top: -5px;
 }
 
-.account-sidebar .account-nav-content ul li a {
+.account-sidebar .account-nav-content ul li a ,
+.account-sidebar .account-nav-content ul .nav.item {
  color: #000;
  font-weight: 500;
  transition: all 0.3s ease-in-out;
@@ -2790,4 +2791,18 @@ top: 0;
   background-size: 1.5em 1.5em;
   padding-right: 1.8rem !important;
   padding: 0 27px 0 10px!important;
+}
+
+fieldset label, form label {
+    font-weight: 500;
+}
+
+.actions-toolbar.bt-none {
+    margin-top: 0px !important;
+    border-top: none !important;
+}
+
+.form-address-edit .field-name-firstname ,
+.form-address-edit .field-name-lastname {
+  padding-bottom: 12px !important;
 }

@@ -8,7 +8,7 @@
    <div><?php echo __('Have no posts.') ?></div>
 </div>
 <?php else: ?>
-<div class="section section-padding blog-list">
+<div class="section py-5 blog-list">
    <div class="w-full inline-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 place-items-center">
       <?php foreach ($collection as $post): ?>
       <div class="flex items-end justify-center shrink-0">
@@ -30,9 +30,13 @@
                 </div>
             </div>
             <div class="blog-blog-info p-4">
-               <h6 class="mb-2">
-                  <a href="<?php echo $post->getPostUrlWithNoCategory(); ?>" class="text-ellipsis line-clamp-2 text-black hover:text-theme-blue transition ease-out text-[1rem] font-bold uppercase"><?php echo $post->getTitle(); ?></a>
+                <h6 class="mb-2 text-sm">
+                  <a href="<?php echo $post->getPostUrlWithNoCategory(); ?>" class="text-ellipsis line-clamp-2 text-black hover:text-theme-blue transition ease-out font-bold uppercase"><?php echo $post->getTitle(); ?></a>
                </h6>
+               <div class="flex items-center gap-2 my-2 [html[lang='ar']_&amp;]:flex-row-reverse">
+                                 <div class="h-[2px] w-6 rounded-full bg-theme-blue"></div>
+                                 <div class="h-px flex-1 bg-gray-200"></div>
+                              </div>
                <?php echo $post->getShortContent(); ?>
             </div>
          </div>

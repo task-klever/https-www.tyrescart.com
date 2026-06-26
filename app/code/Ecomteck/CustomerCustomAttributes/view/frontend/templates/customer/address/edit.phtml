@@ -152,17 +152,12 @@
         </fieldset>
         <div class="actions-toolbar">
             <div class="save-button">
-                <button type="submit" class="action submit btn bg-black text-[0.9rem] md:text-[1rem] hover:bg-theme-blue transition-all duration-300 ease-in-out" data-action="save-address" title="<?php /* @escapeNotVerified */ echo __('Save Address') ?>">
+                <button type="submit" class="action submit inline-flex items-center justify-center px-6 py-2 bg-black text-white text-sm md:text-base font-semibold rounded-full hover:bg-theme-blue transition-colors duration-300" data-action="save-address" title="<?php /* @escapeNotVerified */ echo __('Save Address') ?>">
                     <span><?php /* @escapeNotVerified */ echo __('Save Address') ?></span>
                 </button>
-                <?php /*
-                <button type="submit" class="action submit primary" id="updateAndCheckout" data-action="save-address" title="<?php  @escapeNotVerified  echo __('Save Address and Checkout') ?>">
-                    <span><?php  @escapeNotVerified  echo __('Save Address and Checkout') ?></span>
-                </button>
-                */ ?>
             </div>
             <div class="secondary">
-                <a class="action back underline text-black hover:text-theme-blue transition-all duration-300 ease-in-out font-medium text-[0.9rem] md:text-[1rem]" href="<?php echo $block->escapeUrl($block->getBackUrl()) ?>">
+                <a class="action underline text-black hover:text-theme-blue transition-all duration-300 ease-in-out font-medium text-[0.9rem] md:text-[1rem]" href="<?php echo $block->escapeUrl($block->getBackUrl()) ?>">
                     <span><?php /* @escapeNotVerified */ echo __('Go back') ?></span>
                 </a>
             </div>

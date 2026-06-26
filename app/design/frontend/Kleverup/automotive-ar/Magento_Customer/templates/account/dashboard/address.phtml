@@ -20,8 +20,8 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
 ?>
 <div class="block block-dashboard-addresses">
     <h2 class="block-title my-6 flex justify-between items-center bg-white rounded-[10px] border-b-[6px] border-b-black border border-[#D9D9D9] shadow-lg p-[1rem] md:p-[1.7rem] lg:p-[2.2rem] xl:p-[2.5rem]">
-        <span class="text-[1rem] md:text-[1.3rem] lg:text-[1.5] block"><?= $escaper->escapeHtml(__('Address Book')) ?></span>
-        <a class="action edit inline-block underline text-[1rem] md:text-[1.3rem] lg:text-[1.5] text-theme-blue hover:text-black transition-all duration-300 ease-in-out"
+        <span class="text-sm md:text-lg lg:text-[1.5] block"><?= $escaper->escapeHtml(__('Address Book')) ?></span>
+        <a class="action edit inline-block underline text-sm md:text-lg lg:text-[1.5] text-theme-blue hover:text-black transition-all duration-300 ease-in-out"
            href="<?= $escaper->escapeUrl($block->getAddressBookUrl()) ?>"
         >
             <span><?= $escaper->escapeHtml(__('Manage Addresses')) ?></span>

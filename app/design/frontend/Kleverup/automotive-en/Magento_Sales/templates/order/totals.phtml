@@ -14,7 +14,7 @@
         <?= $block->getChildHtml($_total->getBlockName(), false) ?>
     <?php else :?>
     <tr class="<?= $block->escapeHtmlAttr($_code) ?>">
-        <th  scope="row" colspan="4" style="text-align:right;font-weight:800;font-family:'Montserrat',arial,tahoma">
+        <th  scope="row" colspan="5" style="text-align:right;font-weight:800;font-family:'Montserrat',arial,tahoma">
             <?php if ($_total->getStrong()) : ?>
                 <strong><?= $block->escapeHtml($_total->getLabel()) ?></strong>
             <?php else : ?>

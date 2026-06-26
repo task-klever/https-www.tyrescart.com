@@ -39,7 +39,7 @@ $productUrlSuffix = $viewModelStoreConfig->getStoreConfig('catalog/seo/product_u
 $baseUrl = $block->getBaseUrl();
 $ratingSteps = 5;
 ?>
-<div class="mb-6 text-2xl font-bold"><?= $escaper->escapeHtml(__('My Product Reviews')) ?></div>
+<h2 class="mb-5 text-xl block-title"><?= $escaper->escapeHtml(__('My Product Reviews')) ?></h2>
 
 <div id="content"
      x-data="initReviewList()"

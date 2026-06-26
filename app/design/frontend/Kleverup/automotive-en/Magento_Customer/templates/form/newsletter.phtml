@@ -12,16 +12,16 @@ declare(strict_types=1);
 /** @var \Magento\Framework\Escaper $escaper */
 ?>
 <?= $block->getChildHtml('form_before') ?>
-    <form class="form form-newsletter-manage bg-white rounded-[10px] border-b-[6px] border-b-black border border-[#D9D9D9] shadow-lg p-[1rem] md:p-[1.7rem] lg:p-[2.2rem] xl:p-[2.5rem]"
+    <form class="form form-newsletter-manage bg-white rounded-[10px] border-b-[6px] border-b-black border border-[#D9D9D9] shadow-lg p-5"
           action="<?= $escaper->escapeUrl($block->getAction()) ?>"
           method="post"
           id="form-validate">
         <fieldset class="fieldset">
             <?= $block->getBlockHtml('formkey') ?>
             <div class="text-2xl mb-6">
-                <span class="font-semibold">
+                <h2 class="mb-5 text-xl block-title">
                     <?= $escaper->escapeHtml(__('Subscription option')) ?>
-                </span>
+                </h2>
             </div>
             <div class="field choice flex gap-2">
                 <input type="checkbox" name="is_subscribed" id="subscription" value="1"
@@ -41,7 +41,7 @@ declare(strict_types=1);
             <div class="primary-button">
                 <button type="submit"
                         title="<?= $escaper->escapeHtmlAttr(__('Save')) ?>"
-                        class="action save btn bg-black text-[0.9rem] md:text-[1rem] hover:bg-theme-blue transition-all duration-300 ease-in-out "
+                        class="action save inline-flex items-center justify-center px-6 py-2 bg-black text-white text-sm md:text-base font-semibold rounded-full hover:bg-theme-blue transition-colors duration-300 "
                 >
                     <span>
                         <?= $escaper->escapeHtml(__('Save')) ?>

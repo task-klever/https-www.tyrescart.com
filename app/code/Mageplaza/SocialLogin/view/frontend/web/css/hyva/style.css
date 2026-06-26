@@ -67,12 +67,12 @@
 }
 
 #popup_test  .remind, .action.create, .back {
-    color: #006bb4 !important;
+    @apply text-theme-blue;
     text-decoration: none !important;
 }
 
 #popup_test  .remind:hover, .back:hover, .action.create:hover {
-    color: #006bb4 !important;
+    @apply text-theme-blue;
     text-decoration: underline !important;
 }
 
