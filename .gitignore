@@ -3,7 +3,7 @@
 # Ignore everything by default
 /*
 
-# Track these directories
+# Track custom code
 !/app/
 /app/*
 !/app/code/
@@ -11,48 +11,31 @@
 !/app/etc/
 /app/etc/env.php
 
+# Track Magento core directories
 !/bin/
 !/lib/
 !/dev/
 !/setup/
 
-# Track root config files
+# Track root files
 !/.gitignore
 !/.htaccess
-!/.htaccess.sample
-!/.editorconfig
-!/.php-cs-fixer.dist.php
-!/.user.ini
 !/composer.json
 !/composer.lock
-!/CHANGELOG.md
-!/COPYING.txt
-!/LICENSE.txt
-!/LICENSE_AFL.txt
-!/SECURITY.md
-!/nginx.conf.sample
-!/grunt-config.json.sample
-!/Gruntfile.js.sample
-!/package.json.sample
-!/auth.json.sample
-!/cronLaunch.php
-!/magento-upgrade.md
-!/magento-upgrade-249.md
 !/README.md
 
-# Track pub essentials only
+# Track pub/index.php only
 !/pub/
 /pub/*
-!/pub/.htaccess
-!/pub/.user.ini
 !/pub/index.php
-!/pub/cron.php
-!/pub/get.php
-!/pub/health_check.php
-!/pub/static.php
-!/pub/errors/
 
-# Always ignore
+# Never track
+/vendor/
+/generated/
+/var/
+/pub/static/
+/pub/media/
+/node_modules/
 *.bak.*
 *.bkp*
 *.sql
@@ -61,11 +44,3 @@
 /auth.json
 /.claude/
 deploy-frontend.sh
-
-# Magento generated (never commit)
-/vendor/
-/generated/
-/var/
-/pub/static/
-/pub/media/
-/node_modules/
