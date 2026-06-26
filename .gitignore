@@ -1,60 +1,63 @@
-## Magento 2 Standard .gitignore
+## Magento 2 .gitignore — Track custom code only
 
-# Root files
-/.buildpath
-/.cache
-/.metadata
-/.project
-/.settings
-/.vscode
-atlassian*
-/nbproject
-/robots.txt
-/sitemap*
-*.DS_Store
-/.idea
-/.gitattributes
+# Ignore everything by default
+/*
 
-# Composer
-/vendor/*
-
-# Magento core generated
-/generated/*
-!/generated/.htaccess
-
-# Temporary files
-/var/*
-!/var/.htaccess
-
-# Static content (deployed)
-/pub/static/*
-!/pub/static/.htaccess
-!/pub/static/adminhtml/
-!/pub/static/frontend/
-
-# Media
-/pub/media/*
-!/pub/media/.htaccess
-!/pub/media/catalog/
-!/pub/media/customer/
-!/pub/media/downloadable/
-!/pub/media/import/
-!/pub/media/wysiwyg/
-!/pub/media/tmp/
-
-# Node
-/node_modules
-
-# Auth
-/auth.json
+# Track these directories
+!/app/
+/app/*
+!/app/code/
+!/app/design/
+!/app/etc/
 /app/etc/env.php
 
-# Backup files
+# Track root config files
+!/.gitignore
+!/.htaccess
+!/.htaccess.sample
+!/.editorconfig
+!/.php-cs-fixer.dist.php
+!/.user.ini
+!/composer.json
+!/composer.lock
+!/CHANGELOG.md
+!/COPYING.txt
+!/LICENSE.txt
+!/LICENSE_AFL.txt
+!/SECURITY.md
+!/nginx.conf.sample
+!/grunt-config.json.sample
+!/Gruntfile.js.sample
+!/package.json.sample
+!/auth.json.sample
+!/deploy-frontend.sh
+!/cronLaunch.php
+!/magento-upgrade.md
+!/magento-upgrade-249.md
+!/README.md
+
+# Track bin
+!/bin/
+
+# Track pub essentials only
+!/pub/
+/pub/*
+!/pub/.htaccess
+!/pub/.user.ini
+!/pub/index.php
+!/pub/cron.php
+!/pub/get.php
+!/pub/health_check.php
+!/pub/static.php
+!/pub/errors/
+
+# Always ignore
 *.bak.*
-
-# Temp/debug files
-/pub/faq_debug.php
-/pub/opcache_clear_temp.php
-
-# Logs
+*.bkp*
+*.sql
 *.log
+*.png
+*.jpg
+/auth.json
+/.claude/
+.DS_Store

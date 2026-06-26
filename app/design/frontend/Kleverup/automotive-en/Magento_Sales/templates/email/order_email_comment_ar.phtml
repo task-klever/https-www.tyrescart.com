@@ -1,18 +1,29 @@
 <?php
 /**
  * Order comment for email - Arabic
- * Fetches the first customer comment from order status history
+ * Fetches the customer comment from the quote
  */
 $_order = $block->getOrder();
 $comment = '';
 
-// Get the first status history comment (customer comment saved during checkout)
-$historyCollection = $_order->getStatusHistoryCollection();
-if ($historyCollection && $historyCollection->getSize()) {
-    $items = $historyCollection->getItems();
-    $oldest = end($items);
-    if ($oldest && $oldest->getComment()) {
-        $comment = $oldest->getComment();
+// Try order's customer_note first
+if ($_order->getCustomerNote()) {
+    $comment = $_order->getCustomerNote();
+}
+
+// Fallback: read from quote's customer_comment
+if (!$comment) {
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    try {
+        $quoteId = $_order->getQuoteId();
+        if ($quoteId) {
+            $quote = $objectManager->create(\Magento\Quote\Model\Quote::class)->load($quoteId);
+            if ($quote->getCustomerComment()) {
+                $comment = $quote->getCustomerComment();
+            }
+        }
+    } catch (\Exception $e) {
+        // silently fail
     }
 }
 

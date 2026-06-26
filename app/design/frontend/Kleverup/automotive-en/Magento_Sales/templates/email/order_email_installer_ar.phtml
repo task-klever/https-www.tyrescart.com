@@ -41,9 +41,11 @@ if($pickupStore !='' && $pickupStore != null && $pickupStore != 4):
             <?php if ($_order->getShippingDescription() == "Install at Outlet") { ?>
                 <td width="50%" style="padding:0 0 0 8px; vertical-align:top; text-align:right;">
                     <p style="font-weight:700; font-family:Arial, sans-serif; margin:0 0 10px 0;">معلومات المُركّب</p>
-                    <p style="font-family:Arial, sans-serif; margin:0; font-size:13px; line-height:1.6; color:#444;">
+                    <div dir="ltr" style="unicode-bidi:embed; text-align:left; font-family:Arial, sans-serif; margin:0; font-size:13px; line-height:1.6; color:#444;">
                         <?php echo implode('<br>', $installerInfo); ?>
-                        <br><br><span style="font-weight:700;">تاريخ/وقت الموعد: </span>
+                    </div>
+                    <p style="font-family:Arial, sans-serif; margin:10px 0 0 0; font-size:13px; line-height:1.6; color:#444;">
+                        <span style="font-weight:700;">تاريخ/وقت الموعد: </span>
                         <br><span dir="ltr" style="unicode-bidi:embed;"><?php echo date('Y-m-d', strtotime($_order->getPickupDate())) . " " . $_order->getPickupTime(); ?></span>
                     </p>
                 </td>
@@ -57,7 +59,7 @@ if($pickupStore !='' && $pickupStore != null && $pickupStore != 4):
                     <?php if ($pickupLocation): ?>
                     <p style="font-family:Arial, sans-serif; margin:10px 0 0 0; font-size:13px; line-height:1.6; color:#444; text-align:right;">
                         <span style="font-weight:700;">موقع الاستلام: </span>
-                        <br><a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($pickupLocation); ?>" target="_blank" style="color:#00843d; text-decoration:underline;"><?php echo $block->escapeHtml($pickupLocation); ?></a>
+                        <br><span dir="ltr" style="unicode-bidi:embed;"><a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($pickupLocation); ?>" target="_blank" style="color:#00843d; text-decoration:underline;"><?php echo $block->escapeHtml($pickupLocation); ?></a></span>
                     </p>
                     <?php endif; ?>
                 </td>
