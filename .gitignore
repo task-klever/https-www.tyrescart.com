@@ -21,9 +21,26 @@
 # Track root files
 !/.gitignore
 !/.htaccess
+!/.htaccess.sample
+!/.editorconfig
+!/.php-cs-fixer.dist.php
+!/.user.ini
 !/composer.json
 !/composer.lock
 !/README.md
+!/CHANGELOG.md
+!/COPYING.txt
+!/LICENSE.txt
+!/LICENSE_AFL.txt
+!/SECURITY.md
+!/nginx.conf.sample
+!/grunt-config.json.sample
+!/Gruntfile.js.sample
+!/package.json.sample
+!/auth.json.sample
+!/cronLaunch.php
+!/magento-upgrade.md
+!/magento-upgrade-249.md
 
 # Track pub/index.php only
 !/pub/
